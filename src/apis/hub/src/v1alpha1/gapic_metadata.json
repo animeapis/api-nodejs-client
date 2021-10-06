@@ -1,0 +1,87 @@
+{
+  "schema": "1.0",
+  "comment": "This file maps proto services/RPCs to the corresponding library clients/methods",
+  "language": "typescript",
+  "protoPackage": "animeshon.hub.v1alpha1",
+  "libraryPackage": "@animeapis/hub",
+  "services": {
+    "Git": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "GitClient",
+          "rpcs": {
+            "AdvertiseReferences": {
+              "methods": [
+                "advertiseReferences"
+              ]
+            },
+            "ReceivePack": {
+              "methods": [
+                "receivePack"
+              ]
+            },
+            "UploadPack": {
+              "methods": [
+                "uploadPack"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "GitClient",
+          "rpcs": {
+            "AdvertiseReferences": {
+              "methods": [
+                "advertiseReferences"
+              ]
+            },
+            "ReceivePack": {
+              "methods": [
+                "receivePack"
+              ]
+            },
+            "UploadPack": {
+              "methods": [
+                "uploadPack"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "Hub": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "HubClient",
+          "rpcs": {
+            "CreateRepository": {
+              "methods": [
+                "createRepository"
+              ]
+            },
+            "DeleteRepository": {
+              "methods": [
+                "deleteRepository"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "HubClient",
+          "rpcs": {
+            "CreateRepository": {
+              "methods": [
+                "createRepository"
+              ]
+            },
+            "DeleteRepository": {
+              "methods": [
+                "deleteRepository"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

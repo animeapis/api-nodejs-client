@@ -1,0 +1,77 @@
+{
+  "schema": "1.0",
+  "comment": "This file maps proto services/RPCs to the corresponding library clients/methods",
+  "language": "typescript",
+  "protoPackage": "animeshon.knowledge.v1alpha1",
+  "libraryPackage": "@animeapis/knowledge",
+  "services": {
+    "Knowledge": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "KnowledgeClient",
+          "rpcs": {
+            "CreateContribution": {
+              "methods": [
+                "createContribution"
+              ]
+            },
+            "GetContribution": {
+              "methods": [
+                "getContribution"
+              ]
+            },
+            "ApproveContribution": {
+              "methods": [
+                "approveContribution"
+              ]
+            },
+            "RejectContribution": {
+              "methods": [
+                "rejectContribution"
+              ]
+            },
+            "ListContributions": {
+              "methods": [
+                "listContributions",
+                "listContributionsStream",
+                "listContributionsAsync"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "KnowledgeClient",
+          "rpcs": {
+            "CreateContribution": {
+              "methods": [
+                "createContribution"
+              ]
+            },
+            "GetContribution": {
+              "methods": [
+                "getContribution"
+              ]
+            },
+            "ApproveContribution": {
+              "methods": [
+                "approveContribution"
+              ]
+            },
+            "RejectContribution": {
+              "methods": [
+                "rejectContribution"
+              ]
+            },
+            "ListContributions": {
+              "methods": [
+                "listContributions",
+                "listContributionsStream",
+                "listContributionsAsync"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

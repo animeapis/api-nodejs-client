@@ -1,0 +1,151 @@
+{
+  "schema": "1.0",
+  "comment": "This file maps proto services/RPCs to the corresponding library clients/methods",
+  "language": "typescript",
+  "protoPackage": "animeshon.tracker.v1alpha1",
+  "libraryPackage": "@animeapis/tracker",
+  "services": {
+    "Credentials": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "CredentialsClient",
+          "rpcs": {
+            "GetOAuthInfo": {
+              "methods": [
+                "getOAuthInfo"
+              ]
+            },
+            "SetAuth": {
+              "methods": [
+                "setAuth"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "CredentialsClient",
+          "rpcs": {
+            "GetOAuthInfo": {
+              "methods": [
+                "getOAuthInfo"
+              ]
+            },
+            "SetAuth": {
+              "methods": [
+                "setAuth"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "TrackerService": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "TrackerServiceClient",
+          "rpcs": {
+            "GetTracker": {
+              "methods": [
+                "getTracker"
+              ]
+            },
+            "CreateTracker": {
+              "methods": [
+                "createTracker"
+              ]
+            },
+            "UpdateTracker": {
+              "methods": [
+                "updateTracker"
+              ]
+            },
+            "DeleteTracker": {
+              "methods": [
+                "deleteTracker"
+              ]
+            },
+            "CreateActivity": {
+              "methods": [
+                "createActivity"
+              ]
+            },
+            "DeleteActivity": {
+              "methods": [
+                "deleteActivity"
+              ]
+            },
+            "ImportTrackers": {
+              "methods": [
+                "importTrackers"
+              ]
+            },
+            "ExportTrackers": {
+              "methods": [
+                "exportTrackers"
+              ]
+            },
+            "ListTrackers": {
+              "methods": [
+                "listTrackers",
+                "listTrackersStream",
+                "listTrackersAsync"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "TrackerServiceClient",
+          "rpcs": {
+            "GetTracker": {
+              "methods": [
+                "getTracker"
+              ]
+            },
+            "CreateTracker": {
+              "methods": [
+                "createTracker"
+              ]
+            },
+            "UpdateTracker": {
+              "methods": [
+                "updateTracker"
+              ]
+            },
+            "DeleteTracker": {
+              "methods": [
+                "deleteTracker"
+              ]
+            },
+            "CreateActivity": {
+              "methods": [
+                "createActivity"
+              ]
+            },
+            "DeleteActivity": {
+              "methods": [
+                "deleteActivity"
+              ]
+            },
+            "ImportTrackers": {
+              "methods": [
+                "importTrackers"
+              ]
+            },
+            "ExportTrackers": {
+              "methods": [
+                "exportTrackers"
+              ]
+            },
+            "ListTrackers": {
+              "methods": [
+                "listTrackers",
+                "listTrackersStream",
+                "listTrackersAsync"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

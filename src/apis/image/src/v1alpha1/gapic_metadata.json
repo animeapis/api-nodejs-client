@@ -1,0 +1,151 @@
+{
+  "schema": "1.0",
+  "comment": "This file maps proto services/RPCs to the corresponding library clients/methods",
+  "language": "typescript",
+  "protoPackage": "animeshon.image.v1alpha1",
+  "libraryPackage": "@animeapis/image",
+  "services": {
+    "Image": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "ImageClient",
+          "rpcs": {
+            "UploadImage": {
+              "methods": [
+                "uploadImage"
+              ]
+            },
+            "ImportImage": {
+              "methods": [
+                "importImage"
+              ]
+            },
+            "GetImage": {
+              "methods": [
+                "getImage"
+              ]
+            },
+            "GetAlbum": {
+              "methods": [
+                "getAlbum"
+              ]
+            },
+            "CreateAlbum": {
+              "methods": [
+                "createAlbum"
+              ]
+            },
+            "DeleteAlbum": {
+              "methods": [
+                "deleteAlbum"
+              ]
+            },
+            "GetAlbumSettings": {
+              "methods": [
+                "getAlbumSettings"
+              ]
+            },
+            "UpdateAlbumSettings": {
+              "methods": [
+                "updateAlbumSettings"
+              ]
+            },
+            "ListAlbums": {
+              "methods": [
+                "listAlbums",
+                "listAlbumsStream",
+                "listAlbumsAsync"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "ImageClient",
+          "rpcs": {
+            "UploadImage": {
+              "methods": [
+                "uploadImage"
+              ]
+            },
+            "ImportImage": {
+              "methods": [
+                "importImage"
+              ]
+            },
+            "GetImage": {
+              "methods": [
+                "getImage"
+              ]
+            },
+            "GetAlbum": {
+              "methods": [
+                "getAlbum"
+              ]
+            },
+            "CreateAlbum": {
+              "methods": [
+                "createAlbum"
+              ]
+            },
+            "DeleteAlbum": {
+              "methods": [
+                "deleteAlbum"
+              ]
+            },
+            "GetAlbumSettings": {
+              "methods": [
+                "getAlbumSettings"
+              ]
+            },
+            "UpdateAlbumSettings": {
+              "methods": [
+                "updateAlbumSettings"
+              ]
+            },
+            "ListAlbums": {
+              "methods": [
+                "listAlbums",
+                "listAlbumsStream",
+                "listAlbumsAsync"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "ImageRouter": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "ImageRouterClient",
+          "rpcs": {
+            "GetImageRoute": {
+              "methods": [
+                "getImageRoute"
+              ]
+            },
+            "RouteImage": {
+              "methods": [
+                "routeImage"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "ImageRouterClient",
+          "rpcs": {
+            "GetImageRoute": {
+              "methods": [
+                "getImageRoute"
+              ]
+            },
+            "RouteImage": {
+              "methods": [
+                "routeImage"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
