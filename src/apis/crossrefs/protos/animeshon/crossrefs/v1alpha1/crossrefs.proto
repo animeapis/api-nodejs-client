@@ -1,0 +1,501 @@
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+import "google/api/client.proto";
+import "google/api/field_behavior.proto";
+import "google/api/resource.proto";
+import "google/longrunning/operations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+package animeshon.crossrefs.v1alpha1;
+
+option go_package = "github.com/animeapis/go-genproto/crossrefs/v1alpha1;crossrefs";
+option java_package = "com.animeshon.crossrefs.v1alpha1";
+option java_multiple_files = true;
+option ruby_package = "Animeshon::CrossRefs::v1Alpha1";
+
+// TODO(christian-roggia): consider splitting the service into multiple
+// services, each one responsible for a subgroup of resources such as
+// universes, crossrefs, and parodies.
+
+service Referrer {
+  option (google.api.default_host) = "crossrefs.animeapis.com";
+
+  // GetCrossRef returns a crossref.
+  rpc GetCrossRef(GetCrossRefRequest) returns (CrossRef) {
+    option (google.api.http) = {
+      get: "/v1alpha1/crossrefs/{name=kinds/*/crossrefs/*}"
+    };
+  }
+
+  // CreateCrossRef creates a new crossref.
+  rpc CreateCrossRef(CreateCrossRefRequest) returns (CrossRef) {
+    option (google.api.http) = {
+      post: "/v1alpha1/crossrefs"
+      body: "*"
+    };
+  }
+
+  rpc UpdateCrossRef(UpdateCrossRefRequest) returns (UpdateCrossRefResponse) {
+    option (google.api.http) = {
+      patch: "/v1alpha1/crossrefs/{crossref.name=kinds/*/crossrefs/*}"
+      body: "*"
+    };
+  }
+
+  rpc ListCrossRefs(ListCrossRefsRequest) returns (ListCrossRefsResponse) {
+    option (google.api.http) = {
+      get: "/v1alpha1/crossrefs"
+    };
+  }
+
+  rpc CountCrossRefs(CountCrossRefsRequest) returns (CountCrossRefsResponse) {
+    option (google.api.http) = {
+      get: "/v1alpha1/crossrefs:count"
+    };
+  }
+
+  // Analyzes and proposes new cross-references according to their similarity.
+  rpc AnalyzeCrossRefs(AnalyzeCrossRefRequest) returns (google.longrunning.Operation) {
+    option (google.api.http) = {
+      post: "/v1alpha1/crossrefs:analyze"
+      body: "*"
+    };
+    option (google.longrunning.operation_info) = {
+      response_type: "AnalyzeCrossRefsResponse"
+      metadata_type: "OperationMetadata"
+    };
+  }
+
+  // Imports already existing cross-references from third-parties.
+  rpc ImportCrossRefs(ImportCrossRefRequest) returns (google.longrunning.Operation) {
+    option (google.api.http) = {
+      post: "/v1alpha1/crossrefs:import"
+      body: "*"
+    };
+    option (google.longrunning.operation_info) = {
+      response_type: "ImportCrossRefsResponse"
+      metadata_type: "OperationMetadata"
+    };
+  }
+
+  // Exports the cross-references to Cloud Pub/Sub for a full synchronization.
+  // This operation is usually called after a new import with a clean database.
+  rpc ExportCrossRefs(ExportCrossRefRequest) returns (google.longrunning.Operation) {
+    option (google.api.http) = {
+      post: "/v1alpha1/crossrefs:export"
+      body: "*"
+    };
+    option (google.longrunning.operation_info) = {
+      response_type: "ExportCrossRefsResponse"
+      metadata_type: "OperationMetadata"
+    };
+  }
+
+  // Initialize the cross-references using specific namespaces for each kind.
+  // This operation first analyzes the entities meeting the kind and namespace precondition
+  // to match new entities with existing ones
+  rpc InitializeCrossRefs(google.protobuf.Empty) returns (google.longrunning.Operation) {
+    option (google.api.http) = {
+      post: "/v1alpha1/crossrefs:initialize"
+      body: "*"
+    };
+    option (google.longrunning.operation_info) = {
+      response_type: "InitializeCrossRefsResponse"
+      metadata_type: "OperationMetadata"
+    };
+  }
+
+  rpc AnalyzeParodies(google.protobuf.Empty) returns (google.longrunning.Operation) {
+    option (google.api.http) = {
+      post: "/v1alpha1/parodies:analyze"
+      body: "*"
+    };
+    option (google.longrunning.operation_info) = {
+      response_type: "AnalyzeParodiesResponse"
+      metadata_type: "OperationMetadata"
+    };
+  }
+
+  rpc ExportParodies(google.protobuf.Empty) returns (google.longrunning.Operation) {
+    option (google.api.http) = {
+      post: "/v1alpha1/parodies:export"
+      body: "*"
+    };
+    option (google.longrunning.operation_info) = {
+      response_type: "ExportParodiesResponse"
+      metadata_type: "OperationMetadata"
+    };
+  }
+
+  rpc GetUniverse(GetUniverseRequest) returns (Universe) {
+    option (google.api.http) = {
+      get: "/v1alpha1/{name=universes/*}"
+    };
+  }
+
+  rpc UpdateUniverse(UpdateUniverseRequest) returns (Universe) {
+    option (google.api.http) = {
+      patch: "/v1alpha1/{universe.name=universes/*}"
+      body: "*"
+    };
+  }
+
+  rpc ExpandUniverse(ExpandUniverseRequest) returns (ExpandUniverseResponse) {
+    option (google.api.http) = {
+      post: "/v1alpha1/{name=universes/*}:expand"
+      body: "*"
+    };
+  }
+
+  rpc GetWormhole(GetWormholeRequest) returns (Wormhole) {
+    option (google.api.http) = {
+    get: "/v1alpha1/wormhole/{name=namespaces/*/*/*}"
+    };
+  }
+
+  rpc ListWormholeCrossRefs(ListWormholeCrossRefsRequest) returns (ListWormholeCrossRefsResponse) {
+    option (google.api.http) = {
+    get: "/v1alpha1/wormhole/{name=namespaces/*/*/*}/crossrefs"
+    };
+  }
+}
+
+message ImportCrossRefRequest {
+  // Map of all options for the import
+  map<string, bool> opts = 1;
+}
+
+message ExportCrossRefRequest {
+  // Determine the target of the export.
+  // Full means storage + migration
+  // Storage means only persinstent stogare
+  // Migration means notify the migrato to perform the data consolidation  
+  enum Target {
+    FULL = 0;
+    STORAGE = 1;
+    MIGRATOR = 2;
+  }
+
+  Target target = 1;
+
+  // Kind to restrict the crossrefs to export to a specific subset
+  string kind = 2;
+}
+
+message AnalyzeCrossRefRequest {
+  // Tollerance of the match in pct
+  int32 tollerance = 1;
+
+  // Map of all options for the analysis
+  map<string, bool> opts = 2;
+
+  // Namespaces to analyze
+  repeated string namespaces = 3;
+
+  // Kinds to analyze
+  repeated string target_kinds = 4;
+}
+
+message CrossRef {
+  option (google.api.resource) = {
+    type: "crossrefs.animeapis.com/CrossRef"
+    pattern: "kinds/{kind}/crossrefs/{crossref}"
+  };
+
+  // The resource name of the crossref.
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // kind of the crossreference.
+  string kind = 2;
+
+  // root entity which generated the crossreference.
+  string root = 3;
+
+  // version control.
+  string etag = 4;
+
+  // if verified, the crossreference has been generated by a trusty process or verified by an operator
+  bool verified = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // last operator which edited the crossreference
+  string operator = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // creation time
+  google.protobuf.Timestamp create_time = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // update time
+  google.protobuf.Timestamp update_time = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // all approved entities
+  repeated string approved = 9;
+
+  // all rejected entities
+  repeated string rejected = 10;
+
+  // all rejected entities
+  repeated string pending = 11;
+
+  // all partial entities
+  repeated string partial = 12;
+}
+
+// TODO(christian-roggia): move the universe together with all other resources.
+message Universe {
+  option (google.api.resource) = {
+    type: "crossrefs.animeapis.com/Universe"
+    pattern: "universes/{universe}"
+  };
+
+  // The resource name of the universe.
+  string name = 1;
+
+  // TODO(christian-roggia): resources should be available through protobuf
+  // messages.
+  bytes payload = 2;
+}
+
+// message CanonicalContent {
+// }
+
+// Represents the metadata of the long-running operation.
+message OperationMetadata {
+  // Output only. The time the operation was created.
+  google.protobuf.Timestamp create_time = 1 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Output only. The time the operation finished running.
+  google.protobuf.Timestamp end_time = 2 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Output only. Server-defined resource path for the target of the operation.
+  string target = 3 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Output only. Name of the verb executed by the operation.
+  string verb = 4 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Output only. Human-readable status of the operation, if any.
+  string status_message = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Output only. Identifies whether the user has requested cancellation
+  // of the operation. Operations that have successfully been cancelled
+  // have [Operation.error][] value with a [google.rpc.Status.code][google.rpc.Status.code] of 1,
+  // corresponding to `Code.CANCELLED`.
+  bool requested_cancellation = 6 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Output only. API version used to start the operation.
+  string api_version = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Output only.
+  int32 step_count = 8 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Output only.
+  int32 step_progress = 9 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Output only.
+  int32 item_count = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+
+  // Output only.
+  int32 item_progress = 11 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message GetCrossRefRequest {
+  // The resource name of the requested crossref.
+  string name = 1 [
+    (google.api.resource_reference).type = "crossrefs.animeapis.com/CrossRef",
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message CreateCrossRefRequest {
+  CrossRef crossref = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message UpdateCrossRefRequest {
+  // The crossref to update.
+  CrossRef crossref = 1;
+
+  // The field mask to determine which fields are to be updated. If empty, the
+  // server will assume all fields are to be updated.
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+message UpdateCrossRefResponse {
+  // All CrossRef involved in the update
+  repeated CrossRef crossrefs = 1;
+}
+
+message CrossRefsFilterRequest {
+  // specifies the kind of the CrossRefs to search in 
+  string kind = 1;
+  
+  // if true only crossreferences with pendings are returned
+  bool pendingOnly = 2;
+}
+
+message ListCrossRefsRequest {
+  // The maximum number of users to return. Server may return fewer users
+  // than requested. 
+  // The maximum page_size is 100
+  // If unspecified, server will pick an appropriate default.
+  int32 page_size = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // The value returned from the previous call.
+  string page_token = 2;
+
+  // A filter to be applied to results.
+  CrossRefsFilterRequest filter = 3;
+}
+
+message CountCrossRefsRequest {
+  // A filter to be applied to results.
+  CrossRefsFilterRequest filter = 3;
+}
+
+message ListCrossRefsResponse {
+  // The list of crossrefs.
+  repeated CrossRef crossrefs = 1;
+
+  // A token to retrieve next page of results.
+  string next_page_token = 2;
+}
+
+message CountCrossRefsResponse {
+  int32 count = 1;
+}
+
+message GetUniverseRequest {
+  // The resource name of the requested universe.
+  string name = 1 [
+    (google.api.resource_reference).type = "crossrefs.animeapis.com/Universe",
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message UpdateUniverseRequest {
+  // The universe to update.
+  Universe universe = 1;
+
+  // The field mask to determine which fields are to be updated. If empty, the
+  // server will assume all fields are to be updated.
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+message ExpandUniverseRequest {
+  // The universe to expand.
+  string name = 1;
+
+  // The maximum depth to expand.
+  int32 depth_limit = 2;
+
+  // The filter to use. Accepted values are CONTENT and CHARACTER.
+  string filter = 3;
+}
+
+message ExpandUniverseResponse {
+  // The resource name of the requested universe.
+  string name = 1;
+
+  // The list of content nodes to attach to the universe.
+  // repeated CanonicalContent contents = 2;
+
+  // TODO(christian-roggia): resources should be available through protobuf
+  // messages.
+  bytes payload = 2;
+}
+
+message GetWormholeRequest {
+  string name = 1 [
+    (google.api.resource_reference).type = "crossrefs.animeapis.com/Wormhole",
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message ListWormholeCrossRefsRequest {
+  string name = 1 [
+    (google.api.resource_reference).type = "crossrefs.animeapis.com/Wormhole",
+    (google.api.field_behavior) = REQUIRED
+  ];
+
+  // search wormhole entity in approved edges
+  bool withApproved = 2;
+
+  // search wormhole entity in pending edges
+  bool withPending = 3;
+
+  // search wormhole entity in partial edges
+  bool withPartial = 4;
+
+  // search wormhole entity in rejected edges
+  bool withRejected = 5;
+
+  // list of CrossRefs to exclude
+  repeated string crossRefsExclusion = 6;
+
+  // kind of the CrossRefs to search
+  string kind = 7;
+}
+
+message ListWormholeCrossRefsResponse {
+  // The list of crossrefs.
+  repeated CrossRef crossrefs = 1;
+}
+
+message Wormhole {
+  option (google.api.resource) = {
+    type: "crossrefs.animeapis.com/Wormhole"
+    pattern: "namespaces/{namespace}/{kind}/{id}"
+  };
+
+  message Text {
+    string text = 1;
+  
+    string localization = 2;
+  }
+
+  string name = 1;
+
+  // The names of te content
+  repeated Text names = 2;
+
+  // The aliases of te content
+  repeated Text aliases = 3;
+
+  // raw bytes of image
+  bytes image = 4;
+  
+  // url of the image
+  string image_url = 5;
+
+  // type of the content
+  string type = 6;
+
+  // subtype of the content
+  string subtype = 7;
+
+  // external url of the content
+  string external_url = 8;
+  
+  // type of publication
+  string publishing_type = 9;
+
+  // the content is parody of another content
+  bool is_parody = 10;
+
+  // identifier
+  string identifier = 11;
+
+  // most significant date
+  google.protobuf.Timestamp date = 12;
+}
+
+
+// TODO(christian-roggia): this is a workaround to solve the issue of GAPIC
+// CLI where broken code is generated if google.protobuf.Empty is used in the
+// response_type of longrunning operations.
+message AnalyzeCrossRefsResponse {}
+message ImportCrossRefsResponse {}
+message ExportCrossRefsResponse {}
+message AnalyzeParodiesResponse {}
+message InitializeCrossRefsResponse {}
+message ExportParodiesResponse {}

@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package animeshon.image.v1alpha1;
+
+option go_package = "github.com/animeapis/go-genproto/image/v1alpha1;image";
+option java_package = "com.animeshon.image.v1alpha1";
+option java_multiple_files = true;
+option ruby_package = "Animeshon::Image::v1Alpha1";
+
+// This is a private internal structure used to store metadata information
+// about a specific Image. This structure is never exposed to the public.
+message ImageEntry {
+  // The image resource id.
+  int64 id = 1;
+
+  // A reference to a parent resource.
+  oneof parent {
+    // The album resource id. Example: `albums/123`.
+    int64 album_id = 2;
+  }
+
+  // The uri of the image file.
+  // Example: gs://my-bucket/my-user/my-album/my-image.jpeg
+  string uri = 3;
+
+  // The MIME type of the image.
+  string mime_type = 4;
+
+  // The size of the image in bytes.
+  int32 file_size = 5;
+
+  // The width of image in pixels.
+  int32 width = 6;
+
+  // The height of image in pixels.
+  int32 height = 7;
+
+  // When the image was created.
+  google.protobuf.Timestamp create_time = 8;
+}
+
+// This is a private internal structure used to store metadata information
+// about a specific Album. This structure is never exposed to the public.
+message AlbumEntry {
+  // The album resource id.
+  int64 id = 1;
+
+  // A reference to a parent resource.
+  oneof parent {
+    // The organization resource id. Example: `organizations/456`.
+    int64 organization_id = 2;
+
+    // The user resource id. Example: `users/789`.
+    int64 user_id = 3;
+  }
+
+  // The album display name.
+  string display_name = 4;
+
+  // The bucket where to store resources.
+  string bucket = 5;
+
+  // Whether the album is system managed.
+  bool system_managed = 6;
+
+  // Whether images should be available through the image search.
+  bool enable_search = 7;
+
+  // Whether images can be annotated.
+  bool enable_annotation = 8;
+
+  // Whether images should be client-side encrypted.
+  bool enable_encryption = 9;
+
+  // Whether the content of this album is highly visible by the public such as
+  // profile pictures and banners.
+  bool high_visibility = 10;
+
+  // When the album was created.
+  google.protobuf.Timestamp create_time = 11;
+
+  // When the album was updated.
+  google.protobuf.Timestamp update_time = 12;
+}
+
+message RouteEntry {
+  // A reference to a parent resource.
+  oneof parent {
+    // The organization resource id. Example: `organizations/456`.
+    int64 organization_id = 1;
+
+    // The user resource id. Example: `users/789`.
+    int64 user_id = 2;
+  }
+
+  // The album resource id.
+  int64 album_id = 3;
+
+  // The image resource id.
+  int64 image_id = 4;
+}

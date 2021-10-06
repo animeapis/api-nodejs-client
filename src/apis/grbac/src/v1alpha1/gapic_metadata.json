@@ -1,0 +1,233 @@
+{
+  "schema": "1.0",
+  "comment": "This file maps proto services/RPCs to the corresponding library clients/methods",
+  "language": "typescript",
+  "protoPackage": "animeshon.grbac.v1alpha1",
+  "libraryPackage": "@animeapis/grbac",
+  "services": {
+    "AccessControl": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "AccessControlClient",
+          "rpcs": {
+            "TestIamPolicy": {
+              "methods": [
+                "testIamPolicy"
+              ]
+            },
+            "GetIamPolicy": {
+              "methods": [
+                "getIamPolicy"
+              ]
+            },
+            "SetIamPolicy": {
+              "methods": [
+                "setIamPolicy"
+              ]
+            },
+            "GetResource": {
+              "methods": [
+                "getResource"
+              ]
+            },
+            "CreateResource": {
+              "methods": [
+                "createResource"
+              ]
+            },
+            "TransferResource": {
+              "methods": [
+                "transferResource"
+              ]
+            },
+            "DeleteResource": {
+              "methods": [
+                "deleteResource"
+              ]
+            },
+            "CreateSubject": {
+              "methods": [
+                "createSubject"
+              ]
+            },
+            "DeleteSubject": {
+              "methods": [
+                "deleteSubject"
+              ]
+            },
+            "GetGroup": {
+              "methods": [
+                "getGroup"
+              ]
+            },
+            "CreateGroup": {
+              "methods": [
+                "createGroup"
+              ]
+            },
+            "UpdateGroup": {
+              "methods": [
+                "updateGroup"
+              ]
+            },
+            "AddGroupMember": {
+              "methods": [
+                "addGroupMember"
+              ]
+            },
+            "RemoveGroupMember": {
+              "methods": [
+                "removeGroupMember"
+              ]
+            },
+            "DeleteGroup": {
+              "methods": [
+                "deleteGroup"
+              ]
+            },
+            "CreatePermission": {
+              "methods": [
+                "createPermission"
+              ]
+            },
+            "DeletePermission": {
+              "methods": [
+                "deletePermission"
+              ]
+            },
+            "GetRole": {
+              "methods": [
+                "getRole"
+              ]
+            },
+            "CreateRole": {
+              "methods": [
+                "createRole"
+              ]
+            },
+            "UpdateRole": {
+              "methods": [
+                "updateRole"
+              ]
+            },
+            "DeleteRole": {
+              "methods": [
+                "deleteRole"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "AccessControlClient",
+          "rpcs": {
+            "TestIamPolicy": {
+              "methods": [
+                "testIamPolicy"
+              ]
+            },
+            "GetIamPolicy": {
+              "methods": [
+                "getIamPolicy"
+              ]
+            },
+            "SetIamPolicy": {
+              "methods": [
+                "setIamPolicy"
+              ]
+            },
+            "GetResource": {
+              "methods": [
+                "getResource"
+              ]
+            },
+            "CreateResource": {
+              "methods": [
+                "createResource"
+              ]
+            },
+            "TransferResource": {
+              "methods": [
+                "transferResource"
+              ]
+            },
+            "DeleteResource": {
+              "methods": [
+                "deleteResource"
+              ]
+            },
+            "CreateSubject": {
+              "methods": [
+                "createSubject"
+              ]
+            },
+            "DeleteSubject": {
+              "methods": [
+                "deleteSubject"
+              ]
+            },
+            "GetGroup": {
+              "methods": [
+                "getGroup"
+              ]
+            },
+            "CreateGroup": {
+              "methods": [
+                "createGroup"
+              ]
+            },
+            "UpdateGroup": {
+              "methods": [
+                "updateGroup"
+              ]
+            },
+            "AddGroupMember": {
+              "methods": [
+                "addGroupMember"
+              ]
+            },
+            "RemoveGroupMember": {
+              "methods": [
+                "removeGroupMember"
+              ]
+            },
+            "DeleteGroup": {
+              "methods": [
+                "deleteGroup"
+              ]
+            },
+            "CreatePermission": {
+              "methods": [
+                "createPermission"
+              ]
+            },
+            "DeletePermission": {
+              "methods": [
+                "deletePermission"
+              ]
+            },
+            "GetRole": {
+              "methods": [
+                "getRole"
+              ]
+            },
+            "CreateRole": {
+              "methods": [
+                "createRole"
+              ]
+            },
+            "UpdateRole": {
+              "methods": [
+                "updateRole"
+              ]
+            },
+            "DeleteRole": {
+              "methods": [
+                "deleteRole"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
