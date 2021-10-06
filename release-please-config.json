@@ -1,5 +1,5 @@
 {
-  "bootstrap-sha": "",
+  "bootstrap-sha": "a2b0e8c47764978e39f6e84915ec2474ac5369fb",
   "packages": {
     "src/apis/crossrefs": {},
     "src/apis/grbac": {},
