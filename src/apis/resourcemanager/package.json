@@ -1,6 +1,6 @@
 {
   "name": "@animeapis/resourcemanager",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Resourcemanager client for Node.js",
   "repository": "googleapis/nodejs-resourcemanager",
   "license": "Apache-2.0",
