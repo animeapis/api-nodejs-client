@@ -1,6 +1,6 @@
 {
   "name": "@animeapis/vision",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Vision client for Node.js",
   "repository": "googleapis/nodejs-vision",
   "license": "Apache-2.0",
