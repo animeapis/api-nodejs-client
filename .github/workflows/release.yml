@@ -1,0 +1,28 @@
+name: release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: "https://registry.npmjs.org"
+      
+      - id: prepare-path
+        run: bash .github/workflows/release.sh
+        env:
+          RELEASE: ${{ github.event.release.name }}
+      
+      - run: npm install # npm ci
+        working-directory: src/apis/${{ steps.prepare-path.outputs.working-directory }}
+      
+      - run: npm publish --access public
+        working-directory: src/apis/${{ steps.prepare-path.outputs.working-directory }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

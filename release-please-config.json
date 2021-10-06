@@ -1,0 +1,17 @@
+{
+  "bootstrap-sha": "",
+  "packages": {
+    "src/apis/crossrefs": {},
+    "src/apis/grbac": {},
+    "src/apis/hub": {},
+    "src/apis/iam/admin": {},
+    "src/apis/identity": {},
+    "src/apis/image": {},
+    "src/apis/knowledge": {},
+    "src/apis/library": {},
+    "src/apis/resourcemanager": {},
+    "src/apis/tracker": {},
+    "src/apis/vision": {},
+    "src/apis/webcache": {}
+  }
+}
