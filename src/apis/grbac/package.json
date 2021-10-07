@@ -1,6 +1,6 @@
 {
   "name": "@animeapis/grbac",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "description": "Grbac client for Node.js",
   "repository": "googleapis/nodejs-grbac",
   "license": "Apache-2.0",

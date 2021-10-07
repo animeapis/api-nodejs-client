@@ -1,6 +1,6 @@
 {
   "name": "@animeapis/library",
-  "version": "0.1.0",
+  "version": "1.1.0",
   "description": "Library client for Node.js",
   "repository": "googleapis/nodejs-library",
   "license": "Apache-2.0",
