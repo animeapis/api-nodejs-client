@@ -9,6 +9,7 @@
     "src/apis/image": {},
     "src/apis/knowledge": {},
     "src/apis/library": {},
+    "src/apis/release": {},
     "src/apis/resourcemanager": {},
     "src/apis/tracker": {},
     "src/apis/vision": {},
