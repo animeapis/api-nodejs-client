@@ -1,7 +1,7 @@
 {
   "name": "@animeapis/hub",
   "version": "1.1.0",
-  "description": "Hub client for Node.js",
+  "description": "Animeshon Hub API Client for Node.js",
   "repository": "googleapis/nodejs-hub",
   "license": "Apache-2.0",
   "author": "Google LLC",
