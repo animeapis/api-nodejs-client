@@ -20,9 +20,19 @@
                 "getContribution"
               ]
             },
+            "GetContributionChanges": {
+              "methods": [
+                "getContributionChanges"
+              ]
+            },
             "ApproveContribution": {
               "methods": [
                 "approveContribution"
+              ]
+            },
+            "ReviewContribution": {
+              "methods": [
+                "reviewContribution"
               ]
             },
             "RejectContribution": {
@@ -52,9 +62,19 @@
                 "getContribution"
               ]
             },
+            "GetContributionChanges": {
+              "methods": [
+                "getContributionChanges"
+              ]
+            },
             "ApproveContribution": {
               "methods": [
                 "approveContribution"
+              ]
+            },
+            "ReviewContribution": {
+              "methods": [
+                "reviewContribution"
               ]
             },
             "RejectContribution": {

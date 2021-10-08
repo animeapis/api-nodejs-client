@@ -1,8 +1,8 @@
 {
-  "name": "@animeapis/library",
-  "version": "1.2.0",
-  "description": "Animeshon Library API Client for Node.js",
-  "repository": "googleapis/nodejs-library",
+  "name": "@animeshon/release",
+  "version": "0.1.0",
+  "description": "Release client for Node.js",
+  "repository": "googleapis/nodejs-release",
   "license": "Apache-2.0",
   "author": "Google LLC",
   "main": "build/src/index.js",
@@ -19,9 +19,9 @@
     "google cloud platform",
     "google cloud",
     "cloud",
-    "google library",
-    "library",
-    "library"
+    "google release",
+    "release",
+    "publisher"
   ],
   "scripts": {
     "clean": "gts clean",

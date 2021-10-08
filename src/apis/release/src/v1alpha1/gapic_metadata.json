@@ -1,0 +1,137 @@
+{
+  "schema": "1.0",
+  "comment": "This file maps proto services/RPCs to the corresponding library clients/methods",
+  "language": "typescript",
+  "protoPackage": "animeshon.release.v1alpha1",
+  "libraryPackage": "@animeshon/release",
+  "services": {
+    "Publisher": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "PublisherClient",
+          "rpcs": {
+            "GetRelease": {
+              "methods": [
+                "getRelease"
+              ]
+            },
+            "CreateRelease": {
+              "methods": [
+                "createRelease"
+              ]
+            },
+            "UpdateRelease": {
+              "methods": [
+                "updateRelease"
+              ]
+            },
+            "DeleteRelease": {
+              "methods": [
+                "deleteRelease"
+              ]
+            },
+            "UndeleteRelease": {
+              "methods": [
+                "undeleteRelease"
+              ]
+            },
+            "PublishRelease": {
+              "methods": [
+                "publishRelease"
+              ]
+            },
+            "UnpublishRelease": {
+              "methods": [
+                "unpublishRelease"
+              ]
+            },
+            "ScheduleRelease": {
+              "methods": [
+                "scheduleRelease"
+              ]
+            },
+            "CancelRelease": {
+              "methods": [
+                "cancelRelease"
+              ]
+            },
+            "SuspendRelease": {
+              "methods": [
+                "suspendRelease"
+              ]
+            },
+            "ListReleases": {
+              "methods": [
+                "listReleases",
+                "listReleasesStream",
+                "listReleasesAsync"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "PublisherClient",
+          "rpcs": {
+            "GetRelease": {
+              "methods": [
+                "getRelease"
+              ]
+            },
+            "CreateRelease": {
+              "methods": [
+                "createRelease"
+              ]
+            },
+            "UpdateRelease": {
+              "methods": [
+                "updateRelease"
+              ]
+            },
+            "DeleteRelease": {
+              "methods": [
+                "deleteRelease"
+              ]
+            },
+            "UndeleteRelease": {
+              "methods": [
+                "undeleteRelease"
+              ]
+            },
+            "PublishRelease": {
+              "methods": [
+                "publishRelease"
+              ]
+            },
+            "UnpublishRelease": {
+              "methods": [
+                "unpublishRelease"
+              ]
+            },
+            "ScheduleRelease": {
+              "methods": [
+                "scheduleRelease"
+              ]
+            },
+            "CancelRelease": {
+              "methods": [
+                "cancelRelease"
+              ]
+            },
+            "SuspendRelease": {
+              "methods": [
+                "suspendRelease"
+              ]
+            },
+            "ListReleases": {
+              "methods": [
+                "listReleases",
+                "listReleasesStream",
+                "listReleasesAsync"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

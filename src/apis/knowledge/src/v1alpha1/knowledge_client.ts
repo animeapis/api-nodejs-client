@@ -52,7 +52,6 @@ export class KnowledgeClient {
     batching: {},
   };
   innerApiCalls: {[name: string]: Function};
-  pathTemplates: {[name: string]: gax.PathTemplate};
   knowledgeStub?: Promise<{[name: string]: Function}>;
 
   /**
@@ -141,15 +140,6 @@ export class KnowledgeClient {
     // Load the applicable protos.
     this._protos = this._gaxGrpc.loadProtoJSON(jsonProtos);
 
-    // This API contains "path templates"; forward-slash-separated
-    // identifiers to uniquely identify resources within the API.
-    // Create useful helper objects for these.
-    this.pathTemplates = {
-      contributionPathTemplate: new this._gaxModule.PathTemplate(
-        'contributions/{contribution}'
-      ),
-    };
-
     // Some of the methods on this service return "paged" results,
     // (e.g. 50 results at a time, with tokens to get subsequent
     // pages). Denote the keys used for pagination and results.
@@ -198,7 +188,7 @@ export class KnowledgeClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const knowledgeStubMethods =
-        ['createContribution', 'listContributions', 'getContribution', 'approveContribution', 'rejectContribution'];
+        ['createContribution', 'listContributions', 'getContribution', 'getContributionChanges', 'approveContribution', 'reviewContribution', 'rejectContribution'];
     for (const methodName of knowledgeStubMethods) {
       const callPromise = this.knowledgeStub.then(
         stub => (...args: Array<{}>) => {
@@ -303,10 +293,10 @@ export class KnowledgeClient {
  *
  * @param {Object} request
  *   The request object that will be sent.
- * @param {string} request.name
- *   The resource name.
- * @param {Buffer} request.payload
- *   The resurce payload.
+ * @param {string} request.parent
+ *   The parent resource where this contribution will be created.
+ * @param {animeshon.knowledge.v1alpha1.Contribution} request.contribution
+ * @param {animeshon.knowledge.v1alpha1.ContributionChanges} request.changes
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
@@ -341,6 +331,13 @@ export class KnowledgeClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'parent': request.parent || '',
+    });
     this.initialize();
     return this.innerApiCalls.createContribution(request, options, callback);
   }
@@ -414,6 +411,76 @@ export class KnowledgeClient {
     this.initialize();
     return this.innerApiCalls.getContribution(request, options, callback);
   }
+  getContributionChanges(
+      request?: protos.animeshon.knowledge.v1alpha1.IGetContributionChangesRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.knowledge.v1alpha1.IContributionChanges,
+        protos.animeshon.knowledge.v1alpha1.IGetContributionChangesRequest|undefined, {}|undefined
+      ]>;
+  getContributionChanges(
+      request: protos.animeshon.knowledge.v1alpha1.IGetContributionChangesRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.knowledge.v1alpha1.IContributionChanges,
+          protos.animeshon.knowledge.v1alpha1.IGetContributionChangesRequest|null|undefined,
+          {}|null|undefined>): void;
+  getContributionChanges(
+      request: protos.animeshon.knowledge.v1alpha1.IGetContributionChangesRequest,
+      callback: Callback<
+          protos.animeshon.knowledge.v1alpha1.IContributionChanges,
+          protos.animeshon.knowledge.v1alpha1.IGetContributionChangesRequest|null|undefined,
+          {}|null|undefined>): void;
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resource name of the requested contribution.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [ContributionChanges]{@link animeshon.knowledge.v1alpha1.ContributionChanges}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example
+ * const [response] = await client.getContributionChanges(request);
+ */
+  getContributionChanges(
+      request?: protos.animeshon.knowledge.v1alpha1.IGetContributionChangesRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.animeshon.knowledge.v1alpha1.IContributionChanges,
+          protos.animeshon.knowledge.v1alpha1.IGetContributionChangesRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.animeshon.knowledge.v1alpha1.IContributionChanges,
+          protos.animeshon.knowledge.v1alpha1.IGetContributionChangesRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.animeshon.knowledge.v1alpha1.IContributionChanges,
+        protos.animeshon.knowledge.v1alpha1.IGetContributionChangesRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'name': request.name || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.getContributionChanges(request, options, callback);
+  }
   approveContribution(
       request?: protos.animeshon.knowledge.v1alpha1.IApproveContributionRequest,
       options?: CallOptions):
@@ -482,6 +549,77 @@ export class KnowledgeClient {
     });
     this.initialize();
     return this.innerApiCalls.approveContribution(request, options, callback);
+  }
+  reviewContribution(
+      request?: protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.knowledge.v1alpha1.IContribution,
+        protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest|undefined, {}|undefined
+      ]>;
+  reviewContribution(
+      request: protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.knowledge.v1alpha1.IContribution,
+          protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest|null|undefined,
+          {}|null|undefined>): void;
+  reviewContribution(
+      request: protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest,
+      callback: Callback<
+          protos.animeshon.knowledge.v1alpha1.IContribution,
+          protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest|null|undefined,
+          {}|null|undefined>): void;
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ * @param {string} request.comment
+ * @param {animeshon.knowledge.v1alpha1.ContributionChanges} request.changes
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Contribution]{@link animeshon.knowledge.v1alpha1.Contribution}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example
+ * const [response] = await client.reviewContribution(request);
+ */
+  reviewContribution(
+      request?: protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.animeshon.knowledge.v1alpha1.IContribution,
+          protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.animeshon.knowledge.v1alpha1.IContribution,
+          protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.animeshon.knowledge.v1alpha1.IContribution,
+        protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'name': request.name || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.reviewContribution(request, options, callback);
   }
   rejectContribution(
       request?: protos.animeshon.knowledge.v1alpha1.IRejectContributionRequest,
@@ -578,6 +716,8 @@ export class KnowledgeClient {
  *
  * @param {Object} request
  *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent, which owns this collection of contributions.
  * @param {number} request.pageSize
  *   The maximum number of users to return. Server may return fewer users
  *   than requested. If unspecified, server will pick an appropriate default.
@@ -623,6 +763,13 @@ export class KnowledgeClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'parent': request.parent || '',
+    });
     this.initialize();
     return this.innerApiCalls.listContributions(request, options, callback);
   }
@@ -631,6 +778,8 @@ export class KnowledgeClient {
  * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
  * @param {Object} request
  *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent, which owns this collection of contributions.
  * @param {number} request.pageSize
  *   The maximum number of users to return. Server may return fewer users
  *   than requested. If unspecified, server will pick an appropriate default.
@@ -656,6 +805,13 @@ export class KnowledgeClient {
     Transform{
     request = request || {};
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'parent': request.parent || '',
+    });
     const callSettings = new gax.CallSettings(options);
     this.initialize();
     return this.descriptors.page.listContributions.createStream(
@@ -671,6 +827,8 @@ export class KnowledgeClient {
  * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
  * @param {Object} request
  *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent, which owns this collection of contributions.
  * @param {number} request.pageSize
  *   The maximum number of users to return. Server may return fewer users
  *   than requested. If unspecified, server will pick an appropriate default.
@@ -700,6 +858,13 @@ export class KnowledgeClient {
     AsyncIterable<protos.animeshon.knowledge.v1alpha1.IContribution>{
     request = request || {};
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'parent': request.parent || '',
+    });
     options = options || {};
     const callSettings = new gax.CallSettings(options);
     this.initialize();
@@ -708,32 +873,6 @@ export class KnowledgeClient {
       request as unknown as RequestType,
       callSettings
     ) as AsyncIterable<protos.animeshon.knowledge.v1alpha1.IContribution>;
-  }
-  // --------------------
-  // -- Path templates --
-  // --------------------
-
-  /**
-   * Return a fully-qualified contribution resource name string.
-   *
-   * @param {string} contribution
-   * @returns {string} Resource name string.
-   */
-  contributionPath(contribution:string) {
-    return this.pathTemplates.contributionPathTemplate.render({
-      contribution: contribution,
-    });
-  }
-
-  /**
-   * Parse the contribution from Contribution resource.
-   *
-   * @param {string} contributionName
-   *   A fully-qualified path representing Contribution resource.
-   * @returns {string} A string representing the contribution.
-   */
-  matchContributionFromContributionName(contributionName: string) {
-    return this.pathTemplates.contributionPathTemplate.match(contributionName).contribution;
   }
 
   /**

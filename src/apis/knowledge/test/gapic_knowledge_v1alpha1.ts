@@ -173,7 +173,15 @@ describe('v1alpha1.KnowledgeClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.CreateContributionRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution());
             client.innerApiCalls.createContribution = stubSimpleCall(expectedResponse);
             const [response] = await client.createContribution(request);
@@ -189,7 +197,15 @@ describe('v1alpha1.KnowledgeClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.CreateContributionRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution());
             client.innerApiCalls.createContribution = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -216,7 +232,15 @@ describe('v1alpha1.KnowledgeClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.CreateContributionRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedError = new Error('expected');
             client.innerApiCalls.createContribution = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createContribution(request), expectedError);
@@ -309,6 +333,90 @@ describe('v1alpha1.KnowledgeClient', () => {
         });
     });
 
+    describe('getContributionChanges', () => {
+        it('invokes getContributionChanges without error', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.GetContributionChangesRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ContributionChanges());
+            client.innerApiCalls.getContributionChanges = stubSimpleCall(expectedResponse);
+            const [response] = await client.getContributionChanges(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.getContributionChanges as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes getContributionChanges without error using callback', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.GetContributionChangesRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ContributionChanges());
+            client.innerApiCalls.getContributionChanges = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.getContributionChanges(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.knowledge.v1alpha1.IContributionChanges|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.getContributionChanges as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes getContributionChanges with error', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.GetContributionChangesRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.getContributionChanges = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.getContributionChanges(request), expectedError);
+            assert((client.innerApiCalls.getContributionChanges as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
     describe('approveContribution', () => {
         it('invokes approveContribution without error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
@@ -389,6 +497,90 @@ describe('v1alpha1.KnowledgeClient', () => {
             client.innerApiCalls.approveContribution = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.approveContribution(request), expectedError);
             assert((client.innerApiCalls.approveContribution as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('reviewContribution', () => {
+        it('invokes reviewContribution without error', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ReviewContributionRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution());
+            client.innerApiCalls.reviewContribution = stubSimpleCall(expectedResponse);
+            const [response] = await client.reviewContribution(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.reviewContribution as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes reviewContribution without error using callback', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ReviewContributionRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution());
+            client.innerApiCalls.reviewContribution = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.reviewContribution(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.knowledge.v1alpha1.IContribution|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.reviewContribution as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes reviewContribution with error', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ReviewContributionRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.reviewContribution = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.reviewContribution(request), expectedError);
+            assert((client.innerApiCalls.reviewContribution as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
     });
@@ -485,7 +677,15 @@ describe('v1alpha1.KnowledgeClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ListContributionsRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution()),
               generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution()),
@@ -505,7 +705,15 @@ describe('v1alpha1.KnowledgeClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ListContributionsRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution()),
               generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution()),
@@ -536,7 +744,15 @@ describe('v1alpha1.KnowledgeClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ListContributionsRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedError = new Error('expected');
             client.innerApiCalls.listContributions = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listContributions(request), expectedError);
@@ -551,6 +767,8 @@ describe('v1alpha1.KnowledgeClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ListContributionsRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution()),
               generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution()),
@@ -574,6 +792,11 @@ describe('v1alpha1.KnowledgeClient', () => {
             assert.deepStrictEqual(responses, expectedResponse);
             assert((client.descriptors.page.listContributions.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listContributions, request));
+            assert.strictEqual(
+                (client.descriptors.page.listContributions.createStream as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
         });
 
         it('invokes listContributionsStream with error', async () => {
@@ -583,6 +806,8 @@ describe('v1alpha1.KnowledgeClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ListContributionsRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
             const expectedError = new Error('expected');
             client.descriptors.page.listContributions.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listContributionsStream(request);
@@ -601,6 +826,11 @@ describe('v1alpha1.KnowledgeClient', () => {
             await assert.rejects(promise, expectedError);
             assert((client.descriptors.page.listContributions.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listContributions, request));
+            assert.strictEqual(
+                (client.descriptors.page.listContributions.createStream as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
         });
 
         it('uses async iteration with listContributions without error', async () => {
@@ -609,7 +839,9 @@ describe('v1alpha1.KnowledgeClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ListContributionsRequest());const expectedResponse = [
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ListContributionsRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";const expectedResponse = [
               generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution()),
               generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution()),
               generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution()),
@@ -624,6 +856,11 @@ describe('v1alpha1.KnowledgeClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listContributions.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
+            assert.strictEqual(
+                (client.descriptors.page.listContributions.asyncIterate as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
         });
 
         it('uses async iteration with listContributions with error', async () => {
@@ -632,7 +869,9 @@ describe('v1alpha1.KnowledgeClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ListContributionsRequest());const expectedError = new Error('expected');
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ListContributionsRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";const expectedError = new Error('expected');
             client.descriptors.page.listContributions.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listContributionsAsync(request);
             await assert.rejects(async () => {
@@ -644,39 +883,11 @@ describe('v1alpha1.KnowledgeClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listContributions.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-        });
-    });
-
-    describe('Path templates', () => {
-
-        describe('contribution', () => {
-            const fakePath = "/rendered/path/contribution";
-            const expectedParameters = {
-                contribution: "contributionValue",
-            };
-            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
-            client.initialize();
-            client.pathTemplates.contributionPathTemplate.render =
-                sinon.stub().returns(fakePath);
-            client.pathTemplates.contributionPathTemplate.match =
-                sinon.stub().returns(expectedParameters);
-
-            it('contributionPath', () => {
-                const result = client.contributionPath("contributionValue");
-                assert.strictEqual(result, fakePath);
-                assert((client.pathTemplates.contributionPathTemplate.render as SinonStub)
-                    .getCall(-1).calledWith(expectedParameters));
-            });
-
-            it('matchContributionFromContributionName', () => {
-                const result = client.matchContributionFromContributionName(fakePath);
-                assert.strictEqual(result, "contributionValue");
-                assert((client.pathTemplates.contributionPathTemplate.match as SinonStub)
-                    .getCall(-1).calledWith(fakePath));
-            });
+            assert.strictEqual(
+                (client.descriptors.page.listContributions.asyncIterate as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
         });
     });
 });
