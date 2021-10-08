@@ -1,6 +1,6 @@
 {
   "interfaces": {
-    "animeshon.knowledge.v1alpha1.Knowledge": {
+    "animeshon.release.v1alpha1.Publisher": {
       "retry_codes": {
         "non_idempotent": [],
         "idempotent": [
@@ -20,31 +20,47 @@
         }
       },
       "methods": {
-        "CreateContribution": {
+        "GetRelease": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "ListContributions": {
+        "ListReleases": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "GetContribution": {
+        "CreateRelease": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "GetContributionChanges": {
+        "UpdateRelease": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "ApproveContribution": {
+        "DeleteRelease": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "ReviewContribution": {
+        "UndeleteRelease": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "RejectContribution": {
+        "PublishRelease": {
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
+        },
+        "UnpublishRelease": {
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
+        },
+        "ScheduleRelease": {
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
+        },
+        "CancelRelease": {
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
+        },
+        "SuspendRelease": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         }
