@@ -13,6 +13,7 @@ declare -A services=(
   ["@animeapis/image"]="image"
   ["@animeapis/knowledge"]="knowledge"
   ["@animeapis/library"]="library"
+  ["@animeapis/release"]="release"
   ["@animeapis/resourcemanager"]="resourcemanager"
   ["@animeapis/tracker"]="tracker"
   ["@animeapis/vision"]="vision"
