@@ -10,6 +10,11 @@
         "grpc": {
           "libraryClient": "IdentityClient",
           "rpcs": {
+            "GetUserProfile": {
+              "methods": [
+                "getUserProfile"
+              ]
+            },
             "GetUser": {
               "methods": [
                 "getUser"
@@ -28,6 +33,16 @@
             "DeleteUser": {
               "methods": [
                 "deleteUser"
+              ]
+            },
+            "GetUserSettings": {
+              "methods": [
+                "getUserSettings"
+              ]
+            },
+            "UpdateUserSettings": {
+              "methods": [
+                "updateUserSettings"
               ]
             },
             "GetGroup": {
@@ -69,6 +84,11 @@
         "grpc-fallback": {
           "libraryClient": "IdentityClient",
           "rpcs": {
+            "GetUserProfile": {
+              "methods": [
+                "getUserProfile"
+              ]
+            },
             "GetUser": {
               "methods": [
                 "getUser"
@@ -87,6 +107,16 @@
             "DeleteUser": {
               "methods": [
                 "deleteUser"
+              ]
+            },
+            "GetUserSettings": {
+              "methods": [
+                "getUserSettings"
+              ]
+            },
+            "UpdateUserSettings": {
+              "methods": [
+                "updateUserSettings"
               ]
             },
             "GetGroup": {

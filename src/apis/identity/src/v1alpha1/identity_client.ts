@@ -190,7 +190,7 @@ export class IdentityClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const identityStubMethods =
-        ['getUser', 'listUsers', 'createUser', 'updateUser', 'deleteUser', 'getGroup', 'listGroups', 'createGroup', 'updateGroup', 'deleteGroup'];
+        ['getUserProfile', 'getUser', 'listUsers', 'createUser', 'updateUser', 'deleteUser', 'getUserSettings', 'updateUserSettings', 'getGroup', 'listGroups', 'createGroup', 'updateGroup', 'deleteGroup'];
     for (const methodName of identityStubMethods) {
       const callPromise = this.identityStub.then(
         stub => (...args: Array<{}>) => {
@@ -271,6 +271,76 @@ export class IdentityClient {
   // -------------------
   // -- Service calls --
   // -------------------
+  getUserProfile(
+      request?: protos.animeshon.identity.v1alpha1.IGetUserProfileRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.identity.v1alpha1.IUserProfile,
+        protos.animeshon.identity.v1alpha1.IGetUserProfileRequest|undefined, {}|undefined
+      ]>;
+  getUserProfile(
+      request: protos.animeshon.identity.v1alpha1.IGetUserProfileRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.identity.v1alpha1.IUserProfile,
+          protos.animeshon.identity.v1alpha1.IGetUserProfileRequest|null|undefined,
+          {}|null|undefined>): void;
+  getUserProfile(
+      request: protos.animeshon.identity.v1alpha1.IGetUserProfileRequest,
+      callback: Callback<
+          protos.animeshon.identity.v1alpha1.IUserProfile,
+          protos.animeshon.identity.v1alpha1.IGetUserProfileRequest|null|undefined,
+          {}|null|undefined>): void;
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the user to retrieve the profile from.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [UserProfile]{@link animeshon.identity.v1alpha1.UserProfile}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example
+ * const [response] = await client.getUserProfile(request);
+ */
+  getUserProfile(
+      request?: protos.animeshon.identity.v1alpha1.IGetUserProfileRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.animeshon.identity.v1alpha1.IUserProfile,
+          protos.animeshon.identity.v1alpha1.IGetUserProfileRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.animeshon.identity.v1alpha1.IUserProfile,
+          protos.animeshon.identity.v1alpha1.IGetUserProfileRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.animeshon.identity.v1alpha1.IUserProfile,
+        protos.animeshon.identity.v1alpha1.IGetUserProfileRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'name': request.name || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.getUserProfile(request, options, callback);
+  }
   getUser(
       request?: protos.animeshon.identity.v1alpha1.IGetUserRequest,
       options?: CallOptions):
@@ -546,6 +616,149 @@ export class IdentityClient {
     });
     this.initialize();
     return this.innerApiCalls.deleteUser(request, options, callback);
+  }
+  getUserSettings(
+      request?: protos.animeshon.identity.v1alpha1.IGetUserSettingsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.identity.v1alpha1.IUserSettings,
+        protos.animeshon.identity.v1alpha1.IGetUserSettingsRequest|undefined, {}|undefined
+      ]>;
+  getUserSettings(
+      request: protos.animeshon.identity.v1alpha1.IGetUserSettingsRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.identity.v1alpha1.IUserSettings,
+          protos.animeshon.identity.v1alpha1.IGetUserSettingsRequest|null|undefined,
+          {}|null|undefined>): void;
+  getUserSettings(
+      request: protos.animeshon.identity.v1alpha1.IGetUserSettingsRequest,
+      callback: Callback<
+          protos.animeshon.identity.v1alpha1.IUserSettings,
+          protos.animeshon.identity.v1alpha1.IGetUserSettingsRequest|null|undefined,
+          {}|null|undefined>): void;
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the user to retrieve the settings from.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [UserSettings]{@link animeshon.identity.v1alpha1.UserSettings}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example
+ * const [response] = await client.getUserSettings(request);
+ */
+  getUserSettings(
+      request?: protos.animeshon.identity.v1alpha1.IGetUserSettingsRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.animeshon.identity.v1alpha1.IUserSettings,
+          protos.animeshon.identity.v1alpha1.IGetUserSettingsRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.animeshon.identity.v1alpha1.IUserSettings,
+          protos.animeshon.identity.v1alpha1.IGetUserSettingsRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.animeshon.identity.v1alpha1.IUserSettings,
+        protos.animeshon.identity.v1alpha1.IGetUserSettingsRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'name': request.name || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.getUserSettings(request, options, callback);
+  }
+  updateUserSettings(
+      request?: protos.animeshon.identity.v1alpha1.IUpdateUserSettingsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.identity.v1alpha1.IUserSettings,
+        protos.animeshon.identity.v1alpha1.IUpdateUserSettingsRequest|undefined, {}|undefined
+      ]>;
+  updateUserSettings(
+      request: protos.animeshon.identity.v1alpha1.IUpdateUserSettingsRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.identity.v1alpha1.IUserSettings,
+          protos.animeshon.identity.v1alpha1.IUpdateUserSettingsRequest|null|undefined,
+          {}|null|undefined>): void;
+  updateUserSettings(
+      request: protos.animeshon.identity.v1alpha1.IUpdateUserSettingsRequest,
+      callback: Callback<
+          protos.animeshon.identity.v1alpha1.IUserSettings,
+          protos.animeshon.identity.v1alpha1.IUpdateUserSettingsRequest|null|undefined,
+          {}|null|undefined>): void;
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.identity.v1alpha1.UserSettings} request.settings
+ *   The user settings to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [UserSettings]{@link animeshon.identity.v1alpha1.UserSettings}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example
+ * const [response] = await client.updateUserSettings(request);
+ */
+  updateUserSettings(
+      request?: protos.animeshon.identity.v1alpha1.IUpdateUserSettingsRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.animeshon.identity.v1alpha1.IUserSettings,
+          protos.animeshon.identity.v1alpha1.IUpdateUserSettingsRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.animeshon.identity.v1alpha1.IUserSettings,
+          protos.animeshon.identity.v1alpha1.IUpdateUserSettingsRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.animeshon.identity.v1alpha1.IUserSettings,
+        protos.animeshon.identity.v1alpha1.IUpdateUserSettingsRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'settings.name': request.settings!.name || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.updateUserSettings(request, options, callback);
   }
   getGroup(
       request?: protos.animeshon.identity.v1alpha1.IGetGroupRequest,

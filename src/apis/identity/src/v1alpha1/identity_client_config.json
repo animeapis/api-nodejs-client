@@ -20,6 +20,10 @@
         }
       },
       "methods": {
+        "GetUserProfile": {
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
+        },
         "GetUser": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
@@ -37,6 +41,14 @@
           "retry_params_name": "default"
         },
         "DeleteUser": {
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
+        },
+        "GetUserSettings": {
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
+        },
+        "UpdateUserSettings": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },

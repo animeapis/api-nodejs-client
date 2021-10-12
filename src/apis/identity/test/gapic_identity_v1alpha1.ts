@@ -165,6 +165,90 @@ describe('v1alpha1.IdentityClient', () => {
         assert.strictEqual(result, fakeProjectId);
     });
 
+    describe('getUserProfile', () => {
+        it('invokes getUserProfile without error', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserProfileRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UserProfile());
+            client.innerApiCalls.getUserProfile = stubSimpleCall(expectedResponse);
+            const [response] = await client.getUserProfile(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.getUserProfile as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes getUserProfile without error using callback', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserProfileRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UserProfile());
+            client.innerApiCalls.getUserProfile = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.getUserProfile(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.identity.v1alpha1.IUserProfile|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.getUserProfile as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes getUserProfile with error', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserProfileRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.getUserProfile = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.getUserProfile(request), expectedError);
+            assert((client.innerApiCalls.getUserProfile as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
     describe('getUser', () => {
         it('invokes getUser without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
@@ -476,6 +560,177 @@ describe('v1alpha1.IdentityClient', () => {
             client.innerApiCalls.deleteUser = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteUser(request), expectedError);
             assert((client.innerApiCalls.deleteUser as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('getUserSettings', () => {
+        it('invokes getUserSettings without error', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserSettingsRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UserSettings());
+            client.innerApiCalls.getUserSettings = stubSimpleCall(expectedResponse);
+            const [response] = await client.getUserSettings(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.getUserSettings as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes getUserSettings without error using callback', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserSettingsRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UserSettings());
+            client.innerApiCalls.getUserSettings = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.getUserSettings(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.identity.v1alpha1.IUserSettings|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.getUserSettings as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes getUserSettings with error', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserSettingsRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.getUserSettings = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.getUserSettings(request), expectedError);
+            assert((client.innerApiCalls.getUserSettings as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('updateUserSettings', () => {
+        it('invokes updateUserSettings without error', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserSettingsRequest());
+            request.settings = {};
+            request.settings.name = '';
+            const expectedHeaderRequestParams = "settings.name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UserSettings());
+            client.innerApiCalls.updateUserSettings = stubSimpleCall(expectedResponse);
+            const [response] = await client.updateUserSettings(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.updateUserSettings as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes updateUserSettings without error using callback', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserSettingsRequest());
+            request.settings = {};
+            request.settings.name = '';
+            const expectedHeaderRequestParams = "settings.name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UserSettings());
+            client.innerApiCalls.updateUserSettings = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.updateUserSettings(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.identity.v1alpha1.IUserSettings|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.updateUserSettings as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes updateUserSettings with error', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserSettingsRequest());
+            request.settings = {};
+            request.settings.name = '';
+            const expectedHeaderRequestParams = "settings.name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.updateUserSettings = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.updateUserSettings(request), expectedError);
+            assert((client.innerApiCalls.updateUserSettings as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
     });
