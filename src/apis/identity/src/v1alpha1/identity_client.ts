@@ -190,7 +190,7 @@ export class IdentityClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const identityStubMethods =
-        ['getUserProfile', 'getUser', 'listUsers', 'createUser', 'updateUser', 'deleteUser', 'getUserSettings', 'updateUserSettings', 'getGroup', 'listGroups', 'createGroup', 'updateGroup', 'deleteGroup'];
+        ['getUserProfile', 'getUser', 'listUsers', 'createUser', 'updateUser', 'deleteUser', 'getUserSettings', 'updateUserSettings', 'getUserNotifications', 'updateUserNotifications', 'getGroup', 'listGroups', 'createGroup', 'updateGroup', 'deleteGroup'];
     for (const methodName of identityStubMethods) {
       const callPromise = this.identityStub.then(
         stub => (...args: Array<{}>) => {
@@ -759,6 +759,149 @@ export class IdentityClient {
     });
     this.initialize();
     return this.innerApiCalls.updateUserSettings(request, options, callback);
+  }
+  getUserNotifications(
+      request?: protos.animeshon.identity.v1alpha1.IGetUserNotificationsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.identity.v1alpha1.IUserNotifications,
+        protos.animeshon.identity.v1alpha1.IGetUserNotificationsRequest|undefined, {}|undefined
+      ]>;
+  getUserNotifications(
+      request: protos.animeshon.identity.v1alpha1.IGetUserNotificationsRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.identity.v1alpha1.IUserNotifications,
+          protos.animeshon.identity.v1alpha1.IGetUserNotificationsRequest|null|undefined,
+          {}|null|undefined>): void;
+  getUserNotifications(
+      request: protos.animeshon.identity.v1alpha1.IGetUserNotificationsRequest,
+      callback: Callback<
+          protos.animeshon.identity.v1alpha1.IUserNotifications,
+          protos.animeshon.identity.v1alpha1.IGetUserNotificationsRequest|null|undefined,
+          {}|null|undefined>): void;
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the user to retrieve the notifications from.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [UserNotifications]{@link animeshon.identity.v1alpha1.UserNotifications}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example
+ * const [response] = await client.getUserNotifications(request);
+ */
+  getUserNotifications(
+      request?: protos.animeshon.identity.v1alpha1.IGetUserNotificationsRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.animeshon.identity.v1alpha1.IUserNotifications,
+          protos.animeshon.identity.v1alpha1.IGetUserNotificationsRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.animeshon.identity.v1alpha1.IUserNotifications,
+          protos.animeshon.identity.v1alpha1.IGetUserNotificationsRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.animeshon.identity.v1alpha1.IUserNotifications,
+        protos.animeshon.identity.v1alpha1.IGetUserNotificationsRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'name': request.name || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.getUserNotifications(request, options, callback);
+  }
+  updateUserNotifications(
+      request?: protos.animeshon.identity.v1alpha1.IUpdateUserNotificationsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.identity.v1alpha1.IUserNotifications,
+        protos.animeshon.identity.v1alpha1.IUpdateUserNotificationsRequest|undefined, {}|undefined
+      ]>;
+  updateUserNotifications(
+      request: protos.animeshon.identity.v1alpha1.IUpdateUserNotificationsRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.identity.v1alpha1.IUserNotifications,
+          protos.animeshon.identity.v1alpha1.IUpdateUserNotificationsRequest|null|undefined,
+          {}|null|undefined>): void;
+  updateUserNotifications(
+      request: protos.animeshon.identity.v1alpha1.IUpdateUserNotificationsRequest,
+      callback: Callback<
+          protos.animeshon.identity.v1alpha1.IUserNotifications,
+          protos.animeshon.identity.v1alpha1.IUpdateUserNotificationsRequest|null|undefined,
+          {}|null|undefined>): void;
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.identity.v1alpha1.UserNotifications} request.notifications
+ *   The user notifications to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [UserNotifications]{@link animeshon.identity.v1alpha1.UserNotifications}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example
+ * const [response] = await client.updateUserNotifications(request);
+ */
+  updateUserNotifications(
+      request?: protos.animeshon.identity.v1alpha1.IUpdateUserNotificationsRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.animeshon.identity.v1alpha1.IUserNotifications,
+          protos.animeshon.identity.v1alpha1.IUpdateUserNotificationsRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.animeshon.identity.v1alpha1.IUserNotifications,
+          protos.animeshon.identity.v1alpha1.IUpdateUserNotificationsRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.animeshon.identity.v1alpha1.IUserNotifications,
+        protos.animeshon.identity.v1alpha1.IUpdateUserNotificationsRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'notifications.name': request.notifications!.name || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.updateUserNotifications(request, options, callback);
   }
   getGroup(
       request?: protos.animeshon.identity.v1alpha1.IGetGroupRequest,

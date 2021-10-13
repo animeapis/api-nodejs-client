@@ -735,6 +735,177 @@ describe('v1alpha1.IdentityClient', () => {
         });
     });
 
+    describe('getUserNotifications', () => {
+        it('invokes getUserNotifications without error', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserNotificationsRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UserNotifications());
+            client.innerApiCalls.getUserNotifications = stubSimpleCall(expectedResponse);
+            const [response] = await client.getUserNotifications(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.getUserNotifications as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes getUserNotifications without error using callback', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserNotificationsRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UserNotifications());
+            client.innerApiCalls.getUserNotifications = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.getUserNotifications(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.identity.v1alpha1.IUserNotifications|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.getUserNotifications as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes getUserNotifications with error', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserNotificationsRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.getUserNotifications = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.getUserNotifications(request), expectedError);
+            assert((client.innerApiCalls.getUserNotifications as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('updateUserNotifications', () => {
+        it('invokes updateUserNotifications without error', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserNotificationsRequest());
+            request.notifications = {};
+            request.notifications.name = '';
+            const expectedHeaderRequestParams = "notifications.name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UserNotifications());
+            client.innerApiCalls.updateUserNotifications = stubSimpleCall(expectedResponse);
+            const [response] = await client.updateUserNotifications(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.updateUserNotifications as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes updateUserNotifications without error using callback', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserNotificationsRequest());
+            request.notifications = {};
+            request.notifications.name = '';
+            const expectedHeaderRequestParams = "notifications.name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UserNotifications());
+            client.innerApiCalls.updateUserNotifications = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.updateUserNotifications(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.identity.v1alpha1.IUserNotifications|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.updateUserNotifications as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes updateUserNotifications with error', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserNotificationsRequest());
+            request.notifications = {};
+            request.notifications.name = '';
+            const expectedHeaderRequestParams = "notifications.name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.updateUserNotifications = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.updateUserNotifications(request), expectedError);
+            assert((client.innerApiCalls.updateUserNotifications as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
     describe('getGroup', () => {
         it('invokes getGroup without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({

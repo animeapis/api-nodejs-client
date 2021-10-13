@@ -52,6 +52,14 @@
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
+        "GetUserNotifications": {
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
+        },
+        "UpdateUserNotifications": {
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
+        },
         "GetGroup": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"

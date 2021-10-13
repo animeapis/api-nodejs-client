@@ -73,6 +73,19 @@ service Identity {
     };
   }
 
+  rpc GetUserNotifications(GetUserNotificationsRequest) returns (UserNotifications) {
+    option (google.api.http) = {
+      get: "/v1alpha1/{name=users/*}:notifications"
+    };
+  }
+
+  rpc UpdateUserNotifications(UpdateUserNotificationsRequest) returns (UserNotifications) {
+    option (google.api.http) = {
+      patch: "/v1alpha1/{notifications.name=users/*}:notifications"
+      body: "*"
+    };
+  }
+
   rpc GetGroup(GetGroupRequest) returns (Group) {
     option (google.api.http) = {
       get: "/v1alpha1/{name=groups/*}"
@@ -197,6 +210,10 @@ message User {
 
   // The banner image of the user.
   string banner_image = 16;
+
+  // The type of user. The list of accepted values is the following: `user`,
+  // `translator`, `business`, `artist`, and `developer`.
+  repeated string type = 17;
 }
 
 message UserSettings {
@@ -217,6 +234,14 @@ message UserSettings {
   // A private user will only have the username, discriminator, profile image
   // and banner image public.
   Visibility profile_visibility = 2;
+
+  // Whether the user choose to see explicit content during navigation. 
+  bool show_explicit_content = 3;
+}
+
+message UserNotifications {
+  // The resource name of the user.
+  string name = 1;
 }
 
 message Group {
@@ -264,11 +289,6 @@ message CreateUserRequest {
   User user = 1;
 }
 
-message GetUserSettingsRequest {
-  // The name of the user to retrieve the settings from.
-  string name = 1 [(google.api.field_behavior) = REQUIRED];
-}
-
 message UpdateUserRequest {
   // The user to update.
   User user = 1 [(google.api.field_behavior) = REQUIRED];
@@ -283,9 +303,28 @@ message DeleteUserRequest {
   string name = 1;
 }
 
+message GetUserSettingsRequest {
+  // The name of the user to retrieve the settings from.
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
 message UpdateUserSettingsRequest {
   // The user settings to update.
   UserSettings settings = 1 [(google.api.field_behavior) = REQUIRED];
+
+  // The field mask to determine which fields are to be updated. If empty, the
+  // server will assume all fields are to be updated.
+  google.protobuf.FieldMask update_mask = 2;
+}
+
+message GetUserNotificationsRequest {
+  // The name of the user to retrieve the notifications from.
+  string name = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message UpdateUserNotificationsRequest {
+  // The user notifications to update.
+  UserNotifications notifications = 1 [(google.api.field_behavior) = REQUIRED];
 
   // The field mask to determine which fields are to be updated. If empty, the
   // server will assume all fields are to be updated.
