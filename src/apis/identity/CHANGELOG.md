@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.0](https://www.github.com/animeapis/api-nodejs-client/compare/identity-v1.2.0...identity-v1.3.0) (2021-10-13)
+
+
+### Features
+
+* **identity:** add developer mode to settings ([602b70d](https://www.github.com/animeapis/api-nodejs-client/commit/602b70d740253a6c0034d5159a9849e7fcf06b9d))
+
+
+### Bug Fixes
+
+* **identity:** rename gender non-binary value ([0d4de9a](https://www.github.com/animeapis/api-nodejs-client/commit/0d4de9a2e685af73060d55d8dd9c6c72bc88f043))
+* **identity:** rename type field to activities ([2954c0d](https://www.github.com/animeapis/api-nodejs-client/commit/2954c0d98d3c15575271a96bce2281a40bd1d747))
+
 ## [1.2.0](https://www.github.com/animeapis/api-nodejs-client/compare/identity-v1.1.0...identity-v1.2.0) (2021-10-13)
 
 
