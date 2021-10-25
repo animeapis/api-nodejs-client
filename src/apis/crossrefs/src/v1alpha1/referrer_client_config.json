@@ -24,15 +24,15 @@
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
+        "ListCrossRefs": {
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
+        },
         "CreateCrossRef": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
         "UpdateCrossRef": {
-          "retry_codes_name": "non_idempotent",
-          "retry_params_name": "default"
-        },
-        "ListCrossRefs": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },

@@ -1,0 +1,43 @@
+{
+  "schema": "1.0",
+  "comment": "This file maps proto services/RPCs to the corresponding library clients/methods",
+  "language": "typescript",
+  "protoPackage": "animeshon.graph.v1alpha1",
+  "libraryPackage": "@animeapis/graph",
+  "services": {
+    "Graph": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "GraphClient",
+          "rpcs": {
+            "MigrateGraph": {
+              "methods": [
+                "migrateGraph"
+              ]
+            },
+            "DeleteGraph": {
+              "methods": [
+                "deleteGraph"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "GraphClient",
+          "rpcs": {
+            "MigrateGraph": {
+              "methods": [
+                "migrateGraph"
+              ]
+            },
+            "DeleteGraph": {
+              "methods": [
+                "deleteGraph"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

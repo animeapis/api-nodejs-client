@@ -267,7 +267,7 @@ export class ReferrerClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const referrerStubMethods =
-        ['getCrossRef', 'createCrossRef', 'updateCrossRef', 'listCrossRefs', 'countCrossRefs', 'analyzeCrossRefs', 'importCrossRefs', 'exportCrossRefs', 'initializeCrossRefs', 'analyzeParodies', 'exportParodies', 'getUniverse', 'updateUniverse', 'expandUniverse', 'getWormhole', 'listWormholeCrossRefs'];
+        ['getCrossRef', 'listCrossRefs', 'createCrossRef', 'updateCrossRef', 'countCrossRefs', 'analyzeCrossRefs', 'importCrossRefs', 'exportCrossRefs', 'initializeCrossRefs', 'analyzeParodies', 'exportParodies', 'getUniverse', 'updateUniverse', 'expandUniverse', 'getWormhole', 'listWormholeCrossRefs'];
     for (const methodName of referrerStubMethods) {
       const callPromise = this.referrerStub.then(
         stub => (...args: Array<{}>) => {

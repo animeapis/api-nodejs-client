@@ -20,7 +20,7 @@
         }
       },
       "methods": {
-        "CreateContribution": {
+        "GetContribution": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
@@ -28,7 +28,7 @@
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "GetContribution": {
+        "CreateContribution": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
@@ -36,15 +36,19 @@
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "ApproveContribution": {
-          "retry_codes_name": "non_idempotent",
-          "retry_params_name": "default"
-        },
         "ReviewContribution": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
+        "ApproveContribution": {
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
+        },
         "RejectContribution": {
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
+        },
+        "AllocateResourceName": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         }

@@ -165,90 +165,6 @@ describe('v1alpha1.KnowledgeClient', () => {
         assert.strictEqual(result, fakeProjectId);
     });
 
-    describe('createContribution', () => {
-        it('invokes createContribution without error', async () => {
-            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
-            client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.CreateContributionRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution());
-            client.innerApiCalls.createContribution = stubSimpleCall(expectedResponse);
-            const [response] = await client.createContribution(request);
-            assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createContribution as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
-        });
-
-        it('invokes createContribution without error using callback', async () => {
-            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
-            client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.CreateContributionRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution());
-            client.innerApiCalls.createContribution = stubSimpleCallWithCallback(expectedResponse);
-            const promise = new Promise((resolve, reject) => {
-                 client.createContribution(
-                    request,
-                    (err?: Error|null, result?: protos.animeshon.knowledge.v1alpha1.IContribution|null) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(result);
-                        }
-                    });
-            });
-            const response = await promise;
-            assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createContribution as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
-        });
-
-        it('invokes createContribution with error', async () => {
-            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
-            client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.CreateContributionRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedError = new Error('expected');
-            client.innerApiCalls.createContribution = stubSimpleCall(undefined, expectedError);
-            await assert.rejects(client.createContribution(request), expectedError);
-            assert((client.innerApiCalls.createContribution as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
-        });
-    });
-
     describe('getContribution', () => {
         it('invokes getContribution without error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
@@ -329,6 +245,90 @@ describe('v1alpha1.KnowledgeClient', () => {
             client.innerApiCalls.getContribution = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getContribution(request), expectedError);
             assert((client.innerApiCalls.getContribution as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('createContribution', () => {
+        it('invokes createContribution without error', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.CreateContributionRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution());
+            client.innerApiCalls.createContribution = stubSimpleCall(expectedResponse);
+            const [response] = await client.createContribution(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.createContribution as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes createContribution without error using callback', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.CreateContributionRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution());
+            client.innerApiCalls.createContribution = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.createContribution(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.knowledge.v1alpha1.IContribution|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.createContribution as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes createContribution with error', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.CreateContributionRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.createContribution = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.createContribution(request), expectedError);
+            assert((client.innerApiCalls.createContribution as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
     });
@@ -417,90 +417,6 @@ describe('v1alpha1.KnowledgeClient', () => {
         });
     });
 
-    describe('approveContribution', () => {
-        it('invokes approveContribution without error', async () => {
-            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
-            client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ApproveContributionRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution());
-            client.innerApiCalls.approveContribution = stubSimpleCall(expectedResponse);
-            const [response] = await client.approveContribution(request);
-            assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.approveContribution as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
-        });
-
-        it('invokes approveContribution without error using callback', async () => {
-            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
-            client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ApproveContributionRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution());
-            client.innerApiCalls.approveContribution = stubSimpleCallWithCallback(expectedResponse);
-            const promise = new Promise((resolve, reject) => {
-                 client.approveContribution(
-                    request,
-                    (err?: Error|null, result?: protos.animeshon.knowledge.v1alpha1.IContribution|null) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(result);
-                        }
-                    });
-            });
-            const response = await promise;
-            assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.approveContribution as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
-        });
-
-        it('invokes approveContribution with error', async () => {
-            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
-            client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ApproveContributionRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedError = new Error('expected');
-            client.innerApiCalls.approveContribution = stubSimpleCall(undefined, expectedError);
-            await assert.rejects(client.approveContribution(request), expectedError);
-            assert((client.innerApiCalls.approveContribution as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
-        });
-    });
-
     describe('reviewContribution', () => {
         it('invokes reviewContribution without error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
@@ -585,6 +501,90 @@ describe('v1alpha1.KnowledgeClient', () => {
         });
     });
 
+    describe('approveContribution', () => {
+        it('invokes approveContribution without error', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ApproveContributionRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution());
+            client.innerApiCalls.approveContribution = stubSimpleCall(expectedResponse);
+            const [response] = await client.approveContribution(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.approveContribution as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes approveContribution without error using callback', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ApproveContributionRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution());
+            client.innerApiCalls.approveContribution = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.approveContribution(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.knowledge.v1alpha1.IContribution|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.approveContribution as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes approveContribution with error', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ApproveContributionRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.approveContribution = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.approveContribution(request), expectedError);
+            assert((client.innerApiCalls.approveContribution as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
     describe('rejectContribution', () => {
         it('invokes rejectContribution without error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
@@ -665,6 +665,66 @@ describe('v1alpha1.KnowledgeClient', () => {
             client.innerApiCalls.rejectContribution = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.rejectContribution(request), expectedError);
             assert((client.innerApiCalls.rejectContribution as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('allocateResourceName', () => {
+        it('invokes allocateResourceName without error', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.AllocateResourceNameRequest());
+            const expectedOptions = {};
+            const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.AllocateResourceNameResponse());
+            client.innerApiCalls.allocateResourceName = stubSimpleCall(expectedResponse);
+            const [response] = await client.allocateResourceName(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.allocateResourceName as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes allocateResourceName without error using callback', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.AllocateResourceNameRequest());
+            const expectedOptions = {};
+            const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.AllocateResourceNameResponse());
+            client.innerApiCalls.allocateResourceName = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.allocateResourceName(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.knowledge.v1alpha1.IAllocateResourceNameResponse|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.allocateResourceName as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes allocateResourceName with error', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.AllocateResourceNameRequest());
+            const expectedOptions = {};
+            const expectedError = new Error('expected');
+            client.innerApiCalls.allocateResourceName = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.allocateResourceName(request), expectedError);
+            assert((client.innerApiCalls.allocateResourceName as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
     });

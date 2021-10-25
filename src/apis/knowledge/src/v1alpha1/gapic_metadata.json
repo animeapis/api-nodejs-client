@@ -10,14 +10,14 @@
         "grpc": {
           "libraryClient": "KnowledgeClient",
           "rpcs": {
-            "CreateContribution": {
-              "methods": [
-                "createContribution"
-              ]
-            },
             "GetContribution": {
               "methods": [
                 "getContribution"
+              ]
+            },
+            "CreateContribution": {
+              "methods": [
+                "createContribution"
               ]
             },
             "GetContributionChanges": {
@@ -25,19 +25,24 @@
                 "getContributionChanges"
               ]
             },
-            "ApproveContribution": {
-              "methods": [
-                "approveContribution"
-              ]
-            },
             "ReviewContribution": {
               "methods": [
                 "reviewContribution"
               ]
             },
+            "ApproveContribution": {
+              "methods": [
+                "approveContribution"
+              ]
+            },
             "RejectContribution": {
               "methods": [
                 "rejectContribution"
+              ]
+            },
+            "AllocateResourceName": {
+              "methods": [
+                "allocateResourceName"
               ]
             },
             "ListContributions": {
@@ -52,14 +57,14 @@
         "grpc-fallback": {
           "libraryClient": "KnowledgeClient",
           "rpcs": {
-            "CreateContribution": {
-              "methods": [
-                "createContribution"
-              ]
-            },
             "GetContribution": {
               "methods": [
                 "getContribution"
+              ]
+            },
+            "CreateContribution": {
+              "methods": [
+                "createContribution"
               ]
             },
             "GetContributionChanges": {
@@ -67,19 +72,24 @@
                 "getContributionChanges"
               ]
             },
-            "ApproveContribution": {
-              "methods": [
-                "approveContribution"
-              ]
-            },
             "ReviewContribution": {
               "methods": [
                 "reviewContribution"
               ]
             },
+            "ApproveContribution": {
+              "methods": [
+                "approveContribution"
+              ]
+            },
             "RejectContribution": {
               "methods": [
                 "rejectContribution"
+              ]
+            },
+            "AllocateResourceName": {
+              "methods": [
+                "allocateResourceName"
               ]
             },
             "ListContributions": {
