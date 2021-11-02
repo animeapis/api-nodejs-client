@@ -283,6 +283,7 @@ export class HubClient {
  * @param {Object} request
  *   The request object that will be sent.
  * @param {string} request.name
+ *   The resource name of the repository to be created.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
@@ -352,6 +353,7 @@ export class HubClient {
  * @param {Object} request
  *   The request object that will be sent.
  * @param {string} request.name
+ *   The resource name of the repository to be deleted.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
