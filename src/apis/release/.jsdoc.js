@@ -43,7 +43,7 @@ module.exports = {
     copyright: 'Copyright 2021 Google LLC',
     includeDate: false,
     sourceFiles: false,
-    systemName: '@animeshon/release',
+    systemName: '@animeapis/release',
     theme: 'lumen',
     default: {
       outputSourceFiles: false

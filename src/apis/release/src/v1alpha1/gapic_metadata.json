@@ -3,7 +3,7 @@
   "comment": "This file maps proto services/RPCs to the corresponding library clients/methods",
   "language": "typescript",
   "protoPackage": "animeshon.release.v1alpha1",
-  "libraryPackage": "@animeshon/release",
+  "libraryPackage": "@animeapis/release",
   "services": {
     "Publisher": {
       "clients": {

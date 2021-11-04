@@ -16,7 +16,7 @@
 // ** https://github.com/googleapis/gapic-generator-typescript **
 // ** All changes to this file may be overwritten. **
 
-import {KeeperClient, OAuth2Client} from '@animeshon/credentials';
+import {KeeperClient, OAuth2Client} from '@animeapis/credentials';
 
 // check that the client class type name can be used
 function doStuffWithKeeperClient(client: KeeperClient) {

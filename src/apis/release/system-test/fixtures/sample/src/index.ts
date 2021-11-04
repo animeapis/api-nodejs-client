@@ -16,7 +16,7 @@
 // ** https://github.com/googleapis/gapic-generator-typescript **
 // ** All changes to this file may be overwritten. **
 
-import {PublisherClient} from '@animeshon/release';
+import {PublisherClient} from '@animeapis/release';
 
 // check that the client class type name can be used
 function doStuffWithPublisherClient(client: PublisherClient) {

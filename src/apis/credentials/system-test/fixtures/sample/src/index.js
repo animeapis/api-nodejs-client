@@ -18,7 +18,7 @@
 
 
 /* eslint-disable node/no-missing-require, no-unused-vars */
-const credentials = require('@animeshon/credentials');
+const credentials = require('@animeapis/credentials');
 
 function main() {
   const keeperClient = new credentials.KeeperClient();

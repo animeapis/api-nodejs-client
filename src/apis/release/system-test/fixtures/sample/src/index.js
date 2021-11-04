@@ -18,7 +18,7 @@
 
 
 /* eslint-disable node/no-missing-require, no-unused-vars */
-const release = require('@animeshon/release');
+const release = require('@animeapis/release');
 
 function main() {
   const publisherClient = new release.PublisherClient();
