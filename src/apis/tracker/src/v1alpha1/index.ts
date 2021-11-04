@@ -16,5 +16,4 @@
 // ** https://github.com/googleapis/gapic-generator-typescript **
 // ** All changes to this file may be overwritten. **
 
-export {CredentialsClient} from './credentials_client';
 export {TrackerServiceClient} from './tracker_service_client';

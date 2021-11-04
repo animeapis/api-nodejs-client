@@ -21,7 +21,6 @@
 const tracker = require('@animeapis/tracker');
 
 function main() {
-  const credentialsClient = new tracker.CredentialsClient();
   const trackerServiceClient = new tracker.TrackerServiceClient();
 }
 
