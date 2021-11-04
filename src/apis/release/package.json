@@ -1,6 +1,6 @@
 {
   "name": "@animeshon/release",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Release client for Node.js",
   "repository": "animeapis/api-nodejs-client",
   "license": "Apache-2.0",

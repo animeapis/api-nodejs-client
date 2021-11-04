@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://www.github.com/animeapis/api-nodejs-client/compare/crossrefs-v1.1.0...crossrefs-v1.2.0) (2021-11-04)
+
+
+### Features
+
+* **all:** update repository in package.json ([df2a9f4](https://www.github.com/animeapis/api-nodejs-client/commit/df2a9f4e1a0f39cee3fb88929f1e775889f21063))
+
 ## [1.1.0](https://www.github.com/animeapis/api-nodejs-client/compare/crossrefs-v1.0.0...crossrefs-v1.1.0) (2021-10-07)
 
 
