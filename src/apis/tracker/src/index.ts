@@ -17,11 +17,9 @@
 // ** All changes to this file may be overwritten. **
 
 import * as v1alpha1 from './v1alpha1';
-const CredentialsClient = v1alpha1.CredentialsClient;
-type CredentialsClient = v1alpha1.CredentialsClient;
 const TrackerServiceClient = v1alpha1.TrackerServiceClient;
 type TrackerServiceClient = v1alpha1.TrackerServiceClient;
-export {v1alpha1, CredentialsClient, TrackerServiceClient};
-export default {v1alpha1, CredentialsClient, TrackerServiceClient};
+export {v1alpha1, TrackerServiceClient};
+export default {v1alpha1, TrackerServiceClient};
 import * as protos from '../protos/protos';
 export {protos}

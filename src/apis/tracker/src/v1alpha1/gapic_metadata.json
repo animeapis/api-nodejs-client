@@ -5,40 +5,6 @@
   "protoPackage": "animeshon.tracker.v1alpha1",
   "libraryPackage": "@animeapis/tracker",
   "services": {
-    "Credentials": {
-      "clients": {
-        "grpc": {
-          "libraryClient": "CredentialsClient",
-          "rpcs": {
-            "GetOAuthInfo": {
-              "methods": [
-                "getOAuthInfo"
-              ]
-            },
-            "SetAuth": {
-              "methods": [
-                "setAuth"
-              ]
-            }
-          }
-        },
-        "grpc-fallback": {
-          "libraryClient": "CredentialsClient",
-          "rpcs": {
-            "GetOAuthInfo": {
-              "methods": [
-                "getOAuthInfo"
-              ]
-            },
-            "SetAuth": {
-              "methods": [
-                "setAuth"
-              ]
-            }
-          }
-        }
-      }
-    },
     "TrackerService": {
       "clients": {
         "grpc": {

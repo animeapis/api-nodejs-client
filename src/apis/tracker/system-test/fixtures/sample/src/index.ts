@@ -16,20 +16,14 @@
 // ** https://github.com/googleapis/gapic-generator-typescript **
 // ** All changes to this file may be overwritten. **
 
-import {CredentialsClient, TrackerServiceClient} from '@animeapis/tracker';
+import {TrackerServiceClient} from '@animeapis/tracker';
 
 // check that the client class type name can be used
-function doStuffWithCredentialsClient(client: CredentialsClient) {
-  client.close();
-}
 function doStuffWithTrackerServiceClient(client: TrackerServiceClient) {
   client.close();
 }
 
 function main() {
-  // check that the client instance can be created
-  const credentialsClient = new CredentialsClient();
-  doStuffWithCredentialsClient(credentialsClient);
   // check that the client instance can be created
   const trackerServiceClient = new TrackerServiceClient();
   doStuffWithTrackerServiceClient(trackerServiceClient);
