@@ -2,7 +2,7 @@
   "name": "@animeapis/vision",
   "version": "1.1.0",
   "description": "Vision client for Node.js",
-  "repository": "animeapis/nodejs-vision",
+  "repository": "animeapis/api-nodejs-client",
   "license": "Apache-2.0",
   "author": "Animeshon SRL",
   "main": "build/src/index.js",

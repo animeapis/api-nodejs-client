@@ -2,7 +2,7 @@
   "name": "@animeapis/tracker",
   "version": "1.1.0",
   "description": "Tracker client for Node.js",
-  "repository": "animeapis/nodejs-tracker",
+  "repository": "animeapis/api-nodejs-client",
   "license": "Apache-2.0",
   "author": "Animeshon SRL",
   "main": "build/src/index.js",

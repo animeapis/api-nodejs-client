@@ -2,7 +2,7 @@
   "name": "@animeapis/library",
   "version": "1.2.0",
   "description": "Animeshon Library API Client for Node.js",
-  "repository": "animeapis/nodejs-library",
+  "repository": "animeapis/api-nodejs-client",
   "license": "Apache-2.0",
   "author": "Animeshon SRL",
   "main": "build/src/index.js",

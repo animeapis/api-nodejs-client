@@ -2,7 +2,7 @@
   "name": "@animeapis/iam-admin",
   "version": "1.1.0",
   "description": "Admin client for Node.js",
-  "repository": "animeapis/nodejs-admin",
+  "repository": "animeapis/api-nodejs-client",
   "license": "Apache-2.0",
   "author": "Animeshon SRL",
   "main": "build/src/index.js",

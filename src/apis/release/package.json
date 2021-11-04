@@ -2,7 +2,7 @@
   "name": "@animeshon/release",
   "version": "0.1.0",
   "description": "Release client for Node.js",
-  "repository": "animeapis/nodejs-release",
+  "repository": "animeapis/api-nodejs-client",
   "license": "Apache-2.0",
   "author": "Animeshon SRL",
   "main": "build/src/index.js",
