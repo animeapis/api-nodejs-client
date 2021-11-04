@@ -5,7 +5,9 @@ set -o nounset
 set -o pipefail
 
 declare -A services=(
+  ["@animeapis/credentials"]="credentials"
   ["@animeapis/crossrefs"]="crossrefs"
+  ["@animeapis/graph"]="graph"
   ["@animeapis/grbac"]="grbac"
   ["@animeapis/hub"]="hub"
   ["@animeapis/iam-admin"]="iam/admin"

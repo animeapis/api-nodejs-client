@@ -1,7 +1,9 @@
 {
   "bootstrap-sha": "a2b0e8c47764978e39f6e84915ec2474ac5369fb",
   "packages": {
+    "src/apis/credentials": {},
     "src/apis/crossrefs": {},
+    "src/apis/graph": {},
     "src/apis/grbac": {},
     "src/apis/hub": {},
     "src/apis/iam/admin": {},
