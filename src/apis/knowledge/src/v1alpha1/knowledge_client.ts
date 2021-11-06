@@ -295,6 +295,7 @@ export class KnowledgeClient {
  *   The request object that will be sent.
  * @param {string} request.name
  *   The resource name of the requested contribution.
+ *   Required resource name
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
@@ -437,6 +438,7 @@ export class KnowledgeClient {
  *   The request object that will be sent.
  * @param {string} request.name
  *   The resource name of the requested contribution.
+ *   Required resource name
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
@@ -502,12 +504,17 @@ export class KnowledgeClient {
           protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest|null|undefined,
           {}|null|undefined>): void;
 /**
+ * ReviewContribution allows moderators or the owner to modify and correct the contribution
+ * while in the PENDING or DRAFT state
  *
  * @param {Object} request
  *   The request object that will be sent.
  * @param {string} request.name
+ *   Name of the contribution
  * @param {string} request.comment
+ *   Optional comment on the review
  * @param {animeshon.knowledge.v1alpha1.ContributionChanges} request.changes
+ *   Changes to the existing contribution
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
@@ -573,10 +580,12 @@ export class KnowledgeClient {
           protos.animeshon.knowledge.v1alpha1.IApproveContributionRequest|null|undefined,
           {}|null|undefined>): void;
 /**
+ * ApproveContribution approves the contribution and applies the changes
  *
  * @param {Object} request
  *   The request object that will be sent.
  * @param {string} request.name
+ *   Required resource name
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
@@ -642,10 +651,12 @@ export class KnowledgeClient {
           protos.animeshon.knowledge.v1alpha1.IRejectContributionRequest|null|undefined,
           {}|null|undefined>): void;
 /**
+ * RejectContribution rejects the contribution and DESTROYS all the changes
  *
  * @param {Object} request
  *   The request object that will be sent.
  * @param {string} request.name
+ *   Required resource name
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
@@ -711,6 +722,8 @@ export class KnowledgeClient {
           protos.animeshon.knowledge.v1alpha1.IAllocateResourceNameRequest|null|undefined,
           {}|null|undefined>): void;
 /**
+ * AllocateResourceName reserves a new resource name for entities which are not already part of
+ * Animeshon's Encyclopedia
  *
  * @param {Object} request
  *   The request object that will be sent.
