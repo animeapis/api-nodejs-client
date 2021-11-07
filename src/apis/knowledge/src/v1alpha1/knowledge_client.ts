@@ -515,6 +515,10 @@ export class KnowledgeClient {
  *   Optional comment on the review
  * @param {animeshon.knowledge.v1alpha1.ContributionChanges} request.changes
  *   Changes to the existing contribution
+ *   New changes will be added on top of the existing ones
+ * @param {animeshon.knowledge.v1alpha1.ContributionChanges} request.discards
+ *   Changes to discard from the contribution
+ *   Discarded changes will be completely removed from the contribution
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
