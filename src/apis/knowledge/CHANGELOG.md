@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.3.0](https://www.github.com/animeapis/api-nodejs-client/compare/knowledge-v1.2.0...knowledge-v1.3.0) (2021-11-19)
+
+
+### Features
+
+* added discards field to ReviewContributionRequest to cleanup and remove pending changes ([#34](https://www.github.com/animeapis/api-nodejs-client/issues/34)) ([050f07f](https://www.github.com/animeapis/api-nodejs-client/commit/050f07f3428a4d0a8dd446c82090799ac5d619a6))
+* **knowledge:** add documentation and simplify the graph ([#33](https://www.github.com/animeapis/api-nodejs-client/issues/33)) ([dab8484](https://www.github.com/animeapis/api-nodejs-client/commit/dab8484cf32e11b39a6e0933118d78e421649617))
+* **knowledge:** add episode length ([b11bbae](https://www.github.com/animeapis/api-nodejs-client/commit/b11bbae8db8bbc177851009099542c491aa3779e))
+
+
+### Bug Fixes
+
+* character hometown and birthplaces names ([#32](https://www.github.com/animeapis/api-nodejs-client/issues/32)) ([01175c1](https://www.github.com/animeapis/api-nodejs-client/commit/01175c1cf785e5ba640d05d1eddb270ad7733a31))
+* **knowledge:** EpisodeCount and ChapterCount to snake case ([ed26927](https://www.github.com/animeapis/api-nodejs-client/commit/ed26927826a915f9165be19cf22f8c6ce0193359))
+
 ## [1.2.0](https://www.github.com/animeapis/api-nodejs-client/compare/knowledge-v1.1.1...knowledge-v1.2.0) (2021-11-04)
 
 
