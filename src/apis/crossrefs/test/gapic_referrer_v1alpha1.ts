@@ -1742,7 +1742,7 @@ describe('v1alpha1.ReferrerClient', () => {
         describe('crossRef', () => {
             const fakePath = "/rendered/path/crossRef";
             const expectedParameters = {
-                kind: "kindValue",
+                collection: "collectionValue",
                 crossref: "crossrefValue",
             };
             const client = new referrerModule.v1alpha1.ReferrerClient({
@@ -1756,15 +1756,15 @@ describe('v1alpha1.ReferrerClient', () => {
                 sinon.stub().returns(expectedParameters);
 
             it('crossRefPath', () => {
-                const result = client.crossRefPath("kindValue", "crossrefValue");
+                const result = client.crossRefPath("collectionValue", "crossrefValue");
                 assert.strictEqual(result, fakePath);
                 assert((client.pathTemplates.crossRefPathTemplate.render as SinonStub)
                     .getCall(-1).calledWith(expectedParameters));
             });
 
-            it('matchKindFromCrossRefName', () => {
-                const result = client.matchKindFromCrossRefName(fakePath);
-                assert.strictEqual(result, "kindValue");
+            it('matchCollectionFromCrossRefName', () => {
+                const result = client.matchCollectionFromCrossRefName(fakePath);
+                assert.strictEqual(result, "collectionValue");
                 assert((client.pathTemplates.crossRefPathTemplate.match as SinonStub)
                     .getCall(-1).calledWith(fakePath));
             });

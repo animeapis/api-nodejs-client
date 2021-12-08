@@ -147,7 +147,7 @@ export class ReferrerClient {
     // Create useful helper objects for these.
     this.pathTemplates = {
       crossRefPathTemplate: new this._gaxModule.PathTemplate(
-        'kinds/{kind}/crossrefs/{crossref}'
+        '{collection}/{crossref}'
       ),
       universePathTemplate: new this._gaxModule.PathTemplate(
         'universes/{universe}'
@@ -940,8 +940,8 @@ export class ReferrerClient {
  *   search wormhole entity in rejected edges
  * @param {string[]} request.crossRefsExclusion
  *   list of CrossRefs to exclude
- * @param {string} request.kind
- *   kind of the CrossRefs to search
+ * @param {string} request.prefix
+ *   prefix of the CrossRefs name to search
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
@@ -1018,8 +1018,8 @@ export class ReferrerClient {
  *   Map of all options for the analysis
  * @param {string[]} request.namespaces
  *   Namespaces to analyze
- * @param {string[]} request.targetKinds
- *   Kinds to analyze
+ * @param {string[]} request.targetPrefixes
+ *   Prefixes to analyze
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
@@ -1196,8 +1196,8 @@ export class ReferrerClient {
  * @param {Object} request
  *   The request object that will be sent.
  * @param {animeshon.crossrefs.v1alpha1.ExportCrossRefRequest.Target} request.target
- * @param {string} request.kind
- *   Kind to restrict the crossrefs to export to a specific subset
+ * @param {string} request.prefix
+ *   Prefix to restrict the crossrefs to export to a specific subset
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
@@ -1686,26 +1686,26 @@ export class ReferrerClient {
   /**
    * Return a fully-qualified crossRef resource name string.
    *
-   * @param {string} kind
+   * @param {string} collection
    * @param {string} crossref
    * @returns {string} Resource name string.
    */
-  crossRefPath(kind:string,crossref:string) {
+  crossRefPath(collection:string,crossref:string) {
     return this.pathTemplates.crossRefPathTemplate.render({
-      kind: kind,
+      collection: collection,
       crossref: crossref,
     });
   }
 
   /**
-   * Parse the kind from CrossRef resource.
+   * Parse the collection from CrossRef resource.
    *
    * @param {string} crossRefName
    *   A fully-qualified path representing CrossRef resource.
-   * @returns {string} A string representing the kind.
+   * @returns {string} A string representing the collection.
    */
-  matchKindFromCrossRefName(crossRefName: string) {
-    return this.pathTemplates.crossRefPathTemplate.match(crossRefName).kind;
+  matchCollectionFromCrossRefName(crossRefName: string) {
+    return this.pathTemplates.crossRefPathTemplate.match(crossRefName).collection;
   }
 
   /**
