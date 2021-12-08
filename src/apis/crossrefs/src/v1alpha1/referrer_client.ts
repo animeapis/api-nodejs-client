@@ -1018,8 +1018,8 @@ export class ReferrerClient {
  *   Map of all options for the analysis
  * @param {string[]} request.namespaces
  *   Namespaces to analyze
- * @param {string[]} request.targetPrefixes
- *   Prefixes to analyze
+ * @param {string[]} request.targetKinds
+ *   Kinds to analyze
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
