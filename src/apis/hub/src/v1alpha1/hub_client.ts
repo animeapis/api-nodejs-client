@@ -18,8 +18,10 @@
 
 /* global window */
 import * as gax from 'google-gax';
-import {Callback, CallOptions, Descriptors, ClientOptions} from 'google-gax';
+import {Callback, CallOptions, Descriptors, ClientOptions, PaginationCallback, GaxCall} from 'google-gax';
 
+import { Transform } from 'stream';
+import { RequestType } from 'google-gax/build/src/apitypes';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
 /**
@@ -138,6 +140,14 @@ export class HubClient {
     // Load the applicable protos.
     this._protos = this._gaxGrpc.loadProtoJSON(jsonProtos);
 
+    // Some of the methods on this service return "paged" results,
+    // (e.g. 50 results at a time, with tokens to get subsequent
+    // pages). Denote the keys used for pagination and results.
+    this.descriptors.page = {
+      listRepositories:
+          new this._gaxModule.PageDescriptor('pageToken', 'nextPageToken', 'repositories')
+    };
+
     // Put together the default options sent with requests.
     this._defaults = this._gaxGrpc.constructSettings(
         'animeshon.hub.v1alpha1.Hub', gapicConfig as gax.ClientConfig,
@@ -178,7 +188,7 @@ export class HubClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const hubStubMethods =
-        ['createRepository', 'deleteRepository'];
+        ['createRepository', 'deleteRepository', 'listRepositories'];
     for (const methodName of hubStubMethods) {
       const callPromise = this.hubStub.then(
         stub => (...args: Array<{}>) => {
@@ -193,6 +203,7 @@ export class HubClient {
         });
 
       const descriptor =
+        this.descriptors.page[methodName] ||
         undefined;
       const apiCall = this._gaxModule.createApiCall(
         callPromise,
@@ -399,6 +410,180 @@ export class HubClient {
     return this.innerApiCalls.deleteRepository(request, options, callback);
   }
 
+  listRepositories(
+      request?: protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.hub.v1alpha1.IRepository[],
+        protos.animeshon.hub.v1alpha1.IListRepositoriesRequest|null,
+        protos.animeshon.hub.v1alpha1.IListRepositoriesResponse
+      ]>;
+  listRepositories(
+      request: protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
+          protos.animeshon.hub.v1alpha1.IListRepositoriesResponse|null|undefined,
+          protos.animeshon.hub.v1alpha1.IRepository>): void;
+  listRepositories(
+      request: protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
+      callback: PaginationCallback<
+          protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
+          protos.animeshon.hub.v1alpha1.IListRepositoriesResponse|null|undefined,
+          protos.animeshon.hub.v1alpha1.IRepository>): void;
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent, which owns this collection of repositories.
+ * @param {number} request.pageSize
+ *   If unspecified, server will pick an appropriate default.
+ * @param {string} request.pageToken
+ *   The value returned from the previous call.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is Array of [Repository]{@link animeshon.hub.v1alpha1.Repository}.
+ *   The client library will perform auto-pagination by default: it will call the API as many
+ *   times as needed and will merge results from all the pages into this array.
+ *   Note that it can affect your quota.
+ *   We recommend using `listRepositoriesAsync()`
+ *   method described below for async iteration which you can stop as needed.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+ *   for more details and examples.
+ */
+  listRepositories(
+      request?: protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
+      optionsOrCallback?: CallOptions|PaginationCallback<
+          protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
+          protos.animeshon.hub.v1alpha1.IListRepositoriesResponse|null|undefined,
+          protos.animeshon.hub.v1alpha1.IRepository>,
+      callback?: PaginationCallback<
+          protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
+          protos.animeshon.hub.v1alpha1.IListRepositoriesResponse|null|undefined,
+          protos.animeshon.hub.v1alpha1.IRepository>):
+      Promise<[
+        protos.animeshon.hub.v1alpha1.IRepository[],
+        protos.animeshon.hub.v1alpha1.IListRepositoriesRequest|null,
+        protos.animeshon.hub.v1alpha1.IListRepositoriesResponse
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'parent': request.parent || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.listRepositories(request, options, callback);
+  }
+
+/**
+ * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent, which owns this collection of repositories.
+ * @param {number} request.pageSize
+ *   If unspecified, server will pick an appropriate default.
+ * @param {string} request.pageToken
+ *   The value returned from the previous call.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Stream}
+ *   An object stream which emits an object representing [Repository]{@link animeshon.hub.v1alpha1.Repository} on 'data' event.
+ *   The client library will perform auto-pagination by default: it will call the API as many
+ *   times as needed. Note that it can affect your quota.
+ *   We recommend using `listRepositoriesAsync()`
+ *   method described below for async iteration which you can stop as needed.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+ *   for more details and examples.
+ */
+  listRepositoriesStream(
+      request?: protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
+      options?: CallOptions):
+    Transform{
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'parent': request.parent || '',
+    });
+    const callSettings = new gax.CallSettings(options);
+    this.initialize();
+    return this.descriptors.page.listRepositories.createStream(
+      this.innerApiCalls.listRepositories as gax.GaxCall,
+      request,
+      callSettings
+    );
+  }
+
+/**
+ * Equivalent to `listRepositories`, but returns an iterable object.
+ *
+ * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent, which owns this collection of repositories.
+ * @param {number} request.pageSize
+ *   If unspecified, server will pick an appropriate default.
+ * @param {string} request.pageToken
+ *   The value returned from the previous call.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Object}
+ *   An iterable Object that allows [async iteration](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols).
+ *   When you iterate the returned iterable, each element will be an object representing
+ *   [Repository]{@link animeshon.hub.v1alpha1.Repository}. The API will be called under the hood as needed, once per the page,
+ *   so you can stop the iteration when you don't need more results.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
+ *   for more details and examples.
+ * @example
+ * const iterable = client.listRepositoriesAsync(request);
+ * for await (const response of iterable) {
+ *   // process response
+ * }
+ */
+  listRepositoriesAsync(
+      request?: protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
+      options?: CallOptions):
+    AsyncIterable<protos.animeshon.hub.v1alpha1.IRepository>{
+    request = request || {};
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'parent': request.parent || '',
+    });
+    options = options || {};
+    const callSettings = new gax.CallSettings(options);
+    this.initialize();
+    return this.descriptors.page.listRepositories.asyncIterate(
+      this.innerApiCalls['listRepositories'] as GaxCall,
+      request as unknown as RequestType,
+      callSettings
+    ) as AsyncIterable<protos.animeshon.hub.v1alpha1.IRepository>;
+  }
 
   /**
    * Terminate the gRPC channel and close the client.

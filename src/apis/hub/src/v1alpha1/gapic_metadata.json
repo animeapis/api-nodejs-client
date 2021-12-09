@@ -63,6 +63,13 @@
               "methods": [
                 "deleteRepository"
               ]
+            },
+            "ListRepositories": {
+              "methods": [
+                "listRepositories",
+                "listRepositoriesStream",
+                "listRepositoriesAsync"
+              ]
             }
           }
         },
@@ -77,6 +84,13 @@
             "DeleteRepository": {
               "methods": [
                 "deleteRepository"
+              ]
+            },
+            "ListRepositories": {
+              "methods": [
+                "listRepositories",
+                "listRepositoriesStream",
+                "listRepositoriesAsync"
               ]
             }
           }

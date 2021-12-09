@@ -23,6 +23,8 @@ import {SinonStub} from 'sinon';
 import { describe, it } from 'mocha';
 import * as hubModule from '../src';
 
+import {PassThrough} from 'stream';
+
 import {protobuf} from 'google-gax';
 
 function generateSampleMessage<T extends object>(instance: T) {
@@ -37,6 +39,51 @@ function stubSimpleCall<ResponseType>(response?: ResponseType, error?: Error) {
 
 function stubSimpleCallWithCallback<ResponseType>(response?: ResponseType, error?: Error) {
     return error ? sinon.stub().callsArgWith(2, error) : sinon.stub().callsArgWith(2, null, response);
+}
+
+function stubPageStreamingCall<ResponseType>(responses?: ResponseType[], error?: Error) {
+    const pagingStub = sinon.stub();
+    if (responses) {
+        for (let i = 0; i < responses.length; ++i) {
+            pagingStub.onCall(i).callsArgWith(2, null, responses[i]);
+        }
+    }
+    const transformStub = error ? sinon.stub().callsArgWith(2, error) : pagingStub;
+    const mockStream = new PassThrough({
+        objectMode: true,
+        transform: transformStub,
+    });
+    // trigger as many responses as needed
+    if (responses) {
+        for (let i = 0; i < responses.length; ++i) {
+            setImmediate(() => { mockStream.write({}); });
+        }
+        setImmediate(() => { mockStream.end(); });
+    } else {
+        setImmediate(() => { mockStream.write({}); });
+        setImmediate(() => { mockStream.end(); });
+    }
+    return sinon.stub().returns(mockStream);
+}
+
+function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?: Error) {
+    let counter = 0;
+    const asyncIterable = {
+        [Symbol.asyncIterator]() {
+            return {
+                async next() {
+                    if (error) {
+                        return Promise.reject(error);
+                    }
+                    if (counter >= responses!.length) {
+                        return Promise.resolve({done: true, value: undefined});
+                    }
+                    return Promise.resolve({done: false, value: responses![counter++]});
+                }
+            };
+        }
+    };
+    return sinon.stub().returns(asyncIterable);
 }
 
 describe('v1alpha1.HubClient', () => {
@@ -283,6 +330,228 @@ describe('v1alpha1.HubClient', () => {
             await assert.rejects(client.deleteRepository(request), expectedError);
             assert((client.innerApiCalls.deleteRepository as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('listRepositories', () => {
+        it('invokes listRepositories without error', async () => {
+            const client = new hubModule.v1alpha1.HubClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = [
+              generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
+              generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
+              generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
+            ];
+            client.innerApiCalls.listRepositories = stubSimpleCall(expectedResponse);
+            const [response] = await client.listRepositories(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.listRepositories as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes listRepositories without error using callback', async () => {
+            const client = new hubModule.v1alpha1.HubClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = [
+              generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
+              generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
+              generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
+            ];
+            client.innerApiCalls.listRepositories = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.listRepositories(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.hub.v1alpha1.IRepository[]|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.listRepositories as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes listRepositories with error', async () => {
+            const client = new hubModule.v1alpha1.HubClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.listRepositories = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.listRepositories(request), expectedError);
+            assert((client.innerApiCalls.listRepositories as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes listRepositoriesStream without error', async () => {
+            const client = new hubModule.v1alpha1.HubClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedResponse = [
+              generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
+              generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
+              generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
+            ];
+            client.descriptors.page.listRepositories.createStream = stubPageStreamingCall(expectedResponse);
+            const stream = client.listRepositoriesStream(request);
+            const promise = new Promise((resolve, reject) => {
+                const responses: protos.animeshon.hub.v1alpha1.Repository[] = [];
+                stream.on('data', (response: protos.animeshon.hub.v1alpha1.Repository) => {
+                    responses.push(response);
+                });
+                stream.on('end', () => {
+                    resolve(responses);
+                });
+                stream.on('error', (err: Error) => {
+                    reject(err);
+                });
+            });
+            const responses = await promise;
+            assert.deepStrictEqual(responses, expectedResponse);
+            assert((client.descriptors.page.listRepositories.createStream as SinonStub)
+                .getCall(0).calledWith(client.innerApiCalls.listRepositories, request));
+            assert.strictEqual(
+                (client.descriptors.page.listRepositories.createStream as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
+        });
+
+        it('invokes listRepositoriesStream with error', async () => {
+            const client = new hubModule.v1alpha1.HubClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedError = new Error('expected');
+            client.descriptors.page.listRepositories.createStream = stubPageStreamingCall(undefined, expectedError);
+            const stream = client.listRepositoriesStream(request);
+            const promise = new Promise((resolve, reject) => {
+                const responses: protos.animeshon.hub.v1alpha1.Repository[] = [];
+                stream.on('data', (response: protos.animeshon.hub.v1alpha1.Repository) => {
+                    responses.push(response);
+                });
+                stream.on('end', () => {
+                    resolve(responses);
+                });
+                stream.on('error', (err: Error) => {
+                    reject(err);
+                });
+            });
+            await assert.rejects(promise, expectedError);
+            assert((client.descriptors.page.listRepositories.createStream as SinonStub)
+                .getCall(0).calledWith(client.innerApiCalls.listRepositories, request));
+            assert.strictEqual(
+                (client.descriptors.page.listRepositories.createStream as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
+        });
+
+        it('uses async iteration with listRepositories without error', async () => {
+            const client = new hubModule.v1alpha1.HubClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";const expectedResponse = [
+              generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
+              generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
+              generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
+            ];
+            client.descriptors.page.listRepositories.asyncIterate = stubAsyncIterationCall(expectedResponse);
+            const responses: protos.animeshon.hub.v1alpha1.IRepository[] = [];
+            const iterable = client.listRepositoriesAsync(request);
+            for await (const resource of iterable) {
+                responses.push(resource!);
+            }
+            assert.deepStrictEqual(responses, expectedResponse);
+            assert.deepStrictEqual(
+                (client.descriptors.page.listRepositories.asyncIterate as SinonStub)
+                    .getCall(0).args[1], request);
+            assert.strictEqual(
+                (client.descriptors.page.listRepositories.asyncIterate as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
+        });
+
+        it('uses async iteration with listRepositories with error', async () => {
+            const client = new hubModule.v1alpha1.HubClient({
+                credentials: {client_email: 'bogus', private_key: 'bogus'},
+                projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";const expectedError = new Error('expected');
+            client.descriptors.page.listRepositories.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
+            const iterable = client.listRepositoriesAsync(request);
+            await assert.rejects(async () => {
+                const responses: protos.animeshon.hub.v1alpha1.IRepository[] = [];
+                for await (const resource of iterable) {
+                    responses.push(resource!);
+                }
+            });
+            assert.deepStrictEqual(
+                (client.descriptors.page.listRepositories.asyncIterate as SinonStub)
+                    .getCall(0).args[1], request);
+            assert.strictEqual(
+                (client.descriptors.page.listRepositories.asyncIterate as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
         });
     });
 });
