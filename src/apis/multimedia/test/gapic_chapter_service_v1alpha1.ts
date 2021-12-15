@@ -257,7 +257,15 @@ describe('v1alpha1.ChapterServiceClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateChapterRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter());
             client.innerApiCalls.createChapter = stubSimpleCall(expectedResponse);
             const [response] = await client.createChapter(request);
@@ -273,7 +281,15 @@ describe('v1alpha1.ChapterServiceClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateChapterRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter());
             client.innerApiCalls.createChapter = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -300,7 +316,15 @@ describe('v1alpha1.ChapterServiceClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateChapterRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedError = new Error('expected');
             client.innerApiCalls.createChapter = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createChapter(request), expectedError);
@@ -488,7 +512,15 @@ describe('v1alpha1.ChapterServiceClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
@@ -508,7 +540,15 @@ describe('v1alpha1.ChapterServiceClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
@@ -539,7 +579,15 @@ describe('v1alpha1.ChapterServiceClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedError = new Error('expected');
             client.innerApiCalls.listChapters = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listChapters(request), expectedError);
@@ -554,6 +602,8 @@ describe('v1alpha1.ChapterServiceClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
@@ -577,6 +627,11 @@ describe('v1alpha1.ChapterServiceClient', () => {
             assert.deepStrictEqual(responses, expectedResponse);
             assert((client.descriptors.page.listChapters.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listChapters, request));
+            assert.strictEqual(
+                (client.descriptors.page.listChapters.createStream as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
         });
 
         it('invokes listChaptersStream with error', async () => {
@@ -586,6 +641,8 @@ describe('v1alpha1.ChapterServiceClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
             const expectedError = new Error('expected');
             client.descriptors.page.listChapters.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listChaptersStream(request);
@@ -604,6 +661,11 @@ describe('v1alpha1.ChapterServiceClient', () => {
             await assert.rejects(promise, expectedError);
             assert((client.descriptors.page.listChapters.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listChapters, request));
+            assert.strictEqual(
+                (client.descriptors.page.listChapters.createStream as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
         });
 
         it('uses async iteration with listChapters without error', async () => {
@@ -612,7 +674,9 @@ describe('v1alpha1.ChapterServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest());const expectedResponse = [
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
@@ -627,6 +691,11 @@ describe('v1alpha1.ChapterServiceClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listChapters.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
+            assert.strictEqual(
+                (client.descriptors.page.listChapters.asyncIterate as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
         });
 
         it('uses async iteration with listChapters with error', async () => {
@@ -635,7 +704,9 @@ describe('v1alpha1.ChapterServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest());const expectedError = new Error('expected');
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";const expectedError = new Error('expected');
             client.descriptors.page.listChapters.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listChaptersAsync(request);
             await assert.rejects(async () => {
@@ -647,6 +718,11 @@ describe('v1alpha1.ChapterServiceClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listChapters.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
+            assert.strictEqual(
+                (client.descriptors.page.listChapters.asyncIterate as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
         });
     });
 });

@@ -363,6 +363,8 @@ export class EpisodeServiceClient {
  *
  * @param {Object} request
  *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent this episode belongs to.
  * @param {animeshon.multimedia.v1alpha1.Episode} request.episode
  *   The episode to create.
  * @param {object} [options]
@@ -399,6 +401,13 @@ export class EpisodeServiceClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'parent': request.parent || '',
+    });
     this.initialize();
     return this.innerApiCalls.createEpisode(request, options, callback);
   }
@@ -571,6 +580,8 @@ export class EpisodeServiceClient {
  *
  * @param {Object} request
  *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent this episode belongs to.
  * @param {number} request.pageSize
  *   If unspecified, server will pick an appropriate default.
  * @param {string} request.pageToken
@@ -615,6 +626,13 @@ export class EpisodeServiceClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'parent': request.parent || '',
+    });
     this.initialize();
     return this.innerApiCalls.listEpisodes(request, options, callback);
   }
@@ -623,6 +641,8 @@ export class EpisodeServiceClient {
  * Equivalent to `method.name.toCamelCase()`, but returns a NodeJS Stream object.
  * @param {Object} request
  *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent this episode belongs to.
  * @param {number} request.pageSize
  *   If unspecified, server will pick an appropriate default.
  * @param {string} request.pageToken
@@ -647,6 +667,13 @@ export class EpisodeServiceClient {
     Transform{
     request = request || {};
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'parent': request.parent || '',
+    });
     const callSettings = new gax.CallSettings(options);
     this.initialize();
     return this.descriptors.page.listEpisodes.createStream(
@@ -662,6 +689,8 @@ export class EpisodeServiceClient {
  * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
  * @param {Object} request
  *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent this episode belongs to.
  * @param {number} request.pageSize
  *   If unspecified, server will pick an appropriate default.
  * @param {string} request.pageToken
@@ -690,6 +719,13 @@ export class EpisodeServiceClient {
     AsyncIterable<protos.animeshon.multimedia.v1alpha1.IEpisode>{
     request = request || {};
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'parent': request.parent || '',
+    });
     options = options || {};
     const callSettings = new gax.CallSettings(options);
     this.initialize();

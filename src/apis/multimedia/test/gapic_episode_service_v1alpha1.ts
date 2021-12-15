@@ -257,7 +257,15 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateEpisodeRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode());
             client.innerApiCalls.createEpisode = stubSimpleCall(expectedResponse);
             const [response] = await client.createEpisode(request);
@@ -273,7 +281,15 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateEpisodeRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode());
             client.innerApiCalls.createEpisode = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -300,7 +316,15 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateEpisodeRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedError = new Error('expected');
             client.innerApiCalls.createEpisode = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createEpisode(request), expectedError);
@@ -488,7 +512,15 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
@@ -508,7 +540,15 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
@@ -539,7 +579,15 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest());
-            const expectedOptions = {};
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
             const expectedError = new Error('expected');
             client.innerApiCalls.listEpisodes = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listEpisodes(request), expectedError);
@@ -554,6 +602,8 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
@@ -577,6 +627,11 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             assert.deepStrictEqual(responses, expectedResponse);
             assert((client.descriptors.page.listEpisodes.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listEpisodes, request));
+            assert.strictEqual(
+                (client.descriptors.page.listEpisodes.createStream as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
         });
 
         it('invokes listEpisodesStream with error', async () => {
@@ -586,6 +641,8 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
             const expectedError = new Error('expected');
             client.descriptors.page.listEpisodes.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listEpisodesStream(request);
@@ -604,6 +661,11 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             await assert.rejects(promise, expectedError);
             assert((client.descriptors.page.listEpisodes.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listEpisodes, request));
+            assert.strictEqual(
+                (client.descriptors.page.listEpisodes.createStream as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
         });
 
         it('uses async iteration with listEpisodes without error', async () => {
@@ -612,7 +674,9 @@ describe('v1alpha1.EpisodeServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest());const expectedResponse = [
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
@@ -627,6 +691,11 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listEpisodes.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
+            assert.strictEqual(
+                (client.descriptors.page.listEpisodes.asyncIterate as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
         });
 
         it('uses async iteration with listEpisodes with error', async () => {
@@ -635,7 +704,9 @@ describe('v1alpha1.EpisodeServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest());const expectedError = new Error('expected');
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";const expectedError = new Error('expected');
             client.descriptors.page.listEpisodes.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listEpisodesAsync(request);
             await assert.rejects(async () => {
@@ -647,6 +718,11 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listEpisodes.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
+            assert.strictEqual(
+                (client.descriptors.page.listEpisodes.asyncIterate as SinonStub)
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
+                expectedHeaderRequestParams
+            );
         });
     });
 });
