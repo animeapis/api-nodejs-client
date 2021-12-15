@@ -1,0 +1,145 @@
+{
+  "schema": "1.0",
+  "comment": "This file maps proto services/RPCs to the corresponding library clients/methods",
+  "language": "typescript",
+  "protoPackage": "animeshon.multimedia.v1alpha1",
+  "libraryPackage": "@animeapis/multimedia",
+  "services": {
+    "ChapterService": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "ChapterServiceClient",
+          "rpcs": {
+            "GetChapter": {
+              "methods": [
+                "getChapter"
+              ]
+            },
+            "CreateChapter": {
+              "methods": [
+                "createChapter"
+              ]
+            },
+            "UpdateChapter": {
+              "methods": [
+                "updateChapter"
+              ]
+            },
+            "DeleteChapter": {
+              "methods": [
+                "deleteChapter"
+              ]
+            },
+            "ListChapters": {
+              "methods": [
+                "listChapters",
+                "listChaptersStream",
+                "listChaptersAsync"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "ChapterServiceClient",
+          "rpcs": {
+            "GetChapter": {
+              "methods": [
+                "getChapter"
+              ]
+            },
+            "CreateChapter": {
+              "methods": [
+                "createChapter"
+              ]
+            },
+            "UpdateChapter": {
+              "methods": [
+                "updateChapter"
+              ]
+            },
+            "DeleteChapter": {
+              "methods": [
+                "deleteChapter"
+              ]
+            },
+            "ListChapters": {
+              "methods": [
+                "listChapters",
+                "listChaptersStream",
+                "listChaptersAsync"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "EpisodeService": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "EpisodeServiceClient",
+          "rpcs": {
+            "GetEpisode": {
+              "methods": [
+                "getEpisode"
+              ]
+            },
+            "CreateEpisode": {
+              "methods": [
+                "createEpisode"
+              ]
+            },
+            "UpdateEpisode": {
+              "methods": [
+                "updateEpisode"
+              ]
+            },
+            "DeleteEpisode": {
+              "methods": [
+                "deleteEpisode"
+              ]
+            },
+            "ListEpisodes": {
+              "methods": [
+                "listEpisodes",
+                "listEpisodesStream",
+                "listEpisodesAsync"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "EpisodeServiceClient",
+          "rpcs": {
+            "GetEpisode": {
+              "methods": [
+                "getEpisode"
+              ]
+            },
+            "CreateEpisode": {
+              "methods": [
+                "createEpisode"
+              ]
+            },
+            "UpdateEpisode": {
+              "methods": [
+                "updateEpisode"
+              ]
+            },
+            "DeleteEpisode": {
+              "methods": [
+                "deleteEpisode"
+              ]
+            },
+            "ListEpisodes": {
+              "methods": [
+                "listEpisodes",
+                "listEpisodesStream",
+                "listEpisodesAsync"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
