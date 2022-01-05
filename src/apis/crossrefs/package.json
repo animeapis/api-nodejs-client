@@ -1,6 +1,6 @@
 {
   "name": "@animeapis/crossrefs",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Crossrefs client for Node.js",
   "repository": "animeapis/api-nodejs-client",
   "license": "Apache-2.0",

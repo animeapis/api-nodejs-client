@@ -1,5 +1,13 @@
 # Changelog
 
+### [1.3.1](https://www.github.com/animeapis/api-nodejs-client/compare/hub-v1.3.0...hub-v1.3.1) (2022-01-05)
+
+
+### Bug Fixes
+
+* **hub:** add missing import ([31c337d](https://www.github.com/animeapis/api-nodejs-client/commit/31c337d5a4a598015591b37d76608f41a55da729))
+* **tracker:** add missing wrappers import ([add1be9](https://www.github.com/animeapis/api-nodejs-client/commit/add1be944d56c403a68caaecce8ccb2348efdde0))
+
 ## [1.3.0](https://www.github.com/animeapis/api-nodejs-client/compare/hub-v1.2.0...hub-v1.3.0) (2021-11-04)
 
 
