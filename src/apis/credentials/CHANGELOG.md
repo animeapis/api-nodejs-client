@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.0.2](https://www.github.com/animeapis/api-nodejs-client/compare/credentials-v1.0.1...credentials-v1.0.2) (2022-01-05)
+
+
+### Bug Fixes
+
+* **tracker:** add missing wrappers import ([add1be9](https://www.github.com/animeapis/api-nodejs-client/commit/add1be944d56c403a68caaecce8ccb2348efdde0))
+
 ### [1.0.1](https://www.github.com/animeapis/api-nodejs-client/compare/credentials-v1.0.0...credentials-v1.0.1) (2021-11-04)
 
 

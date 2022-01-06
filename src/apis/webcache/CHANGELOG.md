@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.2.1](https://www.github.com/animeapis/api-nodejs-client/compare/webcache-v1.2.0...webcache-v1.2.1) (2022-01-05)
+
+
+### Bug Fixes
+
+* **tracker:** add missing wrappers import ([add1be9](https://www.github.com/animeapis/api-nodejs-client/commit/add1be944d56c403a68caaecce8ccb2348efdde0))
+
 ## [1.2.0](https://www.github.com/animeapis/api-nodejs-client/compare/webcache-v1.1.0...webcache-v1.2.0) (2021-11-04)
 
 

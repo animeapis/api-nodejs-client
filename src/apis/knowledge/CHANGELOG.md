@@ -1,5 +1,14 @@
 # Changelog
 
+### [1.3.1](https://www.github.com/animeapis/api-nodejs-client/compare/knowledge-v1.3.0...knowledge-v1.3.1) (2022-01-05)
+
+
+### Bug Fixes
+
+* **knowledge:** google.type.Date ([4af72b2](https://www.github.com/animeapis/api-nodejs-client/commit/4af72b2ce41a4eeb18c687f78fc0e20ee00c5e5e))
+* removed maturity ratings and restrictions from episode & chapter ([9ae9986](https://www.github.com/animeapis/api-nodejs-client/commit/9ae998690d2e8f7270b7dbc0469174fe97a4da0f))
+* **tracker:** add missing wrappers import ([add1be9](https://www.github.com/animeapis/api-nodejs-client/commit/add1be944d56c403a68caaecce8ccb2348efdde0))
+
 ## [1.3.0](https://www.github.com/animeapis/api-nodejs-client/compare/knowledge-v1.2.0...knowledge-v1.3.0) (2021-11-19)
 
 

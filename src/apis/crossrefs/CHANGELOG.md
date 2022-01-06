@@ -1,5 +1,13 @@
 # Changelog
 
+### [1.2.1](https://www.github.com/animeapis/api-nodejs-client/compare/crossrefs-v1.2.0...crossrefs-v1.2.1) (2022-01-05)
+
+
+### Bug Fixes
+
+* GetCrossRef path ([3569ea3](https://www.github.com/animeapis/api-nodejs-client/commit/3569ea34663e6cfc4f6d900b12e80c59203718b5))
+* **tracker:** add missing wrappers import ([add1be9](https://www.github.com/animeapis/api-nodejs-client/commit/add1be944d56c403a68caaecce8ccb2348efdde0))
+
 ## [1.2.0](https://www.github.com/animeapis/api-nodejs-client/compare/crossrefs-v1.1.0...crossrefs-v1.2.0) (2021-11-04)
 
 
