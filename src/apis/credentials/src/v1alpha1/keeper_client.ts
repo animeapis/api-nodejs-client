@@ -40,6 +40,7 @@ const version = require('../../../package.json').version;
 export class KeeperClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -51,6 +52,7 @@ export class KeeperClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   keeperStub?: Promise<{[name: string]: Function}>;
 
@@ -92,6 +94,7 @@ export class KeeperClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof KeeperClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -113,6 +116,12 @@ export class KeeperClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -157,6 +166,9 @@ export class KeeperClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -183,7 +195,7 @@ export class KeeperClient {
           (this._protos as protobuf.Root).lookupService('animeshon.credentials.v1alpha1.Keeper') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.credentials.v1alpha1.Keeper,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -269,6 +281,22 @@ export class KeeperClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the credentials to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Credentials]{@link animeshon.credentials.v1alpha1.Credentials}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/keeper.get_credentials.js</caption>
+ * region_tag:credentials_v1alpha1_generated_Keeper_GetCredentials_async
+ */
   getCredentials(
       request?: protos.animeshon.credentials.v1alpha1.IGetCredentialsRequest,
       options?: CallOptions):
@@ -289,22 +317,6 @@ export class KeeperClient {
           protos.animeshon.credentials.v1alpha1.ICredentials,
           protos.animeshon.credentials.v1alpha1.IGetCredentialsRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the credentials to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Credentials]{@link animeshon.credentials.v1alpha1.Credentials}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getCredentials(request);
- */
   getCredentials(
       request?: protos.animeshon.credentials.v1alpha1.IGetCredentialsRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -339,6 +351,26 @@ export class KeeperClient {
     this.initialize();
     return this.innerApiCalls.getCredentials(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.credentials.v1alpha1.Credentials} request.credentials
+ *   The credentials to create.
+ * @param {animeshon.credentials.v1alpha1.CreateCredentialsRequest.Basic} request.basic
+ *   Basic authentication credentials composed by username and password.
+ * @param {animeshon.credentials.v1alpha1.CreateCredentialsRequest.OAuth2} request.oauth2
+ *   OAuth 2.0 authentication credentials composed by a refresh token.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Credentials]{@link animeshon.credentials.v1alpha1.Credentials}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/keeper.create_credentials.js</caption>
+ * region_tag:credentials_v1alpha1_generated_Keeper_CreateCredentials_async
+ */
   createCredentials(
       request?: protos.animeshon.credentials.v1alpha1.ICreateCredentialsRequest,
       options?: CallOptions):
@@ -359,26 +391,6 @@ export class KeeperClient {
           protos.animeshon.credentials.v1alpha1.ICredentials,
           protos.animeshon.credentials.v1alpha1.ICreateCredentialsRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.credentials.v1alpha1.Credentials} request.credentials
- *   The credentials to create.
- * @param {animeshon.credentials.v1alpha1.CreateCredentialsRequest.Basic} request.basic
- *   Basic authentication credentials composed by username and password.
- * @param {animeshon.credentials.v1alpha1.CreateCredentialsRequest.OAuth2} request.oauth2
- *   OAuth 2.0 authentication credentials composed by a refresh token.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Credentials]{@link animeshon.credentials.v1alpha1.Credentials}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createCredentials(request);
- */
   createCredentials(
       request?: protos.animeshon.credentials.v1alpha1.ICreateCredentialsRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -413,6 +425,22 @@ export class KeeperClient {
     this.initialize();
     return this.innerApiCalls.createCredentials(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the credentials to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/keeper.delete_credentials.js</caption>
+ * region_tag:credentials_v1alpha1_generated_Keeper_DeleteCredentials_async
+ */
   deleteCredentials(
       request?: protos.animeshon.credentials.v1alpha1.IDeleteCredentialsRequest,
       options?: CallOptions):
@@ -433,22 +461,6 @@ export class KeeperClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.credentials.v1alpha1.IDeleteCredentialsRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the credentials to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteCredentials(request);
- */
   deleteCredentials(
       request?: protos.animeshon.credentials.v1alpha1.IDeleteCredentialsRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -483,6 +495,22 @@ export class KeeperClient {
     this.initialize();
     return this.innerApiCalls.deleteCredentials(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resorce name of the credentials.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [ActAsCredentialsResponse]{@link animeshon.credentials.v1alpha1.ActAsCredentialsResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/keeper.act_as_credentials.js</caption>
+ * region_tag:credentials_v1alpha1_generated_Keeper_ActAsCredentials_async
+ */
   actAsCredentials(
       request?: protos.animeshon.credentials.v1alpha1.IActAsCredentialsRequest,
       options?: CallOptions):
@@ -503,22 +531,6 @@ export class KeeperClient {
           protos.animeshon.credentials.v1alpha1.IActAsCredentialsResponse,
           protos.animeshon.credentials.v1alpha1.IActAsCredentialsRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The resorce name of the credentials.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [ActAsCredentialsResponse]{@link animeshon.credentials.v1alpha1.ActAsCredentialsResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.actAsCredentials(request);
- */
   actAsCredentials(
       request?: protos.animeshon.credentials.v1alpha1.IActAsCredentialsRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -554,28 +566,7 @@ export class KeeperClient {
     return this.innerApiCalls.actAsCredentials(request, options, callback);
   }
 
-  listCredentials(
-      request?: protos.animeshon.credentials.v1alpha1.IListCredentialsRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.credentials.v1alpha1.ICredentials[],
-        protos.animeshon.credentials.v1alpha1.IListCredentialsRequest|null,
-        protos.animeshon.credentials.v1alpha1.IListCredentialsResponse
-      ]>;
-  listCredentials(
-      request: protos.animeshon.credentials.v1alpha1.IListCredentialsRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.credentials.v1alpha1.IListCredentialsRequest,
-          protos.animeshon.credentials.v1alpha1.IListCredentialsResponse|null|undefined,
-          protos.animeshon.credentials.v1alpha1.ICredentials>): void;
-  listCredentials(
-      request: protos.animeshon.credentials.v1alpha1.IListCredentialsRequest,
-      callback: PaginationCallback<
-          protos.animeshon.credentials.v1alpha1.IListCredentialsRequest,
-          protos.animeshon.credentials.v1alpha1.IListCredentialsResponse|null|undefined,
-          protos.animeshon.credentials.v1alpha1.ICredentials>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -600,6 +591,27 @@ export class KeeperClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listCredentials(
+      request?: protos.animeshon.credentials.v1alpha1.IListCredentialsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.credentials.v1alpha1.ICredentials[],
+        protos.animeshon.credentials.v1alpha1.IListCredentialsRequest|null,
+        protos.animeshon.credentials.v1alpha1.IListCredentialsResponse
+      ]>;
+  listCredentials(
+      request: protos.animeshon.credentials.v1alpha1.IListCredentialsRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.credentials.v1alpha1.IListCredentialsRequest,
+          protos.animeshon.credentials.v1alpha1.IListCredentialsResponse|null|undefined,
+          protos.animeshon.credentials.v1alpha1.ICredentials>): void;
+  listCredentials(
+      request: protos.animeshon.credentials.v1alpha1.IListCredentialsRequest,
+      callback: PaginationCallback<
+          protos.animeshon.credentials.v1alpha1.IListCredentialsRequest,
+          protos.animeshon.credentials.v1alpha1.IListCredentialsResponse|null|undefined,
+          protos.animeshon.credentials.v1alpha1.ICredentials>): void;
   listCredentials(
       request?: protos.animeshon.credentials.v1alpha1.IListCredentialsRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -673,7 +685,8 @@ export class KeeperClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listCredentials'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listCredentials.createStream(
       this.innerApiCalls.listCredentials as gax.GaxCall,
@@ -706,11 +719,8 @@ export class KeeperClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listCredentialsAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/keeper.list_credentials.js</caption>
+ * region_tag:credentials_v1alpha1_generated_Keeper_ListCredentials_async
  */
   listCredentialsAsync(
       request?: protos.animeshon.credentials.v1alpha1.IListCredentialsRequest,
@@ -725,8 +735,8 @@ export class KeeperClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listCredentials'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listCredentials.asyncIterate(
       this.innerApiCalls['listCredentials'] as GaxCall,

@@ -41,6 +41,7 @@ const version = require('../../../package.json').version;
 export class ImageRouterClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -52,6 +53,7 @@ export class ImageRouterClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   imageRouterStub?: Promise<{[name: string]: Function}>;
 
@@ -93,6 +95,7 @@ export class ImageRouterClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof ImageRouterClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -114,6 +117,12 @@ export class ImageRouterClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -150,6 +159,9 @@ export class ImageRouterClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -176,7 +188,7 @@ export class ImageRouterClient {
           (this._protos as protobuf.Root).lookupService('animeshon.image.v1alpha1.ImageRouter') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.image.v1alpha1.ImageRouter,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -261,6 +273,22 @@ export class ImageRouterClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ * Gets the image public link address that is used to fetch images via CDN.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [GetImageRouteResponse]{@link animeshon.image.v1alpha1.GetImageRouteResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/image_router.get_image_route.js</caption>
+ * region_tag:image_v1alpha1_generated_ImageRouter_GetImageRoute_async
+ */
   getImageRoute(
       request?: protos.animeshon.image.v1alpha1.IGetImageRouteRequest,
       options?: CallOptions):
@@ -281,22 +309,6 @@ export class ImageRouterClient {
           protos.animeshon.image.v1alpha1.IGetImageRouteResponse,
           protos.animeshon.image.v1alpha1.IGetImageRouteRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * Gets the image public link address that is used to fetch images via CDN.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [GetImageRouteResponse]{@link animeshon.image.v1alpha1.GetImageRouteResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getImageRoute(request);
- */
   getImageRoute(
       request?: protos.animeshon.image.v1alpha1.IGetImageRouteRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -331,6 +343,25 @@ export class ImageRouterClient {
     this.initialize();
     return this.innerApiCalls.getImageRoute(request, options, callback);
   }
+/**
+ * Routes a raw request received by a CDN host to its target image.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.host
+ *   The host that received the request.
+ * @param {string} request.path
+ *   The requested path representing an opaque route.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [HttpBody]{@link google.api.HttpBody}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/image_router.route_image.js</caption>
+ * region_tag:image_v1alpha1_generated_ImageRouter_RouteImage_async
+ */
   routeImage(
       request?: protos.animeshon.image.v1alpha1.IRouteImageRequest,
       options?: CallOptions):
@@ -351,25 +382,6 @@ export class ImageRouterClient {
           protos.google.api.IHttpBody,
           protos.animeshon.image.v1alpha1.IRouteImageRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * Routes a raw request received by a CDN host to its target image.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.host
- *   The host that received the request.
- * @param {string} request.path
- *   The requested path representing an opaque route.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [HttpBody]{@link google.api.HttpBody}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.routeImage(request);
- */
   routeImage(
       request?: protos.animeshon.image.v1alpha1.IRouteImageRequest,
       optionsOrCallback?: CallOptions|Callback<

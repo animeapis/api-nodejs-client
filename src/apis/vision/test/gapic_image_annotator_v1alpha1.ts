@@ -117,8 +117,8 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.imageAnnotatorStub, undefined);
         await client.initialize();
@@ -127,8 +127,8 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
     it('has close method', () => {
         const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -136,8 +136,8 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -148,8 +148,8 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -168,9 +168,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
     describe('analyzeImage', () => {
         it('invokes analyzeImage without error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.AnalyzeImageRequest());
             request.parent = '';
@@ -192,9 +192,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
         it('invokes analyzeImage without error using callback', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.AnalyzeImageRequest());
             request.parent = '';
@@ -227,9 +227,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
         it('invokes analyzeImage with error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.AnalyzeImageRequest());
             request.parent = '';
@@ -252,9 +252,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
     describe('getImageAnalysis', () => {
         it('invokes getImageAnalysis without error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.GetImageAnalysisRequest());
             request.name = '';
@@ -276,9 +276,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
         it('invokes getImageAnalysis without error using callback', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.GetImageAnalysisRequest());
             request.name = '';
@@ -311,9 +311,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
         it('invokes getImageAnalysis with error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.GetImageAnalysisRequest());
             request.name = '';
@@ -336,9 +336,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
     describe('deleteImageAnalysis', () => {
         it('invokes deleteImageAnalysis without error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.DeleteImageAnalysisRequest());
             request.name = '';
@@ -360,9 +360,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
         it('invokes deleteImageAnalysis without error using callback', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.DeleteImageAnalysisRequest());
             request.name = '';
@@ -395,9 +395,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
         it('invokes deleteImageAnalysis with error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.DeleteImageAnalysisRequest());
             request.name = '';
@@ -420,9 +420,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
     describe('createImageAnnotation', () => {
         it('invokes createImageAnnotation without error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.CreateImageAnnotationRequest());
             request.parent = '';
@@ -444,9 +444,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
         it('invokes createImageAnnotation without error using callback', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.CreateImageAnnotationRequest());
             request.parent = '';
@@ -479,9 +479,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
         it('invokes createImageAnnotation with error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.CreateImageAnnotationRequest());
             request.parent = '';
@@ -504,9 +504,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
     describe('getImageAnnotation', () => {
         it('invokes getImageAnnotation without error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.GetImageAnnotationRequest());
             request.name = '';
@@ -528,9 +528,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
         it('invokes getImageAnnotation without error using callback', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.GetImageAnnotationRequest());
             request.name = '';
@@ -563,9 +563,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
         it('invokes getImageAnnotation with error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.GetImageAnnotationRequest());
             request.name = '';
@@ -588,9 +588,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
     describe('updateImageAnnotation', () => {
         it('invokes updateImageAnnotation without error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.UpdateImageAnnotationRequest());
             request.annotation = {};
@@ -613,9 +613,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
         it('invokes updateImageAnnotation without error using callback', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.UpdateImageAnnotationRequest());
             request.annotation = {};
@@ -649,9 +649,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
         it('invokes updateImageAnnotation with error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.UpdateImageAnnotationRequest());
             request.annotation = {};
@@ -675,9 +675,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
     describe('deleteImageAnnotation', () => {
         it('invokes deleteImageAnnotation without error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.DeleteImageAnnotationRequest());
             request.name = '';
@@ -699,9 +699,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
         it('invokes deleteImageAnnotation without error using callback', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.DeleteImageAnnotationRequest());
             request.name = '';
@@ -734,9 +734,9 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
         it('invokes deleteImageAnnotation with error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.DeleteImageAnnotationRequest());
             request.name = '';
@@ -922,13 +922,14 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
         it('uses async iteration with listImageAnalyses without error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ListImageAnalysesRequest());
             request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedResponse = [
+            const expectedHeaderRequestParams = "parent=";
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnalysis()),
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnalysis()),
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnalysis()),
@@ -1144,13 +1145,14 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
 
         it('uses async iteration with listImageAnnotations without error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ListImageAnnotationsRequest());
             request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedResponse = [
+            const expectedHeaderRequestParams = "parent=";
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation()),
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation()),
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation()),

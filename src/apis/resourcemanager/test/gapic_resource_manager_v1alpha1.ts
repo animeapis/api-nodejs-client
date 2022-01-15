@@ -117,8 +117,8 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.resourceManagerStub, undefined);
         await client.initialize();
@@ -127,8 +127,8 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
     it('has close method', () => {
         const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -136,8 +136,8 @@ describe('v1alpha1.ResourceManagerClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -148,8 +148,8 @@ describe('v1alpha1.ResourceManagerClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -168,9 +168,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
     describe('getOrganization', () => {
         it('invokes getOrganization without error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.GetOrganizationRequest());
             request.name = '';
@@ -192,9 +192,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('invokes getOrganization without error using callback', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.GetOrganizationRequest());
             request.name = '';
@@ -227,9 +227,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('invokes getOrganization with error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.GetOrganizationRequest());
             request.name = '';
@@ -252,12 +252,12 @@ describe('v1alpha1.ResourceManagerClient', () => {
     describe('createOrganization', () => {
         it('invokes createOrganization without error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.CreateOrganizationRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization());
             client.innerApiCalls.createOrganization = stubSimpleCall(expectedResponse);
             const [response] = await client.createOrganization(request);
@@ -268,12 +268,12 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('invokes createOrganization without error using callback', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.CreateOrganizationRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization());
             client.innerApiCalls.createOrganization = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -295,12 +295,12 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('invokes createOrganization with error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.CreateOrganizationRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.createOrganization = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createOrganization(request), expectedError);
@@ -312,9 +312,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
     describe('updateOrganization', () => {
         it('invokes updateOrganization without error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.UpdateOrganizationRequest());
             request.organization = {};
@@ -337,9 +337,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('invokes updateOrganization without error using callback', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.UpdateOrganizationRequest());
             request.organization = {};
@@ -373,9 +373,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('invokes updateOrganization with error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.UpdateOrganizationRequest());
             request.organization = {};
@@ -399,9 +399,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
     describe('deleteOrganization', () => {
         it('invokes deleteOrganization without error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.DeleteOrganizationRequest());
             request.name = '';
@@ -423,9 +423,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('invokes deleteOrganization without error using callback', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.DeleteOrganizationRequest());
             request.name = '';
@@ -458,9 +458,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('invokes deleteOrganization with error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.DeleteOrganizationRequest());
             request.name = '';
@@ -483,9 +483,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
     describe('getTeam', () => {
         it('invokes getTeam without error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.GetTeamRequest());
             request.name = '';
@@ -507,9 +507,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('invokes getTeam without error using callback', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.GetTeamRequest());
             request.name = '';
@@ -542,9 +542,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('invokes getTeam with error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.GetTeamRequest());
             request.name = '';
@@ -567,12 +567,12 @@ describe('v1alpha1.ResourceManagerClient', () => {
     describe('createTeam', () => {
         it('invokes createTeam without error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.CreateTeamRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team());
             client.innerApiCalls.createTeam = stubSimpleCall(expectedResponse);
             const [response] = await client.createTeam(request);
@@ -583,12 +583,12 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('invokes createTeam without error using callback', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.CreateTeamRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team());
             client.innerApiCalls.createTeam = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -610,12 +610,12 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('invokes createTeam with error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.CreateTeamRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.createTeam = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createTeam(request), expectedError);
@@ -627,9 +627,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
     describe('updateTeam', () => {
         it('invokes updateTeam without error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.UpdateTeamRequest());
             request.team = {};
@@ -652,9 +652,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('invokes updateTeam without error using callback', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.UpdateTeamRequest());
             request.team = {};
@@ -688,9 +688,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('invokes updateTeam with error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.UpdateTeamRequest());
             request.team = {};
@@ -714,9 +714,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
     describe('deleteTeam', () => {
         it('invokes deleteTeam without error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.DeleteTeamRequest());
             request.name = '';
@@ -738,9 +738,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('invokes deleteTeam without error using callback', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.DeleteTeamRequest());
             request.name = '';
@@ -773,9 +773,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('invokes deleteTeam with error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.DeleteTeamRequest());
             request.name = '';
@@ -803,7 +803,7 @@ describe('v1alpha1.ResourceManagerClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization()),
@@ -823,7 +823,7 @@ describe('v1alpha1.ResourceManagerClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization()),
@@ -854,7 +854,7 @@ describe('v1alpha1.ResourceManagerClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.listOrganizations = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listOrganizations(request), expectedError);
@@ -923,11 +923,12 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('uses async iteration with listOrganizations without error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest());const expectedResponse = [
+            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest());
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization()),
@@ -973,7 +974,7 @@ describe('v1alpha1.ResourceManagerClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team()),
@@ -993,7 +994,7 @@ describe('v1alpha1.ResourceManagerClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team()),
@@ -1024,7 +1025,7 @@ describe('v1alpha1.ResourceManagerClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.listTeams = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listTeams(request), expectedError);
@@ -1093,11 +1094,12 @@ describe('v1alpha1.ResourceManagerClient', () => {
 
         it('uses async iteration with listTeams without error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest());const expectedResponse = [
+            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest());
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team()),

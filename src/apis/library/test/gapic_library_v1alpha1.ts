@@ -117,8 +117,8 @@ describe('v1alpha1.LibraryClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new libraryModule.v1alpha1.LibraryClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.libraryStub, undefined);
         await client.initialize();
@@ -127,8 +127,8 @@ describe('v1alpha1.LibraryClient', () => {
 
     it('has close method', () => {
         const client = new libraryModule.v1alpha1.LibraryClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -136,8 +136,8 @@ describe('v1alpha1.LibraryClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new libraryModule.v1alpha1.LibraryClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -148,8 +148,8 @@ describe('v1alpha1.LibraryClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new libraryModule.v1alpha1.LibraryClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -168,9 +168,9 @@ describe('v1alpha1.LibraryClient', () => {
     describe('getPlaylist', () => {
         it('invokes getPlaylist without error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.GetPlaylistRequest());
             request.name = '';
@@ -192,9 +192,9 @@ describe('v1alpha1.LibraryClient', () => {
 
         it('invokes getPlaylist without error using callback', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.GetPlaylistRequest());
             request.name = '';
@@ -227,9 +227,9 @@ describe('v1alpha1.LibraryClient', () => {
 
         it('invokes getPlaylist with error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.GetPlaylistRequest());
             request.name = '';
@@ -252,9 +252,9 @@ describe('v1alpha1.LibraryClient', () => {
     describe('createPlaylist', () => {
         it('invokes createPlaylist without error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.CreatePlaylistRequest());
             request.parent = '';
@@ -276,9 +276,9 @@ describe('v1alpha1.LibraryClient', () => {
 
         it('invokes createPlaylist without error using callback', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.CreatePlaylistRequest());
             request.parent = '';
@@ -311,9 +311,9 @@ describe('v1alpha1.LibraryClient', () => {
 
         it('invokes createPlaylist with error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.CreatePlaylistRequest());
             request.parent = '';
@@ -336,9 +336,9 @@ describe('v1alpha1.LibraryClient', () => {
     describe('updatePlaylist', () => {
         it('invokes updatePlaylist without error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.UpdatePlaylistRequest());
             request.playlist = {};
@@ -361,9 +361,9 @@ describe('v1alpha1.LibraryClient', () => {
 
         it('invokes updatePlaylist without error using callback', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.UpdatePlaylistRequest());
             request.playlist = {};
@@ -397,9 +397,9 @@ describe('v1alpha1.LibraryClient', () => {
 
         it('invokes updatePlaylist with error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.UpdatePlaylistRequest());
             request.playlist = {};
@@ -423,9 +423,9 @@ describe('v1alpha1.LibraryClient', () => {
     describe('deletePlaylist', () => {
         it('invokes deletePlaylist without error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.DeletePlaylistRequest());
             request.name = '';
@@ -447,9 +447,9 @@ describe('v1alpha1.LibraryClient', () => {
 
         it('invokes deletePlaylist without error using callback', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.DeletePlaylistRequest());
             request.name = '';
@@ -482,9 +482,9 @@ describe('v1alpha1.LibraryClient', () => {
 
         it('invokes deletePlaylist with error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.DeletePlaylistRequest());
             request.name = '';
@@ -507,9 +507,9 @@ describe('v1alpha1.LibraryClient', () => {
     describe('createPlaylistItem', () => {
         it('invokes createPlaylistItem without error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.CreatePlaylistItemRequest());
             request.parent = '';
@@ -531,9 +531,9 @@ describe('v1alpha1.LibraryClient', () => {
 
         it('invokes createPlaylistItem without error using callback', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.CreatePlaylistItemRequest());
             request.parent = '';
@@ -566,9 +566,9 @@ describe('v1alpha1.LibraryClient', () => {
 
         it('invokes createPlaylistItem with error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.CreatePlaylistItemRequest());
             request.parent = '';
@@ -591,9 +591,9 @@ describe('v1alpha1.LibraryClient', () => {
     describe('batchCreatePlaylistItems', () => {
         it('invokes batchCreatePlaylistItems without error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.BatchCreatePlaylistItemsRequest());
             request.parent = '';
@@ -615,9 +615,9 @@ describe('v1alpha1.LibraryClient', () => {
 
         it('invokes batchCreatePlaylistItems without error using callback', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.BatchCreatePlaylistItemsRequest());
             request.parent = '';
@@ -650,9 +650,9 @@ describe('v1alpha1.LibraryClient', () => {
 
         it('invokes batchCreatePlaylistItems with error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.BatchCreatePlaylistItemsRequest());
             request.parent = '';
@@ -675,9 +675,9 @@ describe('v1alpha1.LibraryClient', () => {
     describe('deletePlaylistItem', () => {
         it('invokes deletePlaylistItem without error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.DeletePlaylistItemRequest());
             request.name = '';
@@ -699,9 +699,9 @@ describe('v1alpha1.LibraryClient', () => {
 
         it('invokes deletePlaylistItem without error using callback', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.DeletePlaylistItemRequest());
             request.name = '';
@@ -734,9 +734,9 @@ describe('v1alpha1.LibraryClient', () => {
 
         it('invokes deletePlaylistItem with error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.DeletePlaylistItemRequest());
             request.name = '';
@@ -922,13 +922,14 @@ describe('v1alpha1.LibraryClient', () => {
 
         it('uses async iteration with listPlaylists without error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.ListPlaylistsRequest());
             request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedResponse = [
+            const expectedHeaderRequestParams = "parent=";
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist()),
               generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist()),
               generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist()),
@@ -1144,13 +1145,14 @@ describe('v1alpha1.LibraryClient', () => {
 
         it('uses async iteration with listPlaylistItems without error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.ListPlaylistItemsRequest());
             request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedResponse = [
+            const expectedHeaderRequestParams = "parent=";
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.library.v1alpha1.PlaylistItem()),
               generateSampleMessage(new protos.animeshon.library.v1alpha1.PlaylistItem()),
               generateSampleMessage(new protos.animeshon.library.v1alpha1.PlaylistItem()),

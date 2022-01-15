@@ -117,8 +117,8 @@ describe('v1alpha1.ImageClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new imageModule.v1alpha1.ImageClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.imageStub, undefined);
         await client.initialize();
@@ -127,8 +127,8 @@ describe('v1alpha1.ImageClient', () => {
 
     it('has close method', () => {
         const client = new imageModule.v1alpha1.ImageClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -136,8 +136,8 @@ describe('v1alpha1.ImageClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new imageModule.v1alpha1.ImageClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -148,8 +148,8 @@ describe('v1alpha1.ImageClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new imageModule.v1alpha1.ImageClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -168,9 +168,9 @@ describe('v1alpha1.ImageClient', () => {
     describe('uploadImage', () => {
         it('invokes uploadImage without error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.UploadImageRequest());
             request.parent = '';
@@ -192,9 +192,9 @@ describe('v1alpha1.ImageClient', () => {
 
         it('invokes uploadImage without error using callback', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.UploadImageRequest());
             request.parent = '';
@@ -227,9 +227,9 @@ describe('v1alpha1.ImageClient', () => {
 
         it('invokes uploadImage with error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.UploadImageRequest());
             request.parent = '';
@@ -252,9 +252,9 @@ describe('v1alpha1.ImageClient', () => {
     describe('importImage', () => {
         it('invokes importImage without error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.ImportImageRequest());
             request.parent = '';
@@ -276,9 +276,9 @@ describe('v1alpha1.ImageClient', () => {
 
         it('invokes importImage without error using callback', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.ImportImageRequest());
             request.parent = '';
@@ -311,9 +311,9 @@ describe('v1alpha1.ImageClient', () => {
 
         it('invokes importImage with error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.ImportImageRequest());
             request.parent = '';
@@ -336,9 +336,9 @@ describe('v1alpha1.ImageClient', () => {
     describe('getImage', () => {
         it('invokes getImage without error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetImageRequest());
             request.name = '';
@@ -360,9 +360,9 @@ describe('v1alpha1.ImageClient', () => {
 
         it('invokes getImage without error using callback', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetImageRequest());
             request.name = '';
@@ -395,9 +395,9 @@ describe('v1alpha1.ImageClient', () => {
 
         it('invokes getImage with error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetImageRequest());
             request.name = '';
@@ -420,9 +420,9 @@ describe('v1alpha1.ImageClient', () => {
     describe('getAlbum', () => {
         it('invokes getAlbum without error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetAlbumRequest());
             request.name = '';
@@ -444,9 +444,9 @@ describe('v1alpha1.ImageClient', () => {
 
         it('invokes getAlbum without error using callback', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetAlbumRequest());
             request.name = '';
@@ -479,9 +479,9 @@ describe('v1alpha1.ImageClient', () => {
 
         it('invokes getAlbum with error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetAlbumRequest());
             request.name = '';
@@ -504,9 +504,9 @@ describe('v1alpha1.ImageClient', () => {
     describe('createAlbum', () => {
         it('invokes createAlbum without error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.CreateAlbumRequest());
             request.parent = '';
@@ -528,9 +528,9 @@ describe('v1alpha1.ImageClient', () => {
 
         it('invokes createAlbum without error using callback', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.CreateAlbumRequest());
             request.parent = '';
@@ -563,9 +563,9 @@ describe('v1alpha1.ImageClient', () => {
 
         it('invokes createAlbum with error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.CreateAlbumRequest());
             request.parent = '';
@@ -588,9 +588,9 @@ describe('v1alpha1.ImageClient', () => {
     describe('deleteAlbum', () => {
         it('invokes deleteAlbum without error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.DeleteAlbumRequest());
             request.name = '';
@@ -612,9 +612,9 @@ describe('v1alpha1.ImageClient', () => {
 
         it('invokes deleteAlbum without error using callback', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.DeleteAlbumRequest());
             request.name = '';
@@ -647,9 +647,9 @@ describe('v1alpha1.ImageClient', () => {
 
         it('invokes deleteAlbum with error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.DeleteAlbumRequest());
             request.name = '';
@@ -672,9 +672,9 @@ describe('v1alpha1.ImageClient', () => {
     describe('getAlbumSettings', () => {
         it('invokes getAlbumSettings without error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetAlbumSettingsRequest());
             request.name = '';
@@ -696,9 +696,9 @@ describe('v1alpha1.ImageClient', () => {
 
         it('invokes getAlbumSettings without error using callback', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetAlbumSettingsRequest());
             request.name = '';
@@ -731,9 +731,9 @@ describe('v1alpha1.ImageClient', () => {
 
         it('invokes getAlbumSettings with error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetAlbumSettingsRequest());
             request.name = '';
@@ -756,9 +756,9 @@ describe('v1alpha1.ImageClient', () => {
     describe('updateAlbumSettings', () => {
         it('invokes updateAlbumSettings without error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.UpdateAlbumSettingsRequest());
             request.settings = {};
@@ -781,9 +781,9 @@ describe('v1alpha1.ImageClient', () => {
 
         it('invokes updateAlbumSettings without error using callback', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.UpdateAlbumSettingsRequest());
             request.settings = {};
@@ -817,9 +817,9 @@ describe('v1alpha1.ImageClient', () => {
 
         it('invokes updateAlbumSettings with error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.UpdateAlbumSettingsRequest());
             request.settings = {};
@@ -1006,13 +1006,14 @@ describe('v1alpha1.ImageClient', () => {
 
         it('uses async iteration with listAlbums without error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.ListAlbumsRequest());
             request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedResponse = [
+            const expectedHeaderRequestParams = "parent=";
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.image.v1alpha1.Album()),
               generateSampleMessage(new protos.animeshon.image.v1alpha1.Album()),
               generateSampleMessage(new protos.animeshon.image.v1alpha1.Album()),

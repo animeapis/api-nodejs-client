@@ -117,8 +117,8 @@ describe('v1alpha1.EpisodeServiceClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.episodeServiceStub, undefined);
         await client.initialize();
@@ -127,8 +127,8 @@ describe('v1alpha1.EpisodeServiceClient', () => {
 
     it('has close method', () => {
         const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -136,8 +136,8 @@ describe('v1alpha1.EpisodeServiceClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -148,8 +148,8 @@ describe('v1alpha1.EpisodeServiceClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -168,9 +168,9 @@ describe('v1alpha1.EpisodeServiceClient', () => {
     describe('getEpisode', () => {
         it('invokes getEpisode without error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetEpisodeRequest());
             request.name = '';
@@ -192,9 +192,9 @@ describe('v1alpha1.EpisodeServiceClient', () => {
 
         it('invokes getEpisode without error using callback', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetEpisodeRequest());
             request.name = '';
@@ -227,9 +227,9 @@ describe('v1alpha1.EpisodeServiceClient', () => {
 
         it('invokes getEpisode with error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetEpisodeRequest());
             request.name = '';
@@ -252,9 +252,9 @@ describe('v1alpha1.EpisodeServiceClient', () => {
     describe('createEpisode', () => {
         it('invokes createEpisode without error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateEpisodeRequest());
             request.parent = '';
@@ -276,9 +276,9 @@ describe('v1alpha1.EpisodeServiceClient', () => {
 
         it('invokes createEpisode without error using callback', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateEpisodeRequest());
             request.parent = '';
@@ -311,9 +311,9 @@ describe('v1alpha1.EpisodeServiceClient', () => {
 
         it('invokes createEpisode with error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateEpisodeRequest());
             request.parent = '';
@@ -336,9 +336,9 @@ describe('v1alpha1.EpisodeServiceClient', () => {
     describe('updateEpisode', () => {
         it('invokes updateEpisode without error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateEpisodeRequest());
             request.episode = {};
@@ -361,9 +361,9 @@ describe('v1alpha1.EpisodeServiceClient', () => {
 
         it('invokes updateEpisode without error using callback', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateEpisodeRequest());
             request.episode = {};
@@ -397,9 +397,9 @@ describe('v1alpha1.EpisodeServiceClient', () => {
 
         it('invokes updateEpisode with error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateEpisodeRequest());
             request.episode = {};
@@ -423,9 +423,9 @@ describe('v1alpha1.EpisodeServiceClient', () => {
     describe('deleteEpisode', () => {
         it('invokes deleteEpisode without error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteEpisodeRequest());
             request.name = '';
@@ -447,9 +447,9 @@ describe('v1alpha1.EpisodeServiceClient', () => {
 
         it('invokes deleteEpisode without error using callback', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteEpisodeRequest());
             request.name = '';
@@ -482,9 +482,9 @@ describe('v1alpha1.EpisodeServiceClient', () => {
 
         it('invokes deleteEpisode with error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteEpisodeRequest());
             request.name = '';
@@ -670,13 +670,14 @@ describe('v1alpha1.EpisodeServiceClient', () => {
 
         it('uses async iteration with listEpisodes without error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest());
             request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedResponse = [
+            const expectedHeaderRequestParams = "parent=";
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),

@@ -39,6 +39,7 @@ const version = require('../../../package.json').version;
 export class AccessControlClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -50,6 +51,7 @@ export class AccessControlClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   accessControlStub?: Promise<{[name: string]: Function}>;
 
@@ -91,6 +93,7 @@ export class AccessControlClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof AccessControlClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -112,6 +115,12 @@ export class AccessControlClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -148,6 +157,9 @@ export class AccessControlClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -174,7 +186,7 @@ export class AccessControlClient {
           (this._protos as protobuf.Root).lookupService('animeshon.grbac.v1alpha1.AccessControl') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.grbac.v1alpha1.AccessControl,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -259,6 +271,25 @@ export class AccessControlClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ * Checks whether a member has a specific permission for a specific resource.
+ * If not allowed an Unauthorized (403) error will be returned.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.grbac.v1alpha1.AccessTuple} request.accessTuple
+ *   The information to use for checking whether a member has a permission for a
+ *   resource.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.test_iam_policy.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_TestIamPolicy_async
+ */
   testIamPolicy(
       request?: protos.animeshon.grbac.v1alpha1.ITestIamPolicyRequest,
       options?: CallOptions):
@@ -279,25 +310,6 @@ export class AccessControlClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.grbac.v1alpha1.ITestIamPolicyRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * Checks whether a member has a specific permission for a specific resource.
- * If not allowed an Unauthorized (403) error will be returned.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.grbac.v1alpha1.AccessTuple} request.accessTuple
- *   The information to use for checking whether a member has a permission for a
- *   resource.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.testIamPolicy(request);
- */
   testIamPolicy(
       request?: protos.animeshon.grbac.v1alpha1.ITestIamPolicyRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -322,29 +334,11 @@ export class AccessControlClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.testIamPolicy(request, options, callback);
   }
-  getIamPolicy(
-      request?: protos.google.iam.v1.IGetIamPolicyRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.google.iam.v1.IPolicy,
-        protos.google.iam.v1.IGetIamPolicyRequest|undefined, {}|undefined
-      ]>;
-  getIamPolicy(
-      request: protos.google.iam.v1.IGetIamPolicyRequest,
-      options: CallOptions,
-      callback: Callback<
-          protos.google.iam.v1.IPolicy,
-          protos.google.iam.v1.IGetIamPolicyRequest|null|undefined,
-          {}|null|undefined>): void;
-  getIamPolicy(
-      request: protos.google.iam.v1.IGetIamPolicyRequest,
-      callback: Callback<
-          protos.google.iam.v1.IPolicy,
-          protos.google.iam.v1.IGetIamPolicyRequest|null|undefined,
-          {}|null|undefined>): void;
 /**
  * Gets the IAM policy that is attached to a generic resource.
  * Note: the full resource name that identifies the resource must be provided.
@@ -364,9 +358,29 @@ export class AccessControlClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
  *   for more details and examples.
- * @example
- * const [response] = await client.getIamPolicy(request);
+ * @example <caption>include:samples/generated/v1alpha1/access_control.get_iam_policy.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_GetIamPolicy_async
  */
+  getIamPolicy(
+      request?: protos.google.iam.v1.IGetIamPolicyRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.iam.v1.IPolicy,
+        protos.google.iam.v1.IGetIamPolicyRequest|undefined, {}|undefined
+      ]>;
+  getIamPolicy(
+      request: protos.google.iam.v1.IGetIamPolicyRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.google.iam.v1.IPolicy,
+          protos.google.iam.v1.IGetIamPolicyRequest|null|undefined,
+          {}|null|undefined>): void;
+  getIamPolicy(
+      request: protos.google.iam.v1.IGetIamPolicyRequest,
+      callback: Callback<
+          protos.google.iam.v1.IPolicy,
+          protos.google.iam.v1.IGetIamPolicyRequest|null|undefined,
+          {}|null|undefined>): void;
   getIamPolicy(
       request?: protos.google.iam.v1.IGetIamPolicyRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -391,29 +405,11 @@ export class AccessControlClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.getIamPolicy(request, options, callback);
   }
-  setIamPolicy(
-      request?: protos.google.iam.v1.ISetIamPolicyRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.google.iam.v1.IPolicy,
-        protos.google.iam.v1.ISetIamPolicyRequest|undefined, {}|undefined
-      ]>;
-  setIamPolicy(
-      request: protos.google.iam.v1.ISetIamPolicyRequest,
-      options: CallOptions,
-      callback: Callback<
-          protos.google.iam.v1.IPolicy,
-          protos.google.iam.v1.ISetIamPolicyRequest|null|undefined,
-          {}|null|undefined>): void;
-  setIamPolicy(
-      request: protos.google.iam.v1.ISetIamPolicyRequest,
-      callback: Callback<
-          protos.google.iam.v1.IPolicy,
-          protos.google.iam.v1.ISetIamPolicyRequest|null|undefined,
-          {}|null|undefined>): void;
 /**
  * Sets the IAM policy that is attached to a generic resource.
  * Note: the full resource name that identifies the resource must be provided.
@@ -435,9 +431,29 @@ export class AccessControlClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
  *   for more details and examples.
- * @example
- * const [response] = await client.setIamPolicy(request);
+ * @example <caption>include:samples/generated/v1alpha1/access_control.set_iam_policy.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_SetIamPolicy_async
  */
+  setIamPolicy(
+      request?: protos.google.iam.v1.ISetIamPolicyRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.iam.v1.IPolicy,
+        protos.google.iam.v1.ISetIamPolicyRequest|undefined, {}|undefined
+      ]>;
+  setIamPolicy(
+      request: protos.google.iam.v1.ISetIamPolicyRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.google.iam.v1.IPolicy,
+          protos.google.iam.v1.ISetIamPolicyRequest|null|undefined,
+          {}|null|undefined>): void;
+  setIamPolicy(
+      request: protos.google.iam.v1.ISetIamPolicyRequest,
+      callback: Callback<
+          protos.google.iam.v1.IPolicy,
+          protos.google.iam.v1.ISetIamPolicyRequest|null|undefined,
+          {}|null|undefined>): void;
   setIamPolicy(
       request?: protos.google.iam.v1.ISetIamPolicyRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -462,9 +478,28 @@ export class AccessControlClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.setIamPolicy(request, options, callback);
   }
+/**
+ * GetResource returns a resource.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The full resource name of the resource to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Resource]{@link animeshon.grbac.v1alpha1.Resource}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.get_resource.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_GetResource_async
+ */
   getResource(
       request?: protos.animeshon.grbac.v1alpha1.IGetResourceRequest,
       options?: CallOptions):
@@ -485,23 +520,6 @@ export class AccessControlClient {
           protos.animeshon.grbac.v1alpha1.IResource,
           protos.animeshon.grbac.v1alpha1.IGetResourceRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * GetResource returns a resource.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The full resource name of the resource to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Resource]{@link animeshon.grbac.v1alpha1.Resource}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getResource(request);
- */
   getResource(
       request?: protos.animeshon.grbac.v1alpha1.IGetResourceRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -536,6 +554,23 @@ export class AccessControlClient {
     this.initialize();
     return this.innerApiCalls.getResource(request, options, callback);
   }
+/**
+ * CreateResource creates a new resource.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.grbac.v1alpha1.Resource} request.resource
+ *   The resource to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Resource]{@link animeshon.grbac.v1alpha1.Resource}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.create_resource.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_CreateResource_async
+ */
   createResource(
       request?: protos.animeshon.grbac.v1alpha1.ICreateResourceRequest,
       options?: CallOptions):
@@ -556,23 +591,6 @@ export class AccessControlClient {
           protos.animeshon.grbac.v1alpha1.IResource,
           protos.animeshon.grbac.v1alpha1.ICreateResourceRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * CreateResource creates a new resource.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.grbac.v1alpha1.Resource} request.resource
- *   The resource to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Resource]{@link animeshon.grbac.v1alpha1.Resource}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createResource(request);
- */
   createResource(
       request?: protos.animeshon.grbac.v1alpha1.ICreateResourceRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -607,26 +625,6 @@ export class AccessControlClient {
     this.initialize();
     return this.innerApiCalls.createResource(request, options, callback);
   }
-  transferResource(
-      request?: protos.animeshon.grbac.v1alpha1.ITransferResourceRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.grbac.v1alpha1.IResource,
-        protos.animeshon.grbac.v1alpha1.ITransferResourceRequest|undefined, {}|undefined
-      ]>;
-  transferResource(
-      request: protos.animeshon.grbac.v1alpha1.ITransferResourceRequest,
-      options: CallOptions,
-      callback: Callback<
-          protos.animeshon.grbac.v1alpha1.IResource,
-          protos.animeshon.grbac.v1alpha1.ITransferResourceRequest|null|undefined,
-          {}|null|undefined>): void;
-  transferResource(
-      request: protos.animeshon.grbac.v1alpha1.ITransferResourceRequest,
-      callback: Callback<
-          protos.animeshon.grbac.v1alpha1.IResource,
-          protos.animeshon.grbac.v1alpha1.ITransferResourceRequest|null|undefined,
-          {}|null|undefined>): void;
 /**
  * TransferResource transfers a resource to a new parent.
  *
@@ -668,9 +666,29 @@ export class AccessControlClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
  *   for more details and examples.
- * @example
- * const [response] = await client.transferResource(request);
+ * @example <caption>include:samples/generated/v1alpha1/access_control.transfer_resource.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_TransferResource_async
  */
+  transferResource(
+      request?: protos.animeshon.grbac.v1alpha1.ITransferResourceRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.grbac.v1alpha1.IResource,
+        protos.animeshon.grbac.v1alpha1.ITransferResourceRequest|undefined, {}|undefined
+      ]>;
+  transferResource(
+      request: protos.animeshon.grbac.v1alpha1.ITransferResourceRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.grbac.v1alpha1.IResource,
+          protos.animeshon.grbac.v1alpha1.ITransferResourceRequest|null|undefined,
+          {}|null|undefined>): void;
+  transferResource(
+      request: protos.animeshon.grbac.v1alpha1.ITransferResourceRequest,
+      callback: Callback<
+          protos.animeshon.grbac.v1alpha1.IResource,
+          protos.animeshon.grbac.v1alpha1.ITransferResourceRequest|null|undefined,
+          {}|null|undefined>): void;
   transferResource(
       request?: protos.animeshon.grbac.v1alpha1.ITransferResourceRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -705,6 +723,23 @@ export class AccessControlClient {
     this.initialize();
     return this.innerApiCalls.transferResource(request, options, callback);
   }
+/**
+ * DeleteResource deletes a resource.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The full resource name that identifies the resource.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.delete_resource.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_DeleteResource_async
+ */
   deleteResource(
       request?: protos.animeshon.grbac.v1alpha1.IDeleteResourceRequest,
       options?: CallOptions):
@@ -725,23 +760,6 @@ export class AccessControlClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.grbac.v1alpha1.IDeleteResourceRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * DeleteResource deletes a resource.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The full resource name that identifies the resource.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteResource(request);
- */
   deleteResource(
       request?: protos.animeshon.grbac.v1alpha1.IDeleteResourceRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -776,6 +794,23 @@ export class AccessControlClient {
     this.initialize();
     return this.innerApiCalls.deleteResource(request, options, callback);
   }
+/**
+ * CreateSubject creates a new subject.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.grbac.v1alpha1.Subject} request.subject
+ *   The subject to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Subject]{@link animeshon.grbac.v1alpha1.Subject}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.create_subject.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_CreateSubject_async
+ */
   createSubject(
       request?: protos.animeshon.grbac.v1alpha1.ICreateSubjectRequest,
       options?: CallOptions):
@@ -796,23 +831,6 @@ export class AccessControlClient {
           protos.animeshon.grbac.v1alpha1.ISubject,
           protos.animeshon.grbac.v1alpha1.ICreateSubjectRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * CreateSubject creates a new subject.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.grbac.v1alpha1.Subject} request.subject
- *   The subject to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Subject]{@link animeshon.grbac.v1alpha1.Subject}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createSubject(request);
- */
   createSubject(
       request?: protos.animeshon.grbac.v1alpha1.ICreateSubjectRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -847,6 +865,23 @@ export class AccessControlClient {
     this.initialize();
     return this.innerApiCalls.createSubject(request, options, callback);
   }
+/**
+ * DeleteSubject deletes a subject.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The subject to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.delete_subject.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_DeleteSubject_async
+ */
   deleteSubject(
       request?: protos.animeshon.grbac.v1alpha1.IDeleteSubjectRequest,
       options?: CallOptions):
@@ -867,23 +902,6 @@ export class AccessControlClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.grbac.v1alpha1.IDeleteSubjectRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * DeleteSubject deletes a subject.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The subject to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteSubject(request);
- */
   deleteSubject(
       request?: protos.animeshon.grbac.v1alpha1.IDeleteSubjectRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -918,6 +936,23 @@ export class AccessControlClient {
     this.initialize();
     return this.innerApiCalls.deleteSubject(request, options, callback);
   }
+/**
+ * GetGroup returns a group.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the group to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Group]{@link animeshon.grbac.v1alpha1.Group}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.get_group.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_GetGroup_async
+ */
   getGroup(
       request?: protos.animeshon.grbac.v1alpha1.IGetGroupRequest,
       options?: CallOptions):
@@ -938,23 +973,6 @@ export class AccessControlClient {
           protos.animeshon.grbac.v1alpha1.IGroup,
           protos.animeshon.grbac.v1alpha1.IGetGroupRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * GetGroup returns a group.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the group to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Group]{@link animeshon.grbac.v1alpha1.Group}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getGroup(request);
- */
   getGroup(
       request?: protos.animeshon.grbac.v1alpha1.IGetGroupRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -989,6 +1007,23 @@ export class AccessControlClient {
     this.initialize();
     return this.innerApiCalls.getGroup(request, options, callback);
   }
+/**
+ * CreateGroup creates a new group.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.grbac.v1alpha1.Group} request.group
+ *   The group to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Group]{@link animeshon.grbac.v1alpha1.Group}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.create_group.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_CreateGroup_async
+ */
   createGroup(
       request?: protos.animeshon.grbac.v1alpha1.ICreateGroupRequest,
       options?: CallOptions):
@@ -1009,23 +1044,6 @@ export class AccessControlClient {
           protos.animeshon.grbac.v1alpha1.IGroup,
           protos.animeshon.grbac.v1alpha1.ICreateGroupRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * CreateGroup creates a new group.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.grbac.v1alpha1.Group} request.group
- *   The group to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Group]{@link animeshon.grbac.v1alpha1.Group}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createGroup(request);
- */
   createGroup(
       request?: protos.animeshon.grbac.v1alpha1.ICreateGroupRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1060,6 +1078,26 @@ export class AccessControlClient {
     this.initialize();
     return this.innerApiCalls.createGroup(request, options, callback);
   }
+/**
+ * UpdateGroup updates a group with a field mask.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.grbac.v1alpha1.Group} request.group
+ *   The group to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Group]{@link animeshon.grbac.v1alpha1.Group}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.update_group.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_UpdateGroup_async
+ */
   updateGroup(
       request?: protos.animeshon.grbac.v1alpha1.IUpdateGroupRequest,
       options?: CallOptions):
@@ -1080,26 +1118,6 @@ export class AccessControlClient {
           protos.animeshon.grbac.v1alpha1.IGroup,
           protos.animeshon.grbac.v1alpha1.IUpdateGroupRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * UpdateGroup updates a group with a field mask.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.grbac.v1alpha1.Group} request.group
- *   The group to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Group]{@link animeshon.grbac.v1alpha1.Group}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateGroup(request);
- */
   updateGroup(
       request?: protos.animeshon.grbac.v1alpha1.IUpdateGroupRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1134,6 +1152,25 @@ export class AccessControlClient {
     this.initialize();
     return this.innerApiCalls.updateGroup(request, options, callback);
   }
+/**
+ * AddGroupMember adds a member to a group.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.group
+ *   The name of the group to add a member to.
+ * @param {string} request.member
+ *   The member to be added.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Group]{@link animeshon.grbac.v1alpha1.Group}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.add_group_member.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_AddGroupMember_async
+ */
   addGroupMember(
       request?: protos.animeshon.grbac.v1alpha1.IAddGroupMemberRequest,
       options?: CallOptions):
@@ -1154,25 +1191,6 @@ export class AccessControlClient {
           protos.animeshon.grbac.v1alpha1.IGroup,
           protos.animeshon.grbac.v1alpha1.IAddGroupMemberRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * AddGroupMember adds a member to a group.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.group
- *   The name of the group to add a member to.
- * @param {string} request.member
- *   The member to be added.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Group]{@link animeshon.grbac.v1alpha1.Group}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.addGroupMember(request);
- */
   addGroupMember(
       request?: protos.animeshon.grbac.v1alpha1.IAddGroupMemberRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1207,6 +1225,25 @@ export class AccessControlClient {
     this.initialize();
     return this.innerApiCalls.addGroupMember(request, options, callback);
   }
+/**
+ * RemoveGroupMember removes a member from a group.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.group
+ *   The name of the group to remove an member from.
+ * @param {string} request.member
+ *   The member to be removed.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Group]{@link animeshon.grbac.v1alpha1.Group}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.remove_group_member.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_RemoveGroupMember_async
+ */
   removeGroupMember(
       request?: protos.animeshon.grbac.v1alpha1.IRemoveGroupMemberRequest,
       options?: CallOptions):
@@ -1227,25 +1264,6 @@ export class AccessControlClient {
           protos.animeshon.grbac.v1alpha1.IGroup,
           protos.animeshon.grbac.v1alpha1.IRemoveGroupMemberRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * RemoveGroupMember removes a member from a group.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.group
- *   The name of the group to remove an member from.
- * @param {string} request.member
- *   The member to be removed.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Group]{@link animeshon.grbac.v1alpha1.Group}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.removeGroupMember(request);
- */
   removeGroupMember(
       request?: protos.animeshon.grbac.v1alpha1.IRemoveGroupMemberRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1280,6 +1298,23 @@ export class AccessControlClient {
     this.initialize();
     return this.innerApiCalls.removeGroupMember(request, options, callback);
   }
+/**
+ * DeleteGroup deletes a group.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resource name of the group to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.delete_group.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_DeleteGroup_async
+ */
   deleteGroup(
       request?: protos.animeshon.grbac.v1alpha1.IDeleteGroupRequest,
       options?: CallOptions):
@@ -1300,23 +1335,6 @@ export class AccessControlClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.grbac.v1alpha1.IDeleteGroupRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * DeleteGroup deletes a group.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The resource name of the group to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteGroup(request);
- */
   deleteGroup(
       request?: protos.animeshon.grbac.v1alpha1.IDeleteGroupRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1351,6 +1369,23 @@ export class AccessControlClient {
     this.initialize();
     return this.innerApiCalls.deleteGroup(request, options, callback);
   }
+/**
+ * CreatePermission creates a new permission.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.grbac.v1alpha1.Permission} request.permission
+ *   The permission to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Permission]{@link animeshon.grbac.v1alpha1.Permission}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.create_permission.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_CreatePermission_async
+ */
   createPermission(
       request?: protos.animeshon.grbac.v1alpha1.ICreatePermissionRequest,
       options?: CallOptions):
@@ -1371,23 +1406,6 @@ export class AccessControlClient {
           protos.animeshon.grbac.v1alpha1.IPermission,
           protos.animeshon.grbac.v1alpha1.ICreatePermissionRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * CreatePermission creates a new permission.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.grbac.v1alpha1.Permission} request.permission
- *   The permission to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Permission]{@link animeshon.grbac.v1alpha1.Permission}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createPermission(request);
- */
   createPermission(
       request?: protos.animeshon.grbac.v1alpha1.ICreatePermissionRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1422,6 +1440,23 @@ export class AccessControlClient {
     this.initialize();
     return this.innerApiCalls.createPermission(request, options, callback);
   }
+/**
+ * DeletePermission deletes a permission.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resource name of the permission to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.delete_permission.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_DeletePermission_async
+ */
   deletePermission(
       request?: protos.animeshon.grbac.v1alpha1.IDeletePermissionRequest,
       options?: CallOptions):
@@ -1442,23 +1477,6 @@ export class AccessControlClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.grbac.v1alpha1.IDeletePermissionRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * DeletePermission deletes a permission.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The resource name of the permission to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deletePermission(request);
- */
   deletePermission(
       request?: protos.animeshon.grbac.v1alpha1.IDeletePermissionRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1493,6 +1511,23 @@ export class AccessControlClient {
     this.initialize();
     return this.innerApiCalls.deletePermission(request, options, callback);
   }
+/**
+ * GetRole returns a role.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the role to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Role]{@link animeshon.grbac.v1alpha1.Role}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.get_role.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_GetRole_async
+ */
   getRole(
       request?: protos.animeshon.grbac.v1alpha1.IGetRoleRequest,
       options?: CallOptions):
@@ -1513,23 +1548,6 @@ export class AccessControlClient {
           protos.animeshon.grbac.v1alpha1.IRole,
           protos.animeshon.grbac.v1alpha1.IGetRoleRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * GetRole returns a role.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the role to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Role]{@link animeshon.grbac.v1alpha1.Role}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getRole(request);
- */
   getRole(
       request?: protos.animeshon.grbac.v1alpha1.IGetRoleRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1564,6 +1582,23 @@ export class AccessControlClient {
     this.initialize();
     return this.innerApiCalls.getRole(request, options, callback);
   }
+/**
+ * CreateRole creates a new role.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.grbac.v1alpha1.Role} request.role
+ *   The role to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Role]{@link animeshon.grbac.v1alpha1.Role}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.create_role.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_CreateRole_async
+ */
   createRole(
       request?: protos.animeshon.grbac.v1alpha1.ICreateRoleRequest,
       options?: CallOptions):
@@ -1584,23 +1619,6 @@ export class AccessControlClient {
           protos.animeshon.grbac.v1alpha1.IRole,
           protos.animeshon.grbac.v1alpha1.ICreateRoleRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * CreateRole creates a new role.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.grbac.v1alpha1.Role} request.role
- *   The role to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Role]{@link animeshon.grbac.v1alpha1.Role}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createRole(request);
- */
   createRole(
       request?: protos.animeshon.grbac.v1alpha1.ICreateRoleRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1635,6 +1653,26 @@ export class AccessControlClient {
     this.initialize();
     return this.innerApiCalls.createRole(request, options, callback);
   }
+/**
+ * UpdateRole updates a role with a field mask.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.grbac.v1alpha1.Role} request.role
+ *   The role to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Role]{@link animeshon.grbac.v1alpha1.Role}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.update_role.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_UpdateRole_async
+ */
   updateRole(
       request?: protos.animeshon.grbac.v1alpha1.IUpdateRoleRequest,
       options?: CallOptions):
@@ -1655,26 +1693,6 @@ export class AccessControlClient {
           protos.animeshon.grbac.v1alpha1.IRole,
           protos.animeshon.grbac.v1alpha1.IUpdateRoleRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * UpdateRole updates a role with a field mask.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.grbac.v1alpha1.Role} request.role
- *   The role to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Role]{@link animeshon.grbac.v1alpha1.Role}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateRole(request);
- */
   updateRole(
       request?: protos.animeshon.grbac.v1alpha1.IUpdateRoleRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1709,6 +1727,23 @@ export class AccessControlClient {
     this.initialize();
     return this.innerApiCalls.updateRole(request, options, callback);
   }
+/**
+ * DeleteRole deletes a role.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resource name of the role to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/access_control.delete_role.js</caption>
+ * region_tag:127_v1alpha1_generated_AccessControl_DeleteRole_async
+ */
   deleteRole(
       request?: protos.animeshon.grbac.v1alpha1.IDeleteRoleRequest,
       options?: CallOptions):
@@ -1729,23 +1764,6 @@ export class AccessControlClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.grbac.v1alpha1.IDeleteRoleRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * DeleteRole deletes a role.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The resource name of the role to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteRole(request);
- */
   deleteRole(
       request?: protos.animeshon.grbac.v1alpha1.IDeleteRoleRequest,
       optionsOrCallback?: CallOptions|Callback<

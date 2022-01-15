@@ -40,6 +40,7 @@ const version = require('../../../package.json').version;
 export class WebCacheClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -51,6 +52,7 @@ export class WebCacheClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   webCacheStub?: Promise<{[name: string]: Function}>;
 
@@ -92,6 +94,7 @@ export class WebCacheClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof WebCacheClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -113,6 +116,12 @@ export class WebCacheClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -157,6 +166,9 @@ export class WebCacheClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -183,7 +195,7 @@ export class WebCacheClient {
           (this._protos as protobuf.Root).lookupService('animeshon.webcache.v1alpha1.WebCache') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.webcache.v1alpha1.WebCache,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -269,6 +281,25 @@ export class WebCacheClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.webcache.v1alpha1.Cache} request.cache
+ *   The cache to be created.
+ * @param {google.protobuf.Duration} request.ttl
+ *   The time-to-live indicating how long this cache should be considered valid.
+ *   If set to zero, the cache will not have an expiration time.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Cache]{@link animeshon.webcache.v1alpha1.Cache}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/web_cache.create_cache.js</caption>
+ * region_tag:webcache_v1alpha1_generated_WebCache_CreateCache_async
+ */
   createCache(
       request?: protos.animeshon.webcache.v1alpha1.ICreateCacheRequest,
       options?: CallOptions):
@@ -289,25 +320,6 @@ export class WebCacheClient {
           protos.animeshon.webcache.v1alpha1.ICache,
           protos.animeshon.webcache.v1alpha1.ICreateCacheRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.webcache.v1alpha1.Cache} request.cache
- *   The cache to be created.
- * @param {google.protobuf.Duration} request.ttl
- *   The time-to-live indicating how long this cache should be considered valid.
- *   If set to zero, the cache will not have an expiration time.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Cache]{@link animeshon.webcache.v1alpha1.Cache}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createCache(request);
- */
   createCache(
       request?: protos.animeshon.webcache.v1alpha1.ICreateCacheRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -332,9 +344,28 @@ export class WebCacheClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.createCache(request, options, callback);
   }
+/**
+ * See https://google.aip.dev/162#referencing-revisions for more information.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resource name of the requested cache.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Cache]{@link animeshon.webcache.v1alpha1.Cache}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/web_cache.get_cache.js</caption>
+ * region_tag:webcache_v1alpha1_generated_WebCache_GetCache_async
+ */
   getCache(
       request?: protos.animeshon.webcache.v1alpha1.IGetCacheRequest,
       options?: CallOptions):
@@ -355,23 +386,6 @@ export class WebCacheClient {
           protos.animeshon.webcache.v1alpha1.ICache,
           protos.animeshon.webcache.v1alpha1.IGetCacheRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * See https://google.aip.dev/162#referencing-revisions for more information.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The resource name of the requested cache.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Cache]{@link animeshon.webcache.v1alpha1.Cache}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getCache(request);
- */
   getCache(
       request?: protos.animeshon.webcache.v1alpha1.IGetCacheRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -406,6 +420,22 @@ export class WebCacheClient {
     this.initialize();
     return this.innerApiCalls.getCache(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the cache to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/web_cache.delete_cache.js</caption>
+ * region_tag:webcache_v1alpha1_generated_WebCache_DeleteCache_async
+ */
   deleteCache(
       request?: protos.animeshon.webcache.v1alpha1.IDeleteCacheRequest,
       options?: CallOptions):
@@ -426,22 +456,6 @@ export class WebCacheClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.webcache.v1alpha1.IDeleteCacheRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the cache to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteCache(request);
- */
   deleteCache(
       request?: protos.animeshon.webcache.v1alpha1.IDeleteCacheRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -477,28 +491,7 @@ export class WebCacheClient {
     return this.innerApiCalls.deleteCache(request, options, callback);
   }
 
-  listCaches(
-      request?: protos.animeshon.webcache.v1alpha1.IListCachesRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.webcache.v1alpha1.ICache[],
-        protos.animeshon.webcache.v1alpha1.IListCachesRequest|null,
-        protos.animeshon.webcache.v1alpha1.IListCachesResponse
-      ]>;
-  listCaches(
-      request: protos.animeshon.webcache.v1alpha1.IListCachesRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.webcache.v1alpha1.IListCachesRequest,
-          protos.animeshon.webcache.v1alpha1.IListCachesResponse|null|undefined,
-          protos.animeshon.webcache.v1alpha1.ICache>): void;
-  listCaches(
-      request: protos.animeshon.webcache.v1alpha1.IListCachesRequest,
-      callback: PaginationCallback<
-          protos.animeshon.webcache.v1alpha1.IListCachesRequest,
-          protos.animeshon.webcache.v1alpha1.IListCachesResponse|null|undefined,
-          protos.animeshon.webcache.v1alpha1.ICache>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -529,6 +522,27 @@ export class WebCacheClient {
  */
   listCaches(
       request?: protos.animeshon.webcache.v1alpha1.IListCachesRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.webcache.v1alpha1.ICache[],
+        protos.animeshon.webcache.v1alpha1.IListCachesRequest|null,
+        protos.animeshon.webcache.v1alpha1.IListCachesResponse
+      ]>;
+  listCaches(
+      request: protos.animeshon.webcache.v1alpha1.IListCachesRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.webcache.v1alpha1.IListCachesRequest,
+          protos.animeshon.webcache.v1alpha1.IListCachesResponse|null|undefined,
+          protos.animeshon.webcache.v1alpha1.ICache>): void;
+  listCaches(
+      request: protos.animeshon.webcache.v1alpha1.IListCachesRequest,
+      callback: PaginationCallback<
+          protos.animeshon.webcache.v1alpha1.IListCachesRequest,
+          protos.animeshon.webcache.v1alpha1.IListCachesResponse|null|undefined,
+          protos.animeshon.webcache.v1alpha1.ICache>): void;
+  listCaches(
+      request?: protos.animeshon.webcache.v1alpha1.IListCachesRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
           protos.animeshon.webcache.v1alpha1.IListCachesRequest,
           protos.animeshon.webcache.v1alpha1.IListCachesResponse|null|undefined,
@@ -552,6 +566,8 @@ export class WebCacheClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.listCaches(request, options, callback);
   }
@@ -590,7 +606,10 @@ export class WebCacheClient {
     Transform{
     request = request || {};
     options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    const defaultCallSettings = this._defaults['listCaches'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listCaches.createStream(
       this.innerApiCalls.listCaches as gax.GaxCall,
@@ -627,11 +646,8 @@ export class WebCacheClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listCachesAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/web_cache.list_caches.js</caption>
+ * region_tag:webcache_v1alpha1_generated_WebCache_ListCaches_async
  */
   listCachesAsync(
       request?: protos.animeshon.webcache.v1alpha1.IListCachesRequest,
@@ -639,8 +655,10 @@ export class WebCacheClient {
     AsyncIterable<protos.animeshon.webcache.v1alpha1.ICache>{
     request = request || {};
     options = options || {};
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    const defaultCallSettings = this._defaults['listCaches'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listCaches.asyncIterate(
       this.innerApiCalls['listCaches'] as GaxCall,

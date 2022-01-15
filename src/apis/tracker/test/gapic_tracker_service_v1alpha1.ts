@@ -133,8 +133,8 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.trackerServiceStub, undefined);
         await client.initialize();
@@ -143,8 +143,8 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
     it('has close method', () => {
         const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -152,8 +152,8 @@ describe('v1alpha1.TrackerServiceClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -164,8 +164,8 @@ describe('v1alpha1.TrackerServiceClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -184,9 +184,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
     describe('getTracker', () => {
         it('invokes getTracker without error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.GetTrackerRequest());
             request.name = '';
@@ -208,9 +208,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes getTracker without error using callback', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.GetTrackerRequest());
             request.name = '';
@@ -243,9 +243,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes getTracker with error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.GetTrackerRequest());
             request.name = '';
@@ -268,9 +268,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
     describe('createTracker', () => {
         it('invokes createTracker without error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.CreateTrackerRequest());
             request.parent = '';
@@ -292,9 +292,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes createTracker without error using callback', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.CreateTrackerRequest());
             request.parent = '';
@@ -327,9 +327,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes createTracker with error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.CreateTrackerRequest());
             request.parent = '';
@@ -352,9 +352,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
     describe('updateTracker', () => {
         it('invokes updateTracker without error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.UpdateTrackerRequest());
             request.tracker = {};
@@ -377,9 +377,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes updateTracker without error using callback', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.UpdateTrackerRequest());
             request.tracker = {};
@@ -413,9 +413,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes updateTracker with error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.UpdateTrackerRequest());
             request.tracker = {};
@@ -439,9 +439,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
     describe('deleteTracker', () => {
         it('invokes deleteTracker without error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.DeleteTrackerRequest());
             request.name = '';
@@ -463,9 +463,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes deleteTracker without error using callback', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.DeleteTrackerRequest());
             request.name = '';
@@ -498,9 +498,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes deleteTracker with error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.DeleteTrackerRequest());
             request.name = '';
@@ -523,9 +523,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
     describe('createActivity', () => {
         it('invokes createActivity without error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.CreateActivityRequest());
             request.parent = '';
@@ -547,9 +547,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes createActivity without error using callback', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.CreateActivityRequest());
             request.parent = '';
@@ -582,9 +582,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes createActivity with error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.CreateActivityRequest());
             request.parent = '';
@@ -607,9 +607,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
     describe('deleteActivity', () => {
         it('invokes deleteActivity without error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.DeleteActivityRequest());
             request.name = '';
@@ -631,9 +631,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes deleteActivity without error using callback', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.DeleteActivityRequest());
             request.name = '';
@@ -666,9 +666,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes deleteActivity with error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.DeleteActivityRequest());
             request.name = '';
@@ -691,9 +691,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
     describe('importTrackers', () => {
         it('invokes importTrackers without error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ImportTrackersRequest());
             request.parent = '';
@@ -716,9 +716,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes importTrackers without error using callback', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ImportTrackersRequest());
             request.parent = '';
@@ -754,9 +754,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes importTrackers with call error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ImportTrackersRequest());
             request.parent = '';
@@ -777,9 +777,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes importTrackers with LRO error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ImportTrackersRequest());
             request.parent = '';
@@ -801,9 +801,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes checkImportTrackersProgress without error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
             expectedResponse.name = 'test';
@@ -819,9 +819,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes checkImportTrackersProgress with error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -835,9 +835,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
     describe('exportTrackers', () => {
         it('invokes exportTrackers without error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ExportTrackersRequest());
             request.parent = '';
@@ -860,9 +860,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes exportTrackers without error using callback', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ExportTrackersRequest());
             request.parent = '';
@@ -898,9 +898,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes exportTrackers with call error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ExportTrackersRequest());
             request.parent = '';
@@ -921,9 +921,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes exportTrackers with LRO error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ExportTrackersRequest());
             request.parent = '';
@@ -945,9 +945,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes checkExportTrackersProgress without error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
             expectedResponse.name = 'test';
@@ -963,9 +963,9 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('invokes checkExportTrackersProgress with error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -1142,13 +1142,14 @@ describe('v1alpha1.TrackerServiceClient', () => {
 
         it('uses async iteration with listTrackers without error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ListTrackersRequest());
             request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedResponse = [
+            const expectedHeaderRequestParams = "parent=";
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker()),
               generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker()),
               generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker()),

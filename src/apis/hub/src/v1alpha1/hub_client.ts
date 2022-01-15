@@ -40,6 +40,7 @@ const version = require('../../../package.json').version;
 export class HubClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -51,6 +52,7 @@ export class HubClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   hubStub?: Promise<{[name: string]: Function}>;
 
@@ -92,6 +94,7 @@ export class HubClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof HubClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -113,6 +116,12 @@ export class HubClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -157,6 +166,9 @@ export class HubClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -183,7 +195,7 @@ export class HubClient {
           (this._protos as protobuf.Root).lookupService('animeshon.hub.v1alpha1.Hub') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.hub.v1alpha1.Hub,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -269,6 +281,22 @@ export class HubClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resource name of the repository to be created.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Repository]{@link animeshon.hub.v1alpha1.Repository}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/hub.create_repository.js</caption>
+ * region_tag:hub_v1alpha1_generated_Hub_CreateRepository_async
+ */
   createRepository(
       request?: protos.animeshon.hub.v1alpha1.ICreateRepositoryRequest,
       options?: CallOptions):
@@ -289,22 +317,6 @@ export class HubClient {
           protos.animeshon.hub.v1alpha1.IRepository,
           protos.animeshon.hub.v1alpha1.ICreateRepositoryRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The resource name of the repository to be created.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Repository]{@link animeshon.hub.v1alpha1.Repository}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createRepository(request);
- */
   createRepository(
       request?: protos.animeshon.hub.v1alpha1.ICreateRepositoryRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -339,6 +351,22 @@ export class HubClient {
     this.initialize();
     return this.innerApiCalls.createRepository(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resource name of the repository to be deleted.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/hub.delete_repository.js</caption>
+ * region_tag:hub_v1alpha1_generated_Hub_DeleteRepository_async
+ */
   deleteRepository(
       request?: protos.animeshon.hub.v1alpha1.IDeleteRepositoryRequest,
       options?: CallOptions):
@@ -359,22 +387,6 @@ export class HubClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.hub.v1alpha1.IDeleteRepositoryRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The resource name of the repository to be deleted.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteRepository(request);
- */
   deleteRepository(
       request?: protos.animeshon.hub.v1alpha1.IDeleteRepositoryRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -410,28 +422,7 @@ export class HubClient {
     return this.innerApiCalls.deleteRepository(request, options, callback);
   }
 
-  listRepositories(
-      request?: protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.hub.v1alpha1.IRepository[],
-        protos.animeshon.hub.v1alpha1.IListRepositoriesRequest|null,
-        protos.animeshon.hub.v1alpha1.IListRepositoriesResponse
-      ]>;
-  listRepositories(
-      request: protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
-          protos.animeshon.hub.v1alpha1.IListRepositoriesResponse|null|undefined,
-          protos.animeshon.hub.v1alpha1.IRepository>): void;
-  listRepositories(
-      request: protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
-      callback: PaginationCallback<
-          protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
-          protos.animeshon.hub.v1alpha1.IListRepositoriesResponse|null|undefined,
-          protos.animeshon.hub.v1alpha1.IRepository>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -454,6 +445,27 @@ export class HubClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listRepositories(
+      request?: protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.hub.v1alpha1.IRepository[],
+        protos.animeshon.hub.v1alpha1.IListRepositoriesRequest|null,
+        protos.animeshon.hub.v1alpha1.IListRepositoriesResponse
+      ]>;
+  listRepositories(
+      request: protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
+          protos.animeshon.hub.v1alpha1.IListRepositoriesResponse|null|undefined,
+          protos.animeshon.hub.v1alpha1.IRepository>): void;
+  listRepositories(
+      request: protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
+      callback: PaginationCallback<
+          protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
+          protos.animeshon.hub.v1alpha1.IListRepositoriesResponse|null|undefined,
+          protos.animeshon.hub.v1alpha1.IRepository>): void;
   listRepositories(
       request?: protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -525,7 +537,8 @@ export class HubClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listRepositories'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listRepositories.createStream(
       this.innerApiCalls.listRepositories as gax.GaxCall,
@@ -556,11 +569,8 @@ export class HubClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listRepositoriesAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/hub.list_repositories.js</caption>
+ * region_tag:hub_v1alpha1_generated_Hub_ListRepositories_async
  */
   listRepositoriesAsync(
       request?: protos.animeshon.hub.v1alpha1.IListRepositoriesRequest,
@@ -575,8 +585,8 @@ export class HubClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listRepositories'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listRepositories.asyncIterate(
       this.innerApiCalls['listRepositories'] as GaxCall,

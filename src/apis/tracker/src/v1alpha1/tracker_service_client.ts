@@ -40,6 +40,7 @@ const version = require('../../../package.json').version;
 export class TrackerServiceClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -51,6 +52,7 @@ export class TrackerServiceClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   operationsClient: gax.OperationsClient;
   trackerServiceStub?: Promise<{[name: string]: Function}>;
@@ -93,6 +95,7 @@ export class TrackerServiceClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof TrackerServiceClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -114,6 +117,12 @@ export class TrackerServiceClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -188,6 +197,9 @@ export class TrackerServiceClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -214,7 +226,7 @@ export class TrackerServiceClient {
           (this._protos as protobuf.Root).lookupService('animeshon.tracker.v1alpha1.TrackerService') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.tracker.v1alpha1.TrackerService,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -301,6 +313,26 @@ export class TrackerServiceClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ * Get a tracker by its unique identifier.
+ *
+ * To fetch a tracker by the resource, use `ListTrackers` instead with an
+ * appropriate filter. Example: `filter = "resource:animes/1245678"`.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the tracker to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Tracker]{@link animeshon.tracker.v1alpha1.Tracker}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/tracker_service.get_tracker.js</caption>
+ * region_tag:tracker_v1alpha1_generated_TrackerService_GetTracker_async
+ */
   getTracker(
       request?: protos.animeshon.tracker.v1alpha1.IGetTrackerRequest,
       options?: CallOptions):
@@ -321,26 +353,6 @@ export class TrackerServiceClient {
           protos.animeshon.tracker.v1alpha1.ITracker,
           protos.animeshon.tracker.v1alpha1.IGetTrackerRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * Get a tracker by its unique identifier.
- *
- * To fetch a tracker by the resource, use `ListTrackers` instead with an
- * appropriate filter. Example: `filter = "resource:animes/1245678"`.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the tracker to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Tracker]{@link animeshon.tracker.v1alpha1.Tracker}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getTracker(request);
- */
   getTracker(
       request?: protos.animeshon.tracker.v1alpha1.IGetTrackerRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -375,6 +387,24 @@ export class TrackerServiceClient {
     this.initialize();
     return this.innerApiCalls.getTracker(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent this tracker belongs to.
+ * @param {animeshon.tracker.v1alpha1.Tracker} request.tracker
+ *   The tracker to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Tracker]{@link animeshon.tracker.v1alpha1.Tracker}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/tracker_service.create_tracker.js</caption>
+ * region_tag:tracker_v1alpha1_generated_TrackerService_CreateTracker_async
+ */
   createTracker(
       request?: protos.animeshon.tracker.v1alpha1.ICreateTrackerRequest,
       options?: CallOptions):
@@ -395,24 +425,6 @@ export class TrackerServiceClient {
           protos.animeshon.tracker.v1alpha1.ITracker,
           protos.animeshon.tracker.v1alpha1.ICreateTrackerRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.parent
- *   The parent this tracker belongs to.
- * @param {animeshon.tracker.v1alpha1.Tracker} request.tracker
- *   The tracker to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Tracker]{@link animeshon.tracker.v1alpha1.Tracker}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createTracker(request);
- */
   createTracker(
       request?: protos.animeshon.tracker.v1alpha1.ICreateTrackerRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -447,6 +459,25 @@ export class TrackerServiceClient {
     this.initialize();
     return this.innerApiCalls.createTracker(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.tracker.v1alpha1.Tracker} request.tracker
+ *   The tracker to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Tracker]{@link animeshon.tracker.v1alpha1.Tracker}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/tracker_service.update_tracker.js</caption>
+ * region_tag:tracker_v1alpha1_generated_TrackerService_UpdateTracker_async
+ */
   updateTracker(
       request?: protos.animeshon.tracker.v1alpha1.IUpdateTrackerRequest,
       options?: CallOptions):
@@ -467,25 +498,6 @@ export class TrackerServiceClient {
           protos.animeshon.tracker.v1alpha1.ITracker,
           protos.animeshon.tracker.v1alpha1.IUpdateTrackerRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.tracker.v1alpha1.Tracker} request.tracker
- *   The tracker to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Tracker]{@link animeshon.tracker.v1alpha1.Tracker}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateTracker(request);
- */
   updateTracker(
       request?: protos.animeshon.tracker.v1alpha1.IUpdateTrackerRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -520,6 +532,22 @@ export class TrackerServiceClient {
     this.initialize();
     return this.innerApiCalls.updateTracker(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the tracker to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/tracker_service.delete_tracker.js</caption>
+ * region_tag:tracker_v1alpha1_generated_TrackerService_DeleteTracker_async
+ */
   deleteTracker(
       request?: protos.animeshon.tracker.v1alpha1.IDeleteTrackerRequest,
       options?: CallOptions):
@@ -540,22 +568,6 @@ export class TrackerServiceClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.tracker.v1alpha1.IDeleteTrackerRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the tracker to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteTracker(request);
- */
   deleteTracker(
       request?: protos.animeshon.tracker.v1alpha1.IDeleteTrackerRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -590,6 +602,24 @@ export class TrackerServiceClient {
     this.initialize();
     return this.innerApiCalls.deleteTracker(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent this tracker belongs to.
+ * @param {animeshon.tracker.v1alpha1.Activity} request.activity
+ *   The activity to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Activity]{@link animeshon.tracker.v1alpha1.Activity}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/tracker_service.create_activity.js</caption>
+ * region_tag:tracker_v1alpha1_generated_TrackerService_CreateActivity_async
+ */
   createActivity(
       request?: protos.animeshon.tracker.v1alpha1.ICreateActivityRequest,
       options?: CallOptions):
@@ -610,24 +640,6 @@ export class TrackerServiceClient {
           protos.animeshon.tracker.v1alpha1.IActivity,
           protos.animeshon.tracker.v1alpha1.ICreateActivityRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.parent
- *   The parent this tracker belongs to.
- * @param {animeshon.tracker.v1alpha1.Activity} request.activity
- *   The activity to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Activity]{@link animeshon.tracker.v1alpha1.Activity}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createActivity(request);
- */
   createActivity(
       request?: protos.animeshon.tracker.v1alpha1.ICreateActivityRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -662,6 +674,22 @@ export class TrackerServiceClient {
     this.initialize();
     return this.innerApiCalls.createActivity(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the activity to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/tracker_service.delete_activity.js</caption>
+ * region_tag:tracker_v1alpha1_generated_TrackerService_DeleteActivity_async
+ */
   deleteActivity(
       request?: protos.animeshon.tracker.v1alpha1.IDeleteActivityRequest,
       options?: CallOptions):
@@ -682,22 +710,6 @@ export class TrackerServiceClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.tracker.v1alpha1.IDeleteActivityRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the activity to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteActivity(request);
- */
   deleteActivity(
       request?: protos.animeshon.tracker.v1alpha1.IDeleteActivityRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -733,6 +745,24 @@ export class TrackerServiceClient {
     return this.innerApiCalls.deleteActivity(request, options, callback);
   }
 
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ * @param {animeshon.tracker.v1alpha1.Provider} request.provider
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing
+ *   a long running operation. Its `promise()` method returns a promise
+ *   you can `await` for.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/tracker_service.import_trackers.js</caption>
+ * region_tag:tracker_v1alpha1_generated_TrackerService_ImportTrackers_async
+ */
   importTrackers(
       request?: protos.animeshon.tracker.v1alpha1.IImportTrackersRequest,
       options?: CallOptions):
@@ -753,25 +783,6 @@ export class TrackerServiceClient {
           LROperation<protos.animeshon.tracker.v1alpha1.IImportTrackersResponse, protos.animeshon.tracker.v1alpha1.IOperationMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.parent
- * @param {animeshon.tracker.v1alpha1.Provider} request.provider
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing
- *   a long running operation. Its `promise()` method returns a promise
- *   you can `await` for.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
- *   for more details and examples.
- * @example
- * const [operation] = await client.importTrackers(request);
- * const [response] = await operation.promise();
- */
   importTrackers(
       request?: protos.animeshon.tracker.v1alpha1.IImportTrackersRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -815,11 +826,8 @@ export class TrackerServiceClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
  *   for more details and examples.
- * @example
- * const decodedOperation = await checkImportTrackersProgress(name);
- * console.log(decodedOperation.result);
- * console.log(decodedOperation.done);
- * console.log(decodedOperation.metadata);
+ * @example <caption>include:samples/generated/v1alpha1/tracker_service.import_trackers.js</caption>
+ * region_tag:tracker_v1alpha1_generated_TrackerService_ImportTrackers_async
  */
   async checkImportTrackersProgress(name: string): Promise<LROperation<protos.animeshon.tracker.v1alpha1.ImportTrackersResponse, protos.animeshon.tracker.v1alpha1.OperationMetadata>>{
     const request = new operationsProtos.google.longrunning.GetOperationRequest({name});
@@ -827,6 +835,24 @@ export class TrackerServiceClient {
     const decodeOperation = new gax.Operation(operation, this.descriptors.longrunning.importTrackers, gax.createDefaultBackoffSettings());
     return decodeOperation as LROperation<protos.animeshon.tracker.v1alpha1.ImportTrackersResponse, protos.animeshon.tracker.v1alpha1.OperationMetadata>;
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ * @param {animeshon.tracker.v1alpha1.Provider} request.provider
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing
+ *   a long running operation. Its `promise()` method returns a promise
+ *   you can `await` for.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/tracker_service.export_trackers.js</caption>
+ * region_tag:tracker_v1alpha1_generated_TrackerService_ExportTrackers_async
+ */
   exportTrackers(
       request?: protos.animeshon.tracker.v1alpha1.IExportTrackersRequest,
       options?: CallOptions):
@@ -847,25 +873,6 @@ export class TrackerServiceClient {
           LROperation<protos.animeshon.tracker.v1alpha1.IExportTrackersResponse, protos.animeshon.tracker.v1alpha1.IOperationMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.parent
- * @param {animeshon.tracker.v1alpha1.Provider} request.provider
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing
- *   a long running operation. Its `promise()` method returns a promise
- *   you can `await` for.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
- *   for more details and examples.
- * @example
- * const [operation] = await client.exportTrackers(request);
- * const [response] = await operation.promise();
- */
   exportTrackers(
       request?: protos.animeshon.tracker.v1alpha1.IExportTrackersRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -909,11 +916,8 @@ export class TrackerServiceClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
  *   for more details and examples.
- * @example
- * const decodedOperation = await checkExportTrackersProgress(name);
- * console.log(decodedOperation.result);
- * console.log(decodedOperation.done);
- * console.log(decodedOperation.metadata);
+ * @example <caption>include:samples/generated/v1alpha1/tracker_service.export_trackers.js</caption>
+ * region_tag:tracker_v1alpha1_generated_TrackerService_ExportTrackers_async
  */
   async checkExportTrackersProgress(name: string): Promise<LROperation<protos.animeshon.tracker.v1alpha1.ExportTrackersResponse, protos.animeshon.tracker.v1alpha1.OperationMetadata>>{
     const request = new operationsProtos.google.longrunning.GetOperationRequest({name});
@@ -921,28 +925,7 @@ export class TrackerServiceClient {
     const decodeOperation = new gax.Operation(operation, this.descriptors.longrunning.exportTrackers, gax.createDefaultBackoffSettings());
     return decodeOperation as LROperation<protos.animeshon.tracker.v1alpha1.ExportTrackersResponse, protos.animeshon.tracker.v1alpha1.OperationMetadata>;
   }
-  listTrackers(
-      request?: protos.animeshon.tracker.v1alpha1.IListTrackersRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.tracker.v1alpha1.ITracker[],
-        protos.animeshon.tracker.v1alpha1.IListTrackersRequest|null,
-        protos.animeshon.tracker.v1alpha1.IListTrackersResponse
-      ]>;
-  listTrackers(
-      request: protos.animeshon.tracker.v1alpha1.IListTrackersRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.tracker.v1alpha1.IListTrackersRequest,
-          protos.animeshon.tracker.v1alpha1.IListTrackersResponse|null|undefined,
-          protos.animeshon.tracker.v1alpha1.ITracker>): void;
-  listTrackers(
-      request: protos.animeshon.tracker.v1alpha1.IListTrackersRequest,
-      callback: PaginationCallback<
-          protos.animeshon.tracker.v1alpha1.IListTrackersRequest,
-          protos.animeshon.tracker.v1alpha1.IListTrackersResponse|null|undefined,
-          protos.animeshon.tracker.v1alpha1.ITracker>): void;
-/**
+ /**
  * TODO: add documentation about supported filters.
  *
  * @param {Object} request
@@ -968,6 +951,27 @@ export class TrackerServiceClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listTrackers(
+      request?: protos.animeshon.tracker.v1alpha1.IListTrackersRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.tracker.v1alpha1.ITracker[],
+        protos.animeshon.tracker.v1alpha1.IListTrackersRequest|null,
+        protos.animeshon.tracker.v1alpha1.IListTrackersResponse
+      ]>;
+  listTrackers(
+      request: protos.animeshon.tracker.v1alpha1.IListTrackersRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.tracker.v1alpha1.IListTrackersRequest,
+          protos.animeshon.tracker.v1alpha1.IListTrackersResponse|null|undefined,
+          protos.animeshon.tracker.v1alpha1.ITracker>): void;
+  listTrackers(
+      request: protos.animeshon.tracker.v1alpha1.IListTrackersRequest,
+      callback: PaginationCallback<
+          protos.animeshon.tracker.v1alpha1.IListTrackersRequest,
+          protos.animeshon.tracker.v1alpha1.IListTrackersResponse|null|undefined,
+          protos.animeshon.tracker.v1alpha1.ITracker>): void;
   listTrackers(
       request?: protos.animeshon.tracker.v1alpha1.IListTrackersRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -1041,7 +1045,8 @@ export class TrackerServiceClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listTrackers'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listTrackers.createStream(
       this.innerApiCalls.listTrackers as gax.GaxCall,
@@ -1074,11 +1079,8 @@ export class TrackerServiceClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listTrackersAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/tracker_service.list_trackers.js</caption>
+ * region_tag:tracker_v1alpha1_generated_TrackerService_ListTrackers_async
  */
   listTrackersAsync(
       request?: protos.animeshon.tracker.v1alpha1.IListTrackersRequest,
@@ -1093,8 +1095,8 @@ export class TrackerServiceClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listTrackers'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listTrackers.asyncIterate(
       this.innerApiCalls['listTrackers'] as GaxCall,
@@ -1115,6 +1117,7 @@ export class TrackerServiceClient {
       return this.trackerServiceStub!.then(stub => {
         this._terminated = true;
         stub.close();
+        this.operationsClient.close();
       });
     }
     return Promise.resolve();

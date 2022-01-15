@@ -40,6 +40,7 @@ const version = require('../../../package.json').version;
 export class LibraryClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -51,6 +52,7 @@ export class LibraryClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   libraryStub?: Promise<{[name: string]: Function}>;
 
@@ -92,6 +94,7 @@ export class LibraryClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof LibraryClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -113,6 +116,12 @@ export class LibraryClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -159,6 +168,9 @@ export class LibraryClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -185,7 +197,7 @@ export class LibraryClient {
           (this._protos as protobuf.Root).lookupService('animeshon.library.v1alpha1.Library') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.library.v1alpha1.Library,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -271,6 +283,22 @@ export class LibraryClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the playlist to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Playlist]{@link animeshon.library.v1alpha1.Playlist}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/library.get_playlist.js</caption>
+ * region_tag:library_v1alpha1_generated_Library_GetPlaylist_async
+ */
   getPlaylist(
       request?: protos.animeshon.library.v1alpha1.IGetPlaylistRequest,
       options?: CallOptions):
@@ -291,22 +319,6 @@ export class LibraryClient {
           protos.animeshon.library.v1alpha1.IPlaylist,
           protos.animeshon.library.v1alpha1.IGetPlaylistRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the playlist to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Playlist]{@link animeshon.library.v1alpha1.Playlist}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getPlaylist(request);
- */
   getPlaylist(
       request?: protos.animeshon.library.v1alpha1.IGetPlaylistRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -341,6 +353,24 @@ export class LibraryClient {
     this.initialize();
     return this.innerApiCalls.getPlaylist(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent this playlist belongs to.
+ * @param {animeshon.library.v1alpha1.Playlist} request.playlist
+ *   The playlist to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Playlist]{@link animeshon.library.v1alpha1.Playlist}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/library.create_playlist.js</caption>
+ * region_tag:library_v1alpha1_generated_Library_CreatePlaylist_async
+ */
   createPlaylist(
       request?: protos.animeshon.library.v1alpha1.ICreatePlaylistRequest,
       options?: CallOptions):
@@ -361,24 +391,6 @@ export class LibraryClient {
           protos.animeshon.library.v1alpha1.IPlaylist,
           protos.animeshon.library.v1alpha1.ICreatePlaylistRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.parent
- *   The parent this playlist belongs to.
- * @param {animeshon.library.v1alpha1.Playlist} request.playlist
- *   The playlist to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Playlist]{@link animeshon.library.v1alpha1.Playlist}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createPlaylist(request);
- */
   createPlaylist(
       request?: protos.animeshon.library.v1alpha1.ICreatePlaylistRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -413,6 +425,25 @@ export class LibraryClient {
     this.initialize();
     return this.innerApiCalls.createPlaylist(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.library.v1alpha1.Playlist} request.playlist
+ *   The playlist to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Playlist]{@link animeshon.library.v1alpha1.Playlist}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/library.update_playlist.js</caption>
+ * region_tag:library_v1alpha1_generated_Library_UpdatePlaylist_async
+ */
   updatePlaylist(
       request?: protos.animeshon.library.v1alpha1.IUpdatePlaylistRequest,
       options?: CallOptions):
@@ -433,25 +464,6 @@ export class LibraryClient {
           protos.animeshon.library.v1alpha1.IPlaylist,
           protos.animeshon.library.v1alpha1.IUpdatePlaylistRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.library.v1alpha1.Playlist} request.playlist
- *   The playlist to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Playlist]{@link animeshon.library.v1alpha1.Playlist}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updatePlaylist(request);
- */
   updatePlaylist(
       request?: protos.animeshon.library.v1alpha1.IUpdatePlaylistRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -486,6 +498,22 @@ export class LibraryClient {
     this.initialize();
     return this.innerApiCalls.updatePlaylist(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the playlist to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/library.delete_playlist.js</caption>
+ * region_tag:library_v1alpha1_generated_Library_DeletePlaylist_async
+ */
   deletePlaylist(
       request?: protos.animeshon.library.v1alpha1.IDeletePlaylistRequest,
       options?: CallOptions):
@@ -506,22 +534,6 @@ export class LibraryClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.library.v1alpha1.IDeletePlaylistRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the playlist to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deletePlaylist(request);
- */
   deletePlaylist(
       request?: protos.animeshon.library.v1alpha1.IDeletePlaylistRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -556,6 +568,24 @@ export class LibraryClient {
     this.initialize();
     return this.innerApiCalls.deletePlaylist(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent this playlist item belongs to.
+ * @param {animeshon.library.v1alpha1.PlaylistItem} request.item
+ *   The playlist item to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [PlaylistItem]{@link animeshon.library.v1alpha1.PlaylistItem}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/library.create_playlist_item.js</caption>
+ * region_tag:library_v1alpha1_generated_Library_CreatePlaylistItem_async
+ */
   createPlaylistItem(
       request?: protos.animeshon.library.v1alpha1.ICreatePlaylistItemRequest,
       options?: CallOptions):
@@ -576,24 +606,6 @@ export class LibraryClient {
           protos.animeshon.library.v1alpha1.IPlaylistItem,
           protos.animeshon.library.v1alpha1.ICreatePlaylistItemRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.parent
- *   The parent this playlist item belongs to.
- * @param {animeshon.library.v1alpha1.PlaylistItem} request.item
- *   The playlist item to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [PlaylistItem]{@link animeshon.library.v1alpha1.PlaylistItem}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createPlaylistItem(request);
- */
   createPlaylistItem(
       request?: protos.animeshon.library.v1alpha1.ICreatePlaylistItemRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -628,6 +640,24 @@ export class LibraryClient {
     this.initialize();
     return this.innerApiCalls.createPlaylistItem(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent this playlist item belongs to.
+ * @param {number[]} request.item
+ *   The playlist items to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [BatchCreatePlaylistItemsResponse]{@link animeshon.library.v1alpha1.BatchCreatePlaylistItemsResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/library.batch_create_playlist_items.js</caption>
+ * region_tag:library_v1alpha1_generated_Library_BatchCreatePlaylistItems_async
+ */
   batchCreatePlaylistItems(
       request?: protos.animeshon.library.v1alpha1.IBatchCreatePlaylistItemsRequest,
       options?: CallOptions):
@@ -648,24 +678,6 @@ export class LibraryClient {
           protos.animeshon.library.v1alpha1.IBatchCreatePlaylistItemsResponse,
           protos.animeshon.library.v1alpha1.IBatchCreatePlaylistItemsRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.parent
- *   The parent this playlist item belongs to.
- * @param {number[]} request.item
- *   The playlist items to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [BatchCreatePlaylistItemsResponse]{@link animeshon.library.v1alpha1.BatchCreatePlaylistItemsResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.batchCreatePlaylistItems(request);
- */
   batchCreatePlaylistItems(
       request?: protos.animeshon.library.v1alpha1.IBatchCreatePlaylistItemsRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -700,6 +712,22 @@ export class LibraryClient {
     this.initialize();
     return this.innerApiCalls.batchCreatePlaylistItems(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the playlist item to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/library.delete_playlist_item.js</caption>
+ * region_tag:library_v1alpha1_generated_Library_DeletePlaylistItem_async
+ */
   deletePlaylistItem(
       request?: protos.animeshon.library.v1alpha1.IDeletePlaylistItemRequest,
       options?: CallOptions):
@@ -720,22 +748,6 @@ export class LibraryClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.library.v1alpha1.IDeletePlaylistItemRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the playlist item to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deletePlaylistItem(request);
- */
   deletePlaylistItem(
       request?: protos.animeshon.library.v1alpha1.IDeletePlaylistItemRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -771,28 +783,7 @@ export class LibraryClient {
     return this.innerApiCalls.deletePlaylistItem(request, options, callback);
   }
 
-  listPlaylists(
-      request?: protos.animeshon.library.v1alpha1.IListPlaylistsRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.library.v1alpha1.IPlaylist[],
-        protos.animeshon.library.v1alpha1.IListPlaylistsRequest|null,
-        protos.animeshon.library.v1alpha1.IListPlaylistsResponse
-      ]>;
-  listPlaylists(
-      request: protos.animeshon.library.v1alpha1.IListPlaylistsRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.library.v1alpha1.IListPlaylistsRequest,
-          protos.animeshon.library.v1alpha1.IListPlaylistsResponse|null|undefined,
-          protos.animeshon.library.v1alpha1.IPlaylist>): void;
-  listPlaylists(
-      request: protos.animeshon.library.v1alpha1.IListPlaylistsRequest,
-      callback: PaginationCallback<
-          protos.animeshon.library.v1alpha1.IListPlaylistsRequest,
-          protos.animeshon.library.v1alpha1.IListPlaylistsResponse|null|undefined,
-          protos.animeshon.library.v1alpha1.IPlaylist>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -817,6 +808,27 @@ export class LibraryClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listPlaylists(
+      request?: protos.animeshon.library.v1alpha1.IListPlaylistsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.library.v1alpha1.IPlaylist[],
+        protos.animeshon.library.v1alpha1.IListPlaylistsRequest|null,
+        protos.animeshon.library.v1alpha1.IListPlaylistsResponse
+      ]>;
+  listPlaylists(
+      request: protos.animeshon.library.v1alpha1.IListPlaylistsRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.library.v1alpha1.IListPlaylistsRequest,
+          protos.animeshon.library.v1alpha1.IListPlaylistsResponse|null|undefined,
+          protos.animeshon.library.v1alpha1.IPlaylist>): void;
+  listPlaylists(
+      request: protos.animeshon.library.v1alpha1.IListPlaylistsRequest,
+      callback: PaginationCallback<
+          protos.animeshon.library.v1alpha1.IListPlaylistsRequest,
+          protos.animeshon.library.v1alpha1.IListPlaylistsResponse|null|undefined,
+          protos.animeshon.library.v1alpha1.IPlaylist>): void;
   listPlaylists(
       request?: protos.animeshon.library.v1alpha1.IListPlaylistsRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -890,7 +902,8 @@ export class LibraryClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listPlaylists'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listPlaylists.createStream(
       this.innerApiCalls.listPlaylists as gax.GaxCall,
@@ -923,11 +936,8 @@ export class LibraryClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listPlaylistsAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/library.list_playlists.js</caption>
+ * region_tag:library_v1alpha1_generated_Library_ListPlaylists_async
  */
   listPlaylistsAsync(
       request?: protos.animeshon.library.v1alpha1.IListPlaylistsRequest,
@@ -942,8 +952,8 @@ export class LibraryClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listPlaylists'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listPlaylists.asyncIterate(
       this.innerApiCalls['listPlaylists'] as GaxCall,
@@ -951,28 +961,7 @@ export class LibraryClient {
       callSettings
     ) as AsyncIterable<protos.animeshon.library.v1alpha1.IPlaylist>;
   }
-  listPlaylistItems(
-      request?: protos.animeshon.library.v1alpha1.IListPlaylistItemsRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.library.v1alpha1.IPlaylistItem[],
-        protos.animeshon.library.v1alpha1.IListPlaylistItemsRequest|null,
-        protos.animeshon.library.v1alpha1.IListPlaylistItemsResponse
-      ]>;
-  listPlaylistItems(
-      request: protos.animeshon.library.v1alpha1.IListPlaylistItemsRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.library.v1alpha1.IListPlaylistItemsRequest,
-          protos.animeshon.library.v1alpha1.IListPlaylistItemsResponse|null|undefined,
-          protos.animeshon.library.v1alpha1.IPlaylistItem>): void;
-  listPlaylistItems(
-      request: protos.animeshon.library.v1alpha1.IListPlaylistItemsRequest,
-      callback: PaginationCallback<
-          protos.animeshon.library.v1alpha1.IListPlaylistItemsRequest,
-          protos.animeshon.library.v1alpha1.IListPlaylistItemsResponse|null|undefined,
-          protos.animeshon.library.v1alpha1.IPlaylistItem>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -997,6 +986,27 @@ export class LibraryClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listPlaylistItems(
+      request?: protos.animeshon.library.v1alpha1.IListPlaylistItemsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.library.v1alpha1.IPlaylistItem[],
+        protos.animeshon.library.v1alpha1.IListPlaylistItemsRequest|null,
+        protos.animeshon.library.v1alpha1.IListPlaylistItemsResponse
+      ]>;
+  listPlaylistItems(
+      request: protos.animeshon.library.v1alpha1.IListPlaylistItemsRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.library.v1alpha1.IListPlaylistItemsRequest,
+          protos.animeshon.library.v1alpha1.IListPlaylistItemsResponse|null|undefined,
+          protos.animeshon.library.v1alpha1.IPlaylistItem>): void;
+  listPlaylistItems(
+      request: protos.animeshon.library.v1alpha1.IListPlaylistItemsRequest,
+      callback: PaginationCallback<
+          protos.animeshon.library.v1alpha1.IListPlaylistItemsRequest,
+          protos.animeshon.library.v1alpha1.IListPlaylistItemsResponse|null|undefined,
+          protos.animeshon.library.v1alpha1.IPlaylistItem>): void;
   listPlaylistItems(
       request?: protos.animeshon.library.v1alpha1.IListPlaylistItemsRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -1070,7 +1080,8 @@ export class LibraryClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listPlaylistItems'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listPlaylistItems.createStream(
       this.innerApiCalls.listPlaylistItems as gax.GaxCall,
@@ -1103,11 +1114,8 @@ export class LibraryClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listPlaylistItemsAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/library.list_playlist_items.js</caption>
+ * region_tag:library_v1alpha1_generated_Library_ListPlaylistItems_async
  */
   listPlaylistItemsAsync(
       request?: protos.animeshon.library.v1alpha1.IListPlaylistItemsRequest,
@@ -1122,8 +1130,8 @@ export class LibraryClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listPlaylistItems'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listPlaylistItems.asyncIterate(
       this.innerApiCalls['listPlaylistItems'] as GaxCall,

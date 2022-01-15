@@ -38,6 +38,7 @@ const version = require('../../../package.json').version;
 export class GraphClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -49,6 +50,7 @@ export class GraphClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   graphStub?: Promise<{[name: string]: Function}>;
 
@@ -90,6 +92,7 @@ export class GraphClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof GraphClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -111,6 +114,12 @@ export class GraphClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -147,6 +156,9 @@ export class GraphClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -173,7 +185,7 @@ export class GraphClient {
           (this._protos as protobuf.Root).lookupService('animeshon.graph.v1alpha1.Graph') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.graph.v1alpha1.Graph,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -258,26 +270,6 @@ export class GraphClient {
   // -------------------
   // -- Service calls --
   // -------------------
-  migrateGraph(
-      request?: protos.animeshon.graph.v1alpha1.IMigrateGraphRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.google.protobuf.IEmpty,
-        protos.animeshon.graph.v1alpha1.IMigrateGraphRequest|undefined, {}|undefined
-      ]>;
-  migrateGraph(
-      request: protos.animeshon.graph.v1alpha1.IMigrateGraphRequest,
-      options: CallOptions,
-      callback: Callback<
-          protos.google.protobuf.IEmpty,
-          protos.animeshon.graph.v1alpha1.IMigrateGraphRequest|null|undefined,
-          {}|null|undefined>): void;
-  migrateGraph(
-      request: protos.animeshon.graph.v1alpha1.IMigrateGraphRequest,
-      callback: Callback<
-          protos.google.protobuf.IEmpty,
-          protos.animeshon.graph.v1alpha1.IMigrateGraphRequest|null|undefined,
-          {}|null|undefined>): void;
 /**
  *
  * @param {Object} request
@@ -291,9 +283,29 @@ export class GraphClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
  *   for more details and examples.
- * @example
- * const [response] = await client.migrateGraph(request);
+ * @example <caption>include:samples/generated/v1alpha1/graph.migrate_graph.js</caption>
+ * region_tag:graph_v1alpha1_generated_Graph_MigrateGraph_async
  */
+  migrateGraph(
+      request?: protos.animeshon.graph.v1alpha1.IMigrateGraphRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.protobuf.IEmpty,
+        protos.animeshon.graph.v1alpha1.IMigrateGraphRequest|undefined, {}|undefined
+      ]>;
+  migrateGraph(
+      request: protos.animeshon.graph.v1alpha1.IMigrateGraphRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.google.protobuf.IEmpty,
+          protos.animeshon.graph.v1alpha1.IMigrateGraphRequest|null|undefined,
+          {}|null|undefined>): void;
+  migrateGraph(
+      request: protos.animeshon.graph.v1alpha1.IMigrateGraphRequest,
+      callback: Callback<
+          protos.google.protobuf.IEmpty,
+          protos.animeshon.graph.v1alpha1.IMigrateGraphRequest|null|undefined,
+          {}|null|undefined>): void;
   migrateGraph(
       request?: protos.animeshon.graph.v1alpha1.IMigrateGraphRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -318,9 +330,27 @@ export class GraphClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.migrateGraph(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resource name of the resource to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/graph.delete_graph.js</caption>
+ * region_tag:graph_v1alpha1_generated_Graph_DeleteGraph_async
+ */
   deleteGraph(
       request?: protos.animeshon.graph.v1alpha1.IDeleteGraphRequest,
       options?: CallOptions):
@@ -341,22 +371,6 @@ export class GraphClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.graph.v1alpha1.IDeleteGraphRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The resource name of the resource to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteGraph(request);
- */
   deleteGraph(
       request?: protos.animeshon.graph.v1alpha1.IDeleteGraphRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -381,6 +395,8 @@ export class GraphClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.deleteGraph(request, options, callback);
   }

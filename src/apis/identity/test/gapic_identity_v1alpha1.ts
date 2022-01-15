@@ -117,8 +117,8 @@ describe('v1alpha1.IdentityClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new identityModule.v1alpha1.IdentityClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.identityStub, undefined);
         await client.initialize();
@@ -127,8 +127,8 @@ describe('v1alpha1.IdentityClient', () => {
 
     it('has close method', () => {
         const client = new identityModule.v1alpha1.IdentityClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -136,8 +136,8 @@ describe('v1alpha1.IdentityClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new identityModule.v1alpha1.IdentityClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -148,8 +148,8 @@ describe('v1alpha1.IdentityClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new identityModule.v1alpha1.IdentityClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -168,9 +168,9 @@ describe('v1alpha1.IdentityClient', () => {
     describe('getUserProfile', () => {
         it('invokes getUserProfile without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserProfileRequest());
             request.name = '';
@@ -192,9 +192,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes getUserProfile without error using callback', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserProfileRequest());
             request.name = '';
@@ -227,9 +227,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes getUserProfile with error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserProfileRequest());
             request.name = '';
@@ -252,9 +252,9 @@ describe('v1alpha1.IdentityClient', () => {
     describe('getUser', () => {
         it('invokes getUser without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserRequest());
             request.name = '';
@@ -276,9 +276,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes getUser without error using callback', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserRequest());
             request.name = '';
@@ -311,9 +311,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes getUser with error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserRequest());
             request.name = '';
@@ -336,12 +336,12 @@ describe('v1alpha1.IdentityClient', () => {
     describe('createUser', () => {
         it('invokes createUser without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.CreateUserRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.animeshon.identity.v1alpha1.User());
             client.innerApiCalls.createUser = stubSimpleCall(expectedResponse);
             const [response] = await client.createUser(request);
@@ -352,12 +352,12 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes createUser without error using callback', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.CreateUserRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.animeshon.identity.v1alpha1.User());
             client.innerApiCalls.createUser = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -379,12 +379,12 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes createUser with error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.CreateUserRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.createUser = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createUser(request), expectedError);
@@ -396,9 +396,9 @@ describe('v1alpha1.IdentityClient', () => {
     describe('updateUser', () => {
         it('invokes updateUser without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserRequest());
             request.user = {};
@@ -421,9 +421,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes updateUser without error using callback', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserRequest());
             request.user = {};
@@ -457,9 +457,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes updateUser with error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserRequest());
             request.user = {};
@@ -483,9 +483,9 @@ describe('v1alpha1.IdentityClient', () => {
     describe('deleteUser', () => {
         it('invokes deleteUser without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.DeleteUserRequest());
             request.name = '';
@@ -507,9 +507,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes deleteUser without error using callback', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.DeleteUserRequest());
             request.name = '';
@@ -542,9 +542,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes deleteUser with error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.DeleteUserRequest());
             request.name = '';
@@ -567,9 +567,9 @@ describe('v1alpha1.IdentityClient', () => {
     describe('getUserSettings', () => {
         it('invokes getUserSettings without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserSettingsRequest());
             request.name = '';
@@ -591,9 +591,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes getUserSettings without error using callback', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserSettingsRequest());
             request.name = '';
@@ -626,9 +626,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes getUserSettings with error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserSettingsRequest());
             request.name = '';
@@ -651,9 +651,9 @@ describe('v1alpha1.IdentityClient', () => {
     describe('updateUserSettings', () => {
         it('invokes updateUserSettings without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserSettingsRequest());
             request.settings = {};
@@ -676,9 +676,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes updateUserSettings without error using callback', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserSettingsRequest());
             request.settings = {};
@@ -712,9 +712,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes updateUserSettings with error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserSettingsRequest());
             request.settings = {};
@@ -738,9 +738,9 @@ describe('v1alpha1.IdentityClient', () => {
     describe('getUserNotifications', () => {
         it('invokes getUserNotifications without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserNotificationsRequest());
             request.name = '';
@@ -762,9 +762,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes getUserNotifications without error using callback', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserNotificationsRequest());
             request.name = '';
@@ -797,9 +797,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes getUserNotifications with error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserNotificationsRequest());
             request.name = '';
@@ -822,9 +822,9 @@ describe('v1alpha1.IdentityClient', () => {
     describe('updateUserNotifications', () => {
         it('invokes updateUserNotifications without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserNotificationsRequest());
             request.notifications = {};
@@ -847,9 +847,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes updateUserNotifications without error using callback', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserNotificationsRequest());
             request.notifications = {};
@@ -883,9 +883,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes updateUserNotifications with error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserNotificationsRequest());
             request.notifications = {};
@@ -909,9 +909,9 @@ describe('v1alpha1.IdentityClient', () => {
     describe('getGroup', () => {
         it('invokes getGroup without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetGroupRequest());
             request.name = '';
@@ -933,9 +933,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes getGroup without error using callback', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetGroupRequest());
             request.name = '';
@@ -968,9 +968,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes getGroup with error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetGroupRequest());
             request.name = '';
@@ -993,12 +993,12 @@ describe('v1alpha1.IdentityClient', () => {
     describe('createGroup', () => {
         it('invokes createGroup without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.CreateGroupRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.animeshon.identity.v1alpha1.Group());
             client.innerApiCalls.createGroup = stubSimpleCall(expectedResponse);
             const [response] = await client.createGroup(request);
@@ -1009,12 +1009,12 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes createGroup without error using callback', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.CreateGroupRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.animeshon.identity.v1alpha1.Group());
             client.innerApiCalls.createGroup = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -1036,12 +1036,12 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes createGroup with error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.CreateGroupRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.createGroup = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createGroup(request), expectedError);
@@ -1053,9 +1053,9 @@ describe('v1alpha1.IdentityClient', () => {
     describe('updateGroup', () => {
         it('invokes updateGroup without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateGroupRequest());
             request.group = {};
@@ -1078,9 +1078,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes updateGroup without error using callback', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateGroupRequest());
             request.group = {};
@@ -1114,9 +1114,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes updateGroup with error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateGroupRequest());
             request.group = {};
@@ -1140,9 +1140,9 @@ describe('v1alpha1.IdentityClient', () => {
     describe('deleteGroup', () => {
         it('invokes deleteGroup without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.DeleteGroupRequest());
             request.name = '';
@@ -1164,9 +1164,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes deleteGroup without error using callback', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.DeleteGroupRequest());
             request.name = '';
@@ -1199,9 +1199,9 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('invokes deleteGroup with error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.DeleteGroupRequest());
             request.name = '';
@@ -1229,7 +1229,7 @@ describe('v1alpha1.IdentityClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.ListUsersRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.identity.v1alpha1.User()),
               generateSampleMessage(new protos.animeshon.identity.v1alpha1.User()),
@@ -1249,7 +1249,7 @@ describe('v1alpha1.IdentityClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.ListUsersRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.identity.v1alpha1.User()),
               generateSampleMessage(new protos.animeshon.identity.v1alpha1.User()),
@@ -1280,7 +1280,7 @@ describe('v1alpha1.IdentityClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.ListUsersRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.listUsers = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listUsers(request), expectedError);
@@ -1349,11 +1349,12 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('uses async iteration with listUsers without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.ListUsersRequest());const expectedResponse = [
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.ListUsersRequest());
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.identity.v1alpha1.User()),
               generateSampleMessage(new protos.animeshon.identity.v1alpha1.User()),
               generateSampleMessage(new protos.animeshon.identity.v1alpha1.User()),
@@ -1399,7 +1400,7 @@ describe('v1alpha1.IdentityClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.ListGroupsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.identity.v1alpha1.Group()),
               generateSampleMessage(new protos.animeshon.identity.v1alpha1.Group()),
@@ -1419,7 +1420,7 @@ describe('v1alpha1.IdentityClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.ListGroupsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.identity.v1alpha1.Group()),
               generateSampleMessage(new protos.animeshon.identity.v1alpha1.Group()),
@@ -1450,7 +1451,7 @@ describe('v1alpha1.IdentityClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.ListGroupsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.listGroups = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listGroups(request), expectedError);
@@ -1519,11 +1520,12 @@ describe('v1alpha1.IdentityClient', () => {
 
         it('uses async iteration with listGroups without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.ListGroupsRequest());const expectedResponse = [
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.ListGroupsRequest());
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.identity.v1alpha1.Group()),
               generateSampleMessage(new protos.animeshon.identity.v1alpha1.Group()),
               generateSampleMessage(new protos.animeshon.identity.v1alpha1.Group()),

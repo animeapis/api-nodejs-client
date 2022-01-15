@@ -40,6 +40,7 @@ const version = require('../../../package.json').version;
 export class ImageClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -51,6 +52,7 @@ export class ImageClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   imageStub?: Promise<{[name: string]: Function}>;
 
@@ -92,6 +94,7 @@ export class ImageClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof ImageClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -113,6 +116,12 @@ export class ImageClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -157,6 +166,9 @@ export class ImageClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -183,7 +195,7 @@ export class ImageClient {
           (this._protos as protobuf.Root).lookupService('animeshon.image.v1alpha1.Image') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.image.v1alpha1.Image,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -269,6 +281,26 @@ export class ImageClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ * Uploads an image through the request HttpBody.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The image parent of the image. This value defaults to the user performing
+ *   the upload operation if no parent is set.
+ * @param {google.api.HttpBody} request.body
+ *   The image content, represented as an HttpBody.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [UploadImageResponse]{@link animeshon.image.v1alpha1.UploadImageResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/image.upload_image.js</caption>
+ * region_tag:image_v1alpha1_generated_Image_UploadImage_async
+ */
   uploadImage(
       request?: protos.animeshon.image.v1alpha1.IUploadImageRequest,
       options?: CallOptions):
@@ -289,26 +321,6 @@ export class ImageClient {
           protos.animeshon.image.v1alpha1.IUploadImageResponse,
           protos.animeshon.image.v1alpha1.IUploadImageRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * Uploads an image through the request HttpBody.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.parent
- *   The image parent of the image. This value defaults to the user performing
- *   the upload operation if no parent is set.
- * @param {google.api.HttpBody} request.body
- *   The image content, represented as an HttpBody.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [UploadImageResponse]{@link animeshon.image.v1alpha1.UploadImageResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.uploadImage(request);
- */
   uploadImage(
       request?: protos.animeshon.image.v1alpha1.IUploadImageRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -343,26 +355,6 @@ export class ImageClient {
     this.initialize();
     return this.innerApiCalls.uploadImage(request, options, callback);
   }
-  importImage(
-      request?: protos.animeshon.image.v1alpha1.IImportImageRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.image.v1alpha1.IImportImageResponse,
-        protos.animeshon.image.v1alpha1.IImportImageRequest|undefined, {}|undefined
-      ]>;
-  importImage(
-      request: protos.animeshon.image.v1alpha1.IImportImageRequest,
-      options: CallOptions,
-      callback: Callback<
-          protos.animeshon.image.v1alpha1.IImportImageResponse,
-          protos.animeshon.image.v1alpha1.IImportImageRequest|null|undefined,
-          {}|null|undefined>): void;
-  importImage(
-      request: protos.animeshon.image.v1alpha1.IImportImageRequest,
-      callback: Callback<
-          protos.animeshon.image.v1alpha1.IImportImageResponse,
-          protos.animeshon.image.v1alpha1.IImportImageRequest|null|undefined,
-          {}|null|undefined>): void;
 /**
  * Imports an image from a remote web address.
  *
@@ -387,9 +379,29 @@ export class ImageClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
  *   for more details and examples.
- * @example
- * const [response] = await client.importImage(request);
+ * @example <caption>include:samples/generated/v1alpha1/image.import_image.js</caption>
+ * region_tag:image_v1alpha1_generated_Image_ImportImage_async
  */
+  importImage(
+      request?: protos.animeshon.image.v1alpha1.IImportImageRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.image.v1alpha1.IImportImageResponse,
+        protos.animeshon.image.v1alpha1.IImportImageRequest|undefined, {}|undefined
+      ]>;
+  importImage(
+      request: protos.animeshon.image.v1alpha1.IImportImageRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.image.v1alpha1.IImportImageResponse,
+          protos.animeshon.image.v1alpha1.IImportImageRequest|null|undefined,
+          {}|null|undefined>): void;
+  importImage(
+      request: protos.animeshon.image.v1alpha1.IImportImageRequest,
+      callback: Callback<
+          protos.animeshon.image.v1alpha1.IImportImageResponse,
+          protos.animeshon.image.v1alpha1.IImportImageRequest|null|undefined,
+          {}|null|undefined>): void;
   importImage(
       request?: protos.animeshon.image.v1alpha1.IImportImageRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -424,26 +436,6 @@ export class ImageClient {
     this.initialize();
     return this.innerApiCalls.importImage(request, options, callback);
   }
-  getImage(
-      request?: protos.animeshon.image.v1alpha1.IGetImageRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.google.api.IHttpBody,
-        protos.animeshon.image.v1alpha1.IGetImageRequest|undefined, {}|undefined
-      ]>;
-  getImage(
-      request: protos.animeshon.image.v1alpha1.IGetImageRequest,
-      options: CallOptions,
-      callback: Callback<
-          protos.google.api.IHttpBody,
-          protos.animeshon.image.v1alpha1.IGetImageRequest|null|undefined,
-          {}|null|undefined>): void;
-  getImage(
-      request: protos.animeshon.image.v1alpha1.IGetImageRequest,
-      callback: Callback<
-          protos.google.api.IHttpBody,
-          protos.animeshon.image.v1alpha1.IGetImageRequest|null|undefined,
-          {}|null|undefined>): void;
 /**
  * Gets an image in binary representation with the format and size requested.
  *
@@ -473,9 +465,29 @@ export class ImageClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
  *   for more details and examples.
- * @example
- * const [response] = await client.getImage(request);
+ * @example <caption>include:samples/generated/v1alpha1/image.get_image.js</caption>
+ * region_tag:image_v1alpha1_generated_Image_GetImage_async
  */
+  getImage(
+      request?: protos.animeshon.image.v1alpha1.IGetImageRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.google.api.IHttpBody,
+        protos.animeshon.image.v1alpha1.IGetImageRequest|undefined, {}|undefined
+      ]>;
+  getImage(
+      request: protos.animeshon.image.v1alpha1.IGetImageRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.google.api.IHttpBody,
+          protos.animeshon.image.v1alpha1.IGetImageRequest|null|undefined,
+          {}|null|undefined>): void;
+  getImage(
+      request: protos.animeshon.image.v1alpha1.IGetImageRequest,
+      callback: Callback<
+          protos.google.api.IHttpBody,
+          protos.animeshon.image.v1alpha1.IGetImageRequest|null|undefined,
+          {}|null|undefined>): void;
   getImage(
       request?: protos.animeshon.image.v1alpha1.IGetImageRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -510,6 +522,23 @@ export class ImageClient {
     this.initialize();
     return this.innerApiCalls.getImage(request, options, callback);
   }
+/**
+ * Gets an image album.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the album to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Album]{@link animeshon.image.v1alpha1.Album}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/image.get_album.js</caption>
+ * region_tag:image_v1alpha1_generated_Image_GetAlbum_async
+ */
   getAlbum(
       request?: protos.animeshon.image.v1alpha1.IGetAlbumRequest,
       options?: CallOptions):
@@ -530,23 +559,6 @@ export class ImageClient {
           protos.animeshon.image.v1alpha1.IAlbum,
           protos.animeshon.image.v1alpha1.IGetAlbumRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * Gets an image album.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the album to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Album]{@link animeshon.image.v1alpha1.Album}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getAlbum(request);
- */
   getAlbum(
       request?: protos.animeshon.image.v1alpha1.IGetAlbumRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -581,6 +593,25 @@ export class ImageClient {
     this.initialize();
     return this.innerApiCalls.getAlbum(request, options, callback);
   }
+/**
+ * Creates a new image album.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent this album belongs to.
+ * @param {animeshon.image.v1alpha1.Album} request.album
+ *   The album to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Album]{@link animeshon.image.v1alpha1.Album}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/image.create_album.js</caption>
+ * region_tag:image_v1alpha1_generated_Image_CreateAlbum_async
+ */
   createAlbum(
       request?: protos.animeshon.image.v1alpha1.ICreateAlbumRequest,
       options?: CallOptions):
@@ -601,25 +632,6 @@ export class ImageClient {
           protos.animeshon.image.v1alpha1.IAlbum,
           protos.animeshon.image.v1alpha1.ICreateAlbumRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * Creates a new image album.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.parent
- *   The parent this album belongs to.
- * @param {animeshon.image.v1alpha1.Album} request.album
- *   The album to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Album]{@link animeshon.image.v1alpha1.Album}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createAlbum(request);
- */
   createAlbum(
       request?: protos.animeshon.image.v1alpha1.ICreateAlbumRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -654,6 +666,23 @@ export class ImageClient {
     this.initialize();
     return this.innerApiCalls.createAlbum(request, options, callback);
   }
+/**
+ * Deletes an existing image album.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The album to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/image.delete_album.js</caption>
+ * region_tag:image_v1alpha1_generated_Image_DeleteAlbum_async
+ */
   deleteAlbum(
       request?: protos.animeshon.image.v1alpha1.IDeleteAlbumRequest,
       options?: CallOptions):
@@ -674,23 +703,6 @@ export class ImageClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.image.v1alpha1.IDeleteAlbumRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * Deletes an existing image album.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The album to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteAlbum(request);
- */
   deleteAlbum(
       request?: protos.animeshon.image.v1alpha1.IDeleteAlbumRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -725,6 +737,23 @@ export class ImageClient {
     this.initialize();
     return this.innerApiCalls.deleteAlbum(request, options, callback);
   }
+/**
+ * Gets the settings of an image album.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the album to retrieve settings from.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [AlbumSettings]{@link animeshon.image.v1alpha1.AlbumSettings}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/image.get_album_settings.js</caption>
+ * region_tag:image_v1alpha1_generated_Image_GetAlbumSettings_async
+ */
   getAlbumSettings(
       request?: protos.animeshon.image.v1alpha1.IGetAlbumSettingsRequest,
       options?: CallOptions):
@@ -745,23 +774,6 @@ export class ImageClient {
           protos.animeshon.image.v1alpha1.IAlbumSettings,
           protos.animeshon.image.v1alpha1.IGetAlbumSettingsRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * Gets the settings of an image album.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the album to retrieve settings from.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [AlbumSettings]{@link animeshon.image.v1alpha1.AlbumSettings}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getAlbumSettings(request);
- */
   getAlbumSettings(
       request?: protos.animeshon.image.v1alpha1.IGetAlbumSettingsRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -796,6 +808,26 @@ export class ImageClient {
     this.initialize();
     return this.innerApiCalls.getAlbumSettings(request, options, callback);
   }
+/**
+ * Updates the settings of an image album.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.image.v1alpha1.AlbumSettings} request.settings
+ *   The album settings to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [AlbumSettings]{@link animeshon.image.v1alpha1.AlbumSettings}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/image.update_album_settings.js</caption>
+ * region_tag:image_v1alpha1_generated_Image_UpdateAlbumSettings_async
+ */
   updateAlbumSettings(
       request?: protos.animeshon.image.v1alpha1.IUpdateAlbumSettingsRequest,
       options?: CallOptions):
@@ -816,26 +848,6 @@ export class ImageClient {
           protos.animeshon.image.v1alpha1.IAlbumSettings,
           protos.animeshon.image.v1alpha1.IUpdateAlbumSettingsRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * Updates the settings of an image album.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.image.v1alpha1.AlbumSettings} request.settings
- *   The album settings to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [AlbumSettings]{@link animeshon.image.v1alpha1.AlbumSettings}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateAlbumSettings(request);
- */
   updateAlbumSettings(
       request?: protos.animeshon.image.v1alpha1.IUpdateAlbumSettingsRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -871,28 +883,7 @@ export class ImageClient {
     return this.innerApiCalls.updateAlbumSettings(request, options, callback);
   }
 
-  listAlbums(
-      request?: protos.animeshon.image.v1alpha1.IListAlbumsRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.image.v1alpha1.IAlbum[],
-        protos.animeshon.image.v1alpha1.IListAlbumsRequest|null,
-        protos.animeshon.image.v1alpha1.IListAlbumsResponse
-      ]>;
-  listAlbums(
-      request: protos.animeshon.image.v1alpha1.IListAlbumsRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.image.v1alpha1.IListAlbumsRequest,
-          protos.animeshon.image.v1alpha1.IListAlbumsResponse|null|undefined,
-          protos.animeshon.image.v1alpha1.IAlbum>): void;
-  listAlbums(
-      request: protos.animeshon.image.v1alpha1.IListAlbumsRequest,
-      callback: PaginationCallback<
-          protos.animeshon.image.v1alpha1.IListAlbumsRequest,
-          protos.animeshon.image.v1alpha1.IListAlbumsResponse|null|undefined,
-          protos.animeshon.image.v1alpha1.IAlbum>): void;
-/**
+ /**
  * Lists image albums with pagination.
  *
  * @param {Object} request
@@ -918,6 +909,27 @@ export class ImageClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listAlbums(
+      request?: protos.animeshon.image.v1alpha1.IListAlbumsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.image.v1alpha1.IAlbum[],
+        protos.animeshon.image.v1alpha1.IListAlbumsRequest|null,
+        protos.animeshon.image.v1alpha1.IListAlbumsResponse
+      ]>;
+  listAlbums(
+      request: protos.animeshon.image.v1alpha1.IListAlbumsRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.image.v1alpha1.IListAlbumsRequest,
+          protos.animeshon.image.v1alpha1.IListAlbumsResponse|null|undefined,
+          protos.animeshon.image.v1alpha1.IAlbum>): void;
+  listAlbums(
+      request: protos.animeshon.image.v1alpha1.IListAlbumsRequest,
+      callback: PaginationCallback<
+          protos.animeshon.image.v1alpha1.IListAlbumsRequest,
+          protos.animeshon.image.v1alpha1.IListAlbumsResponse|null|undefined,
+          protos.animeshon.image.v1alpha1.IAlbum>): void;
   listAlbums(
       request?: protos.animeshon.image.v1alpha1.IListAlbumsRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -991,7 +1003,8 @@ export class ImageClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listAlbums'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listAlbums.createStream(
       this.innerApiCalls.listAlbums as gax.GaxCall,
@@ -1024,11 +1037,8 @@ export class ImageClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listAlbumsAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/image.list_albums.js</caption>
+ * region_tag:image_v1alpha1_generated_Image_ListAlbums_async
  */
   listAlbumsAsync(
       request?: protos.animeshon.image.v1alpha1.IListAlbumsRequest,
@@ -1043,8 +1053,8 @@ export class ImageClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listAlbums'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listAlbums.asyncIterate(
       this.innerApiCalls['listAlbums'] as GaxCall,

@@ -133,8 +133,8 @@ describe('v1alpha1.ReferrerClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new referrerModule.v1alpha1.ReferrerClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.referrerStub, undefined);
         await client.initialize();
@@ -143,8 +143,8 @@ describe('v1alpha1.ReferrerClient', () => {
 
     it('has close method', () => {
         const client = new referrerModule.v1alpha1.ReferrerClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -152,8 +152,8 @@ describe('v1alpha1.ReferrerClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new referrerModule.v1alpha1.ReferrerClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -164,8 +164,8 @@ describe('v1alpha1.ReferrerClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new referrerModule.v1alpha1.ReferrerClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -184,9 +184,9 @@ describe('v1alpha1.ReferrerClient', () => {
     describe('getCrossRef', () => {
         it('invokes getCrossRef without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetCrossRefRequest());
             request.name = '';
@@ -208,9 +208,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes getCrossRef without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetCrossRefRequest());
             request.name = '';
@@ -243,9 +243,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes getCrossRef with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetCrossRefRequest());
             request.name = '';
@@ -268,12 +268,12 @@ describe('v1alpha1.ReferrerClient', () => {
     describe('createCrossRef', () => {
         it('invokes createCrossRef without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CreateCrossRefRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef());
             client.innerApiCalls.createCrossRef = stubSimpleCall(expectedResponse);
             const [response] = await client.createCrossRef(request);
@@ -284,12 +284,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes createCrossRef without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CreateCrossRefRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef());
             client.innerApiCalls.createCrossRef = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -311,12 +311,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes createCrossRef with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CreateCrossRefRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.createCrossRef = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createCrossRef(request), expectedError);
@@ -328,9 +328,9 @@ describe('v1alpha1.ReferrerClient', () => {
     describe('updateCrossRef', () => {
         it('invokes updateCrossRef without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateCrossRefRequest());
             request.crossref = {};
@@ -353,9 +353,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes updateCrossRef without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateCrossRefRequest());
             request.crossref = {};
@@ -389,9 +389,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes updateCrossRef with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateCrossRefRequest());
             request.crossref = {};
@@ -415,12 +415,12 @@ describe('v1alpha1.ReferrerClient', () => {
     describe('countCrossRefs', () => {
         it('invokes countCrossRefs without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsResponse());
             client.innerApiCalls.countCrossRefs = stubSimpleCall(expectedResponse);
             const [response] = await client.countCrossRefs(request);
@@ -431,12 +431,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes countCrossRefs without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsResponse());
             client.innerApiCalls.countCrossRefs = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -458,12 +458,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes countCrossRefs with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.countCrossRefs = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.countCrossRefs(request), expectedError);
@@ -475,9 +475,9 @@ describe('v1alpha1.ReferrerClient', () => {
     describe('getUniverse', () => {
         it('invokes getUniverse without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetUniverseRequest());
             request.name = '';
@@ -499,9 +499,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes getUniverse without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetUniverseRequest());
             request.name = '';
@@ -534,9 +534,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes getUniverse with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetUniverseRequest());
             request.name = '';
@@ -559,9 +559,9 @@ describe('v1alpha1.ReferrerClient', () => {
     describe('updateUniverse', () => {
         it('invokes updateUniverse without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateUniverseRequest());
             request.universe = {};
@@ -584,9 +584,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes updateUniverse without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateUniverseRequest());
             request.universe = {};
@@ -620,9 +620,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes updateUniverse with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateUniverseRequest());
             request.universe = {};
@@ -646,9 +646,9 @@ describe('v1alpha1.ReferrerClient', () => {
     describe('expandUniverse', () => {
         it('invokes expandUniverse without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExpandUniverseRequest());
             request.name = '';
@@ -670,9 +670,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes expandUniverse without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExpandUniverseRequest());
             request.name = '';
@@ -705,9 +705,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes expandUniverse with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExpandUniverseRequest());
             request.name = '';
@@ -730,9 +730,9 @@ describe('v1alpha1.ReferrerClient', () => {
     describe('getWormhole', () => {
         it('invokes getWormhole without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetWormholeRequest());
             request.name = '';
@@ -754,9 +754,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes getWormhole without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetWormholeRequest());
             request.name = '';
@@ -789,9 +789,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes getWormhole with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetWormholeRequest());
             request.name = '';
@@ -814,9 +814,9 @@ describe('v1alpha1.ReferrerClient', () => {
     describe('listWormholeCrossRefs', () => {
         it('invokes listWormholeCrossRefs without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsRequest());
             request.name = '';
@@ -838,9 +838,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes listWormholeCrossRefs without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsRequest());
             request.name = '';
@@ -873,9 +873,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes listWormholeCrossRefs with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsRequest());
             request.name = '';
@@ -898,12 +898,12 @@ describe('v1alpha1.ReferrerClient', () => {
     describe('analyzeCrossRefs', () => {
         it('invokes analyzeCrossRefs without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.AnalyzeCrossRefRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
             client.innerApiCalls.analyzeCrossRefs = stubLongRunningCall(expectedResponse);
             const [operation] = await client.analyzeCrossRefs(request);
@@ -915,12 +915,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes analyzeCrossRefs without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.AnalyzeCrossRefRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
             client.innerApiCalls.analyzeCrossRefs = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -945,12 +945,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes analyzeCrossRefs with call error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.AnalyzeCrossRefRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.analyzeCrossRefs = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.analyzeCrossRefs(request), expectedError);
@@ -960,12 +960,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes analyzeCrossRefs with LRO error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.AnalyzeCrossRefRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.analyzeCrossRefs = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.analyzeCrossRefs(request);
@@ -976,9 +976,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes checkAnalyzeCrossRefsProgress without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
             expectedResponse.name = 'test';
@@ -994,9 +994,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes checkAnalyzeCrossRefsProgress with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -1010,12 +1010,12 @@ describe('v1alpha1.ReferrerClient', () => {
     describe('importCrossRefs', () => {
         it('invokes importCrossRefs without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ImportCrossRefRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
             client.innerApiCalls.importCrossRefs = stubLongRunningCall(expectedResponse);
             const [operation] = await client.importCrossRefs(request);
@@ -1027,12 +1027,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes importCrossRefs without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ImportCrossRefRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
             client.innerApiCalls.importCrossRefs = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -1057,12 +1057,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes importCrossRefs with call error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ImportCrossRefRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.importCrossRefs = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.importCrossRefs(request), expectedError);
@@ -1072,12 +1072,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes importCrossRefs with LRO error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ImportCrossRefRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.importCrossRefs = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.importCrossRefs(request);
@@ -1088,9 +1088,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes checkImportCrossRefsProgress without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
             expectedResponse.name = 'test';
@@ -1106,9 +1106,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes checkImportCrossRefsProgress with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -1122,12 +1122,12 @@ describe('v1alpha1.ReferrerClient', () => {
     describe('exportCrossRefs', () => {
         it('invokes exportCrossRefs without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExportCrossRefRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
             client.innerApiCalls.exportCrossRefs = stubLongRunningCall(expectedResponse);
             const [operation] = await client.exportCrossRefs(request);
@@ -1139,12 +1139,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes exportCrossRefs without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExportCrossRefRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
             client.innerApiCalls.exportCrossRefs = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -1169,12 +1169,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes exportCrossRefs with call error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExportCrossRefRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.exportCrossRefs = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.exportCrossRefs(request), expectedError);
@@ -1184,12 +1184,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes exportCrossRefs with LRO error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExportCrossRefRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.exportCrossRefs = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.exportCrossRefs(request);
@@ -1200,9 +1200,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes checkExportCrossRefsProgress without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
             expectedResponse.name = 'test';
@@ -1218,9 +1218,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes checkExportCrossRefsProgress with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -1234,12 +1234,12 @@ describe('v1alpha1.ReferrerClient', () => {
     describe('initializeCrossRefs', () => {
         it('invokes initializeCrossRefs without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
             client.innerApiCalls.initializeCrossRefs = stubLongRunningCall(expectedResponse);
             const [operation] = await client.initializeCrossRefs(request);
@@ -1251,12 +1251,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes initializeCrossRefs without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
             client.innerApiCalls.initializeCrossRefs = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -1281,12 +1281,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes initializeCrossRefs with call error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.initializeCrossRefs = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.initializeCrossRefs(request), expectedError);
@@ -1296,12 +1296,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes initializeCrossRefs with LRO error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.initializeCrossRefs = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.initializeCrossRefs(request);
@@ -1312,9 +1312,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes checkInitializeCrossRefsProgress without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
             expectedResponse.name = 'test';
@@ -1330,9 +1330,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes checkInitializeCrossRefsProgress with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -1346,12 +1346,12 @@ describe('v1alpha1.ReferrerClient', () => {
     describe('analyzeParodies', () => {
         it('invokes analyzeParodies without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
             client.innerApiCalls.analyzeParodies = stubLongRunningCall(expectedResponse);
             const [operation] = await client.analyzeParodies(request);
@@ -1363,12 +1363,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes analyzeParodies without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
             client.innerApiCalls.analyzeParodies = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -1393,12 +1393,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes analyzeParodies with call error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.analyzeParodies = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.analyzeParodies(request), expectedError);
@@ -1408,12 +1408,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes analyzeParodies with LRO error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.analyzeParodies = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.analyzeParodies(request);
@@ -1424,9 +1424,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes checkAnalyzeParodiesProgress without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
             expectedResponse.name = 'test';
@@ -1442,9 +1442,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes checkAnalyzeParodiesProgress with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -1458,12 +1458,12 @@ describe('v1alpha1.ReferrerClient', () => {
     describe('exportParodies', () => {
         it('invokes exportParodies without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
             client.innerApiCalls.exportParodies = stubLongRunningCall(expectedResponse);
             const [operation] = await client.exportParodies(request);
@@ -1475,12 +1475,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes exportParodies without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
             client.innerApiCalls.exportParodies = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -1505,12 +1505,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes exportParodies with call error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.exportParodies = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.exportParodies(request), expectedError);
@@ -1520,12 +1520,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes exportParodies with LRO error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.exportParodies = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.exportParodies(request);
@@ -1536,9 +1536,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes checkExportParodiesProgress without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
             expectedResponse.name = 'test';
@@ -1554,9 +1554,9 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('invokes checkExportParodiesProgress with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -1575,7 +1575,7 @@ describe('v1alpha1.ReferrerClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef()),
               generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef()),
@@ -1595,7 +1595,7 @@ describe('v1alpha1.ReferrerClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef()),
               generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef()),
@@ -1626,7 +1626,7 @@ describe('v1alpha1.ReferrerClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.listCrossRefs = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listCrossRefs(request), expectedError);
@@ -1695,11 +1695,12 @@ describe('v1alpha1.ReferrerClient', () => {
 
         it('uses async iteration with listCrossRefs without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest());const expectedResponse = [
+            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest());
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef()),
               generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef()),
               generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef()),

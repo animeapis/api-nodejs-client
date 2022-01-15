@@ -117,8 +117,8 @@ describe('v1alpha1.ChapterServiceClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.chapterServiceStub, undefined);
         await client.initialize();
@@ -127,8 +127,8 @@ describe('v1alpha1.ChapterServiceClient', () => {
 
     it('has close method', () => {
         const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -136,8 +136,8 @@ describe('v1alpha1.ChapterServiceClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -148,8 +148,8 @@ describe('v1alpha1.ChapterServiceClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -168,9 +168,9 @@ describe('v1alpha1.ChapterServiceClient', () => {
     describe('getChapter', () => {
         it('invokes getChapter without error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetChapterRequest());
             request.name = '';
@@ -192,9 +192,9 @@ describe('v1alpha1.ChapterServiceClient', () => {
 
         it('invokes getChapter without error using callback', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetChapterRequest());
             request.name = '';
@@ -227,9 +227,9 @@ describe('v1alpha1.ChapterServiceClient', () => {
 
         it('invokes getChapter with error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetChapterRequest());
             request.name = '';
@@ -252,9 +252,9 @@ describe('v1alpha1.ChapterServiceClient', () => {
     describe('createChapter', () => {
         it('invokes createChapter without error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateChapterRequest());
             request.parent = '';
@@ -276,9 +276,9 @@ describe('v1alpha1.ChapterServiceClient', () => {
 
         it('invokes createChapter without error using callback', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateChapterRequest());
             request.parent = '';
@@ -311,9 +311,9 @@ describe('v1alpha1.ChapterServiceClient', () => {
 
         it('invokes createChapter with error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateChapterRequest());
             request.parent = '';
@@ -336,9 +336,9 @@ describe('v1alpha1.ChapterServiceClient', () => {
     describe('updateChapter', () => {
         it('invokes updateChapter without error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateChapterRequest());
             request.chapter = {};
@@ -361,9 +361,9 @@ describe('v1alpha1.ChapterServiceClient', () => {
 
         it('invokes updateChapter without error using callback', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateChapterRequest());
             request.chapter = {};
@@ -397,9 +397,9 @@ describe('v1alpha1.ChapterServiceClient', () => {
 
         it('invokes updateChapter with error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateChapterRequest());
             request.chapter = {};
@@ -423,9 +423,9 @@ describe('v1alpha1.ChapterServiceClient', () => {
     describe('deleteChapter', () => {
         it('invokes deleteChapter without error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteChapterRequest());
             request.name = '';
@@ -447,9 +447,9 @@ describe('v1alpha1.ChapterServiceClient', () => {
 
         it('invokes deleteChapter without error using callback', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteChapterRequest());
             request.name = '';
@@ -482,9 +482,9 @@ describe('v1alpha1.ChapterServiceClient', () => {
 
         it('invokes deleteChapter with error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteChapterRequest());
             request.name = '';
@@ -670,13 +670,14 @@ describe('v1alpha1.ChapterServiceClient', () => {
 
         it('uses async iteration with listChapters without error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest());
             request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedResponse = [
+            const expectedHeaderRequestParams = "parent=";
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),

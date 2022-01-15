@@ -70,8 +70,8 @@ describe('v1alpha1.GitClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new gitModule.v1alpha1.GitClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.gitStub, undefined);
         await client.initialize();
@@ -80,8 +80,8 @@ describe('v1alpha1.GitClient', () => {
 
     it('has close method', () => {
         const client = new gitModule.v1alpha1.GitClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -89,8 +89,8 @@ describe('v1alpha1.GitClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new gitModule.v1alpha1.GitClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -101,8 +101,8 @@ describe('v1alpha1.GitClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new gitModule.v1alpha1.GitClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -121,9 +121,9 @@ describe('v1alpha1.GitClient', () => {
     describe('advertiseReferences', () => {
         it('invokes advertiseReferences without error', async () => {
             const client = new gitModule.v1alpha1.GitClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.AdvertiseReferencesRequest());
             request.name = '';
@@ -145,9 +145,9 @@ describe('v1alpha1.GitClient', () => {
 
         it('invokes advertiseReferences without error using callback', async () => {
             const client = new gitModule.v1alpha1.GitClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.AdvertiseReferencesRequest());
             request.name = '';
@@ -180,9 +180,9 @@ describe('v1alpha1.GitClient', () => {
 
         it('invokes advertiseReferences with error', async () => {
             const client = new gitModule.v1alpha1.GitClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.AdvertiseReferencesRequest());
             request.name = '';
@@ -205,9 +205,9 @@ describe('v1alpha1.GitClient', () => {
     describe('receivePack', () => {
         it('invokes receivePack without error', async () => {
             const client = new gitModule.v1alpha1.GitClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ReceivePackRequest());
             request.name = '';
@@ -229,9 +229,9 @@ describe('v1alpha1.GitClient', () => {
 
         it('invokes receivePack without error using callback', async () => {
             const client = new gitModule.v1alpha1.GitClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ReceivePackRequest());
             request.name = '';
@@ -264,9 +264,9 @@ describe('v1alpha1.GitClient', () => {
 
         it('invokes receivePack with error', async () => {
             const client = new gitModule.v1alpha1.GitClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ReceivePackRequest());
             request.name = '';
@@ -289,9 +289,9 @@ describe('v1alpha1.GitClient', () => {
     describe('uploadPack', () => {
         it('invokes uploadPack without error', async () => {
             const client = new gitModule.v1alpha1.GitClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.UploadPackRequest());
             request.name = '';
@@ -313,9 +313,9 @@ describe('v1alpha1.GitClient', () => {
 
         it('invokes uploadPack without error using callback', async () => {
             const client = new gitModule.v1alpha1.GitClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.UploadPackRequest());
             request.name = '';
@@ -348,9 +348,9 @@ describe('v1alpha1.GitClient', () => {
 
         it('invokes uploadPack with error', async () => {
             const client = new gitModule.v1alpha1.GitClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.UploadPackRequest());
             request.name = '';

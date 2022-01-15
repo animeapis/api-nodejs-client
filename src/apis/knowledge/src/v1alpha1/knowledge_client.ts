@@ -40,6 +40,7 @@ const version = require('../../../package.json').version;
 export class KnowledgeClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -51,6 +52,7 @@ export class KnowledgeClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   knowledgeStub?: Promise<{[name: string]: Function}>;
 
@@ -92,6 +94,7 @@ export class KnowledgeClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof KnowledgeClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -113,6 +116,12 @@ export class KnowledgeClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -157,6 +166,9 @@ export class KnowledgeClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -183,7 +195,7 @@ export class KnowledgeClient {
           (this._protos as protobuf.Root).lookupService('animeshon.knowledge.v1alpha1.Knowledge') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.knowledge.v1alpha1.Knowledge,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -269,6 +281,23 @@ export class KnowledgeClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resource name of the requested contribution.
+ *   Required resource name
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Contribution]{@link animeshon.knowledge.v1alpha1.Contribution}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/knowledge.get_contribution.js</caption>
+ * region_tag:knowledge_v1alpha1_generated_Knowledge_GetContribution_async
+ */
   getContribution(
       request?: protos.animeshon.knowledge.v1alpha1.IGetContributionRequest,
       options?: CallOptions):
@@ -289,23 +318,6 @@ export class KnowledgeClient {
           protos.animeshon.knowledge.v1alpha1.IContribution,
           protos.animeshon.knowledge.v1alpha1.IGetContributionRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The resource name of the requested contribution.
- *   Required resource name
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Contribution]{@link animeshon.knowledge.v1alpha1.Contribution}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getContribution(request);
- */
   getContribution(
       request?: protos.animeshon.knowledge.v1alpha1.IGetContributionRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -340,6 +352,24 @@ export class KnowledgeClient {
     this.initialize();
     return this.innerApiCalls.getContribution(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent resource where this contribution will be created.
+ * @param {animeshon.knowledge.v1alpha1.Contribution} request.contribution
+ * @param {animeshon.knowledge.v1alpha1.ContributionChanges} request.changes
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Contribution]{@link animeshon.knowledge.v1alpha1.Contribution}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/knowledge.create_contribution.js</caption>
+ * region_tag:knowledge_v1alpha1_generated_Knowledge_CreateContribution_async
+ */
   createContribution(
       request?: protos.animeshon.knowledge.v1alpha1.ICreateContributionRequest,
       options?: CallOptions):
@@ -360,24 +390,6 @@ export class KnowledgeClient {
           protos.animeshon.knowledge.v1alpha1.IContribution,
           protos.animeshon.knowledge.v1alpha1.ICreateContributionRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.parent
- *   The parent resource where this contribution will be created.
- * @param {animeshon.knowledge.v1alpha1.Contribution} request.contribution
- * @param {animeshon.knowledge.v1alpha1.ContributionChanges} request.changes
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Contribution]{@link animeshon.knowledge.v1alpha1.Contribution}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createContribution(request);
- */
   createContribution(
       request?: protos.animeshon.knowledge.v1alpha1.ICreateContributionRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -412,6 +424,23 @@ export class KnowledgeClient {
     this.initialize();
     return this.innerApiCalls.createContribution(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resource name of the requested contribution.
+ *   Required resource name
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [ContributionChanges]{@link animeshon.knowledge.v1alpha1.ContributionChanges}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/knowledge.get_contribution_changes.js</caption>
+ * region_tag:knowledge_v1alpha1_generated_Knowledge_GetContributionChanges_async
+ */
   getContributionChanges(
       request?: protos.animeshon.knowledge.v1alpha1.IGetContributionChangesRequest,
       options?: CallOptions):
@@ -432,23 +461,6 @@ export class KnowledgeClient {
           protos.animeshon.knowledge.v1alpha1.IContributionChanges,
           protos.animeshon.knowledge.v1alpha1.IGetContributionChangesRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The resource name of the requested contribution.
- *   Required resource name
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [ContributionChanges]{@link animeshon.knowledge.v1alpha1.ContributionChanges}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getContributionChanges(request);
- */
   getContributionChanges(
       request?: protos.animeshon.knowledge.v1alpha1.IGetContributionChangesRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -483,26 +495,6 @@ export class KnowledgeClient {
     this.initialize();
     return this.innerApiCalls.getContributionChanges(request, options, callback);
   }
-  reviewContribution(
-      request?: protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.knowledge.v1alpha1.IContribution,
-        protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest|undefined, {}|undefined
-      ]>;
-  reviewContribution(
-      request: protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest,
-      options: CallOptions,
-      callback: Callback<
-          protos.animeshon.knowledge.v1alpha1.IContribution,
-          protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest|null|undefined,
-          {}|null|undefined>): void;
-  reviewContribution(
-      request: protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest,
-      callback: Callback<
-          protos.animeshon.knowledge.v1alpha1.IContribution,
-          protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest|null|undefined,
-          {}|null|undefined>): void;
 /**
  * ReviewContribution allows moderators or the owner to modify and correct the contribution
  * while in the PENDING or DRAFT state
@@ -526,9 +518,29 @@ export class KnowledgeClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
  *   for more details and examples.
- * @example
- * const [response] = await client.reviewContribution(request);
+ * @example <caption>include:samples/generated/v1alpha1/knowledge.review_contribution.js</caption>
+ * region_tag:knowledge_v1alpha1_generated_Knowledge_ReviewContribution_async
  */
+  reviewContribution(
+      request?: protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.knowledge.v1alpha1.IContribution,
+        protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest|undefined, {}|undefined
+      ]>;
+  reviewContribution(
+      request: protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.knowledge.v1alpha1.IContribution,
+          protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest|null|undefined,
+          {}|null|undefined>): void;
+  reviewContribution(
+      request: protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest,
+      callback: Callback<
+          protos.animeshon.knowledge.v1alpha1.IContribution,
+          protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest|null|undefined,
+          {}|null|undefined>): void;
   reviewContribution(
       request?: protos.animeshon.knowledge.v1alpha1.IReviewContributionRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -563,6 +575,23 @@ export class KnowledgeClient {
     this.initialize();
     return this.innerApiCalls.reviewContribution(request, options, callback);
   }
+/**
+ * ApproveContribution approves the contribution and applies the changes
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   Required resource name
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Contribution]{@link animeshon.knowledge.v1alpha1.Contribution}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/knowledge.approve_contribution.js</caption>
+ * region_tag:knowledge_v1alpha1_generated_Knowledge_ApproveContribution_async
+ */
   approveContribution(
       request?: protos.animeshon.knowledge.v1alpha1.IApproveContributionRequest,
       options?: CallOptions):
@@ -583,23 +612,6 @@ export class KnowledgeClient {
           protos.animeshon.knowledge.v1alpha1.IContribution,
           protos.animeshon.knowledge.v1alpha1.IApproveContributionRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * ApproveContribution approves the contribution and applies the changes
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   Required resource name
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Contribution]{@link animeshon.knowledge.v1alpha1.Contribution}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.approveContribution(request);
- */
   approveContribution(
       request?: protos.animeshon.knowledge.v1alpha1.IApproveContributionRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -634,6 +646,23 @@ export class KnowledgeClient {
     this.initialize();
     return this.innerApiCalls.approveContribution(request, options, callback);
   }
+/**
+ * RejectContribution rejects the contribution and DESTROYS all the changes
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   Required resource name
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Contribution]{@link animeshon.knowledge.v1alpha1.Contribution}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/knowledge.reject_contribution.js</caption>
+ * region_tag:knowledge_v1alpha1_generated_Knowledge_RejectContribution_async
+ */
   rejectContribution(
       request?: protos.animeshon.knowledge.v1alpha1.IRejectContributionRequest,
       options?: CallOptions):
@@ -654,23 +683,6 @@ export class KnowledgeClient {
           protos.animeshon.knowledge.v1alpha1.IContribution,
           protos.animeshon.knowledge.v1alpha1.IRejectContributionRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * RejectContribution rejects the contribution and DESTROYS all the changes
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   Required resource name
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Contribution]{@link animeshon.knowledge.v1alpha1.Contribution}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.rejectContribution(request);
- */
   rejectContribution(
       request?: protos.animeshon.knowledge.v1alpha1.IRejectContributionRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -705,6 +717,24 @@ export class KnowledgeClient {
     this.initialize();
     return this.innerApiCalls.rejectContribution(request, options, callback);
   }
+/**
+ * AllocateResourceName reserves a new resource name for entities which are not already part of
+ * Animeshon's Encyclopedia
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.kind
+ *   The resource kind of the resource to migrate.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [AllocateResourceNameResponse]{@link animeshon.knowledge.v1alpha1.AllocateResourceNameResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/knowledge.allocate_resource_name.js</caption>
+ * region_tag:knowledge_v1alpha1_generated_Knowledge_AllocateResourceName_async
+ */
   allocateResourceName(
       request?: protos.animeshon.knowledge.v1alpha1.IAllocateResourceNameRequest,
       options?: CallOptions):
@@ -725,24 +755,6 @@ export class KnowledgeClient {
           protos.animeshon.knowledge.v1alpha1.IAllocateResourceNameResponse,
           protos.animeshon.knowledge.v1alpha1.IAllocateResourceNameRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * AllocateResourceName reserves a new resource name for entities which are not already part of
- * Animeshon's Encyclopedia
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.kind
- *   The resource kind of the resource to migrate.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [AllocateResourceNameResponse]{@link animeshon.knowledge.v1alpha1.AllocateResourceNameResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.allocateResourceName(request);
- */
   allocateResourceName(
       request?: protos.animeshon.knowledge.v1alpha1.IAllocateResourceNameRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -767,32 +779,13 @@ export class KnowledgeClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.allocateResourceName(request, options, callback);
   }
 
-  listContributions(
-      request?: protos.animeshon.knowledge.v1alpha1.IListContributionsRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.knowledge.v1alpha1.IContribution[],
-        protos.animeshon.knowledge.v1alpha1.IListContributionsRequest|null,
-        protos.animeshon.knowledge.v1alpha1.IListContributionsResponse
-      ]>;
-  listContributions(
-      request: protos.animeshon.knowledge.v1alpha1.IListContributionsRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.knowledge.v1alpha1.IListContributionsRequest,
-          protos.animeshon.knowledge.v1alpha1.IListContributionsResponse|null|undefined,
-          protos.animeshon.knowledge.v1alpha1.IContribution>): void;
-  listContributions(
-      request: protos.animeshon.knowledge.v1alpha1.IListContributionsRequest,
-      callback: PaginationCallback<
-          protos.animeshon.knowledge.v1alpha1.IListContributionsRequest,
-          protos.animeshon.knowledge.v1alpha1.IListContributionsResponse|null|undefined,
-          protos.animeshon.knowledge.v1alpha1.IContribution>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -819,6 +812,27 @@ export class KnowledgeClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listContributions(
+      request?: protos.animeshon.knowledge.v1alpha1.IListContributionsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.knowledge.v1alpha1.IContribution[],
+        protos.animeshon.knowledge.v1alpha1.IListContributionsRequest|null,
+        protos.animeshon.knowledge.v1alpha1.IListContributionsResponse
+      ]>;
+  listContributions(
+      request: protos.animeshon.knowledge.v1alpha1.IListContributionsRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.knowledge.v1alpha1.IListContributionsRequest,
+          protos.animeshon.knowledge.v1alpha1.IListContributionsResponse|null|undefined,
+          protos.animeshon.knowledge.v1alpha1.IContribution>): void;
+  listContributions(
+      request: protos.animeshon.knowledge.v1alpha1.IListContributionsRequest,
+      callback: PaginationCallback<
+          protos.animeshon.knowledge.v1alpha1.IListContributionsRequest,
+          protos.animeshon.knowledge.v1alpha1.IListContributionsResponse|null|undefined,
+          protos.animeshon.knowledge.v1alpha1.IContribution>): void;
   listContributions(
       request?: protos.animeshon.knowledge.v1alpha1.IListContributionsRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -894,7 +908,8 @@ export class KnowledgeClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listContributions'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listContributions.createStream(
       this.innerApiCalls.listContributions as gax.GaxCall,
@@ -929,11 +944,8 @@ export class KnowledgeClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listContributionsAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/knowledge.list_contributions.js</caption>
+ * region_tag:knowledge_v1alpha1_generated_Knowledge_ListContributions_async
  */
   listContributionsAsync(
       request?: protos.animeshon.knowledge.v1alpha1.IListContributionsRequest,
@@ -948,8 +960,8 @@ export class KnowledgeClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listContributions'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listContributions.asyncIterate(
       this.innerApiCalls['listContributions'] as GaxCall,

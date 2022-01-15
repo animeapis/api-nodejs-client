@@ -70,8 +70,8 @@ describe('v1alpha1.GraphClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new graphModule.v1alpha1.GraphClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.graphStub, undefined);
         await client.initialize();
@@ -80,8 +80,8 @@ describe('v1alpha1.GraphClient', () => {
 
     it('has close method', () => {
         const client = new graphModule.v1alpha1.GraphClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -89,8 +89,8 @@ describe('v1alpha1.GraphClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new graphModule.v1alpha1.GraphClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -101,8 +101,8 @@ describe('v1alpha1.GraphClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new graphModule.v1alpha1.GraphClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -121,12 +121,12 @@ describe('v1alpha1.GraphClient', () => {
     describe('migrateGraph', () => {
         it('invokes migrateGraph without error', async () => {
             const client = new graphModule.v1alpha1.GraphClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.graph.v1alpha1.MigrateGraphRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
             client.innerApiCalls.migrateGraph = stubSimpleCall(expectedResponse);
             const [response] = await client.migrateGraph(request);
@@ -137,12 +137,12 @@ describe('v1alpha1.GraphClient', () => {
 
         it('invokes migrateGraph without error using callback', async () => {
             const client = new graphModule.v1alpha1.GraphClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.graph.v1alpha1.MigrateGraphRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
             client.innerApiCalls.migrateGraph = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -164,12 +164,12 @@ describe('v1alpha1.GraphClient', () => {
 
         it('invokes migrateGraph with error', async () => {
             const client = new graphModule.v1alpha1.GraphClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.graph.v1alpha1.MigrateGraphRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.migrateGraph = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.migrateGraph(request), expectedError);
@@ -181,12 +181,12 @@ describe('v1alpha1.GraphClient', () => {
     describe('deleteGraph', () => {
         it('invokes deleteGraph without error', async () => {
             const client = new graphModule.v1alpha1.GraphClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.graph.v1alpha1.DeleteGraphRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
             client.innerApiCalls.deleteGraph = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteGraph(request);
@@ -197,12 +197,12 @@ describe('v1alpha1.GraphClient', () => {
 
         it('invokes deleteGraph without error using callback', async () => {
             const client = new graphModule.v1alpha1.GraphClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.graph.v1alpha1.DeleteGraphRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
             client.innerApiCalls.deleteGraph = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -224,12 +224,12 @@ describe('v1alpha1.GraphClient', () => {
 
         it('invokes deleteGraph with error', async () => {
             const client = new graphModule.v1alpha1.GraphClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.graph.v1alpha1.DeleteGraphRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteGraph = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteGraph(request), expectedError);

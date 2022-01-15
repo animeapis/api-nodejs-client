@@ -117,8 +117,8 @@ describe('v1alpha1.PublisherClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new publisherModule.v1alpha1.PublisherClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.publisherStub, undefined);
         await client.initialize();
@@ -127,8 +127,8 @@ describe('v1alpha1.PublisherClient', () => {
 
     it('has close method', () => {
         const client = new publisherModule.v1alpha1.PublisherClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -136,8 +136,8 @@ describe('v1alpha1.PublisherClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new publisherModule.v1alpha1.PublisherClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -148,8 +148,8 @@ describe('v1alpha1.PublisherClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new publisherModule.v1alpha1.PublisherClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -168,9 +168,9 @@ describe('v1alpha1.PublisherClient', () => {
     describe('getRelease', () => {
         it('invokes getRelease without error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.GetReleaseRequest());
             request.name = '';
@@ -192,9 +192,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes getRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.GetReleaseRequest());
             request.name = '';
@@ -227,9 +227,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes getRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.GetReleaseRequest());
             request.name = '';
@@ -252,9 +252,9 @@ describe('v1alpha1.PublisherClient', () => {
     describe('createRelease', () => {
         it('invokes createRelease without error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.CreateReleaseRequest());
             request.parent = '';
@@ -276,9 +276,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes createRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.CreateReleaseRequest());
             request.parent = '';
@@ -311,9 +311,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes createRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.CreateReleaseRequest());
             request.parent = '';
@@ -336,9 +336,9 @@ describe('v1alpha1.PublisherClient', () => {
     describe('updateRelease', () => {
         it('invokes updateRelease without error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UpdateReleaseRequest());
             request.release = {};
@@ -361,9 +361,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes updateRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UpdateReleaseRequest());
             request.release = {};
@@ -397,9 +397,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes updateRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UpdateReleaseRequest());
             request.release = {};
@@ -423,9 +423,9 @@ describe('v1alpha1.PublisherClient', () => {
     describe('deleteRelease', () => {
         it('invokes deleteRelease without error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.DeleteReleaseRequest());
             request.name = '';
@@ -447,9 +447,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes deleteRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.DeleteReleaseRequest());
             request.name = '';
@@ -482,9 +482,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes deleteRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.DeleteReleaseRequest());
             request.name = '';
@@ -507,9 +507,9 @@ describe('v1alpha1.PublisherClient', () => {
     describe('undeleteRelease', () => {
         it('invokes undeleteRelease without error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UndeleteReleaseRequest());
             request.name = '';
@@ -531,9 +531,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes undeleteRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UndeleteReleaseRequest());
             request.name = '';
@@ -566,9 +566,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes undeleteRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UndeleteReleaseRequest());
             request.name = '';
@@ -591,9 +591,9 @@ describe('v1alpha1.PublisherClient', () => {
     describe('publishRelease', () => {
         it('invokes publishRelease without error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.PublishReleaseRequest());
             request.name = '';
@@ -615,9 +615,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes publishRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.PublishReleaseRequest());
             request.name = '';
@@ -650,9 +650,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes publishRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.PublishReleaseRequest());
             request.name = '';
@@ -675,9 +675,9 @@ describe('v1alpha1.PublisherClient', () => {
     describe('unpublishRelease', () => {
         it('invokes unpublishRelease without error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UnpublishReleaseRequest());
             request.name = '';
@@ -699,9 +699,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes unpublishRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UnpublishReleaseRequest());
             request.name = '';
@@ -734,9 +734,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes unpublishRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UnpublishReleaseRequest());
             request.name = '';
@@ -759,9 +759,9 @@ describe('v1alpha1.PublisherClient', () => {
     describe('scheduleRelease', () => {
         it('invokes scheduleRelease without error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.ScheduleReleaseRequest());
             request.name = '';
@@ -783,9 +783,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes scheduleRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.ScheduleReleaseRequest());
             request.name = '';
@@ -818,9 +818,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes scheduleRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.ScheduleReleaseRequest());
             request.name = '';
@@ -843,9 +843,9 @@ describe('v1alpha1.PublisherClient', () => {
     describe('cancelRelease', () => {
         it('invokes cancelRelease without error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.CancelReleaseRequest());
             request.name = '';
@@ -867,9 +867,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes cancelRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.CancelReleaseRequest());
             request.name = '';
@@ -902,9 +902,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes cancelRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.CancelReleaseRequest());
             request.name = '';
@@ -927,9 +927,9 @@ describe('v1alpha1.PublisherClient', () => {
     describe('suspendRelease', () => {
         it('invokes suspendRelease without error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.SuspendReleaseRequest());
             request.name = '';
@@ -951,9 +951,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes suspendRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.SuspendReleaseRequest());
             request.name = '';
@@ -986,9 +986,9 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('invokes suspendRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.SuspendReleaseRequest());
             request.name = '';
@@ -1174,13 +1174,14 @@ describe('v1alpha1.PublisherClient', () => {
 
         it('uses async iteration with listReleases without error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.ListReleasesRequest());
             request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedResponse = [
+            const expectedHeaderRequestParams = "parent=";
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.release.v1alpha1.Release()),
               generateSampleMessage(new protos.animeshon.release.v1alpha1.Release()),
               generateSampleMessage(new protos.animeshon.release.v1alpha1.Release()),

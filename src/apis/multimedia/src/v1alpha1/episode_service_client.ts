@@ -40,6 +40,7 @@ const version = require('../../../package.json').version;
 export class EpisodeServiceClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -51,6 +52,7 @@ export class EpisodeServiceClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   episodeServiceStub?: Promise<{[name: string]: Function}>;
 
@@ -92,6 +94,7 @@ export class EpisodeServiceClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof EpisodeServiceClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -113,6 +116,12 @@ export class EpisodeServiceClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -157,6 +166,9 @@ export class EpisodeServiceClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -183,7 +195,7 @@ export class EpisodeServiceClient {
           (this._protos as protobuf.Root).lookupService('animeshon.multimedia.v1alpha1.EpisodeService') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.multimedia.v1alpha1.EpisodeService,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -269,6 +281,22 @@ export class EpisodeServiceClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the episode to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Episode]{@link animeshon.multimedia.v1alpha1.Episode}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/episode_service.get_episode.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_EpisodeService_GetEpisode_async
+ */
   getEpisode(
       request?: protos.animeshon.multimedia.v1alpha1.IGetEpisodeRequest,
       options?: CallOptions):
@@ -289,22 +317,6 @@ export class EpisodeServiceClient {
           protos.animeshon.multimedia.v1alpha1.IEpisode,
           protos.animeshon.multimedia.v1alpha1.IGetEpisodeRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the episode to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Episode]{@link animeshon.multimedia.v1alpha1.Episode}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getEpisode(request);
- */
   getEpisode(
       request?: protos.animeshon.multimedia.v1alpha1.IGetEpisodeRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -339,6 +351,24 @@ export class EpisodeServiceClient {
     this.initialize();
     return this.innerApiCalls.getEpisode(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent this episode belongs to.
+ * @param {animeshon.multimedia.v1alpha1.Episode} request.episode
+ *   The episode to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Episode]{@link animeshon.multimedia.v1alpha1.Episode}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/episode_service.create_episode.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_EpisodeService_CreateEpisode_async
+ */
   createEpisode(
       request?: protos.animeshon.multimedia.v1alpha1.ICreateEpisodeRequest,
       options?: CallOptions):
@@ -359,24 +389,6 @@ export class EpisodeServiceClient {
           protos.animeshon.multimedia.v1alpha1.IEpisode,
           protos.animeshon.multimedia.v1alpha1.ICreateEpisodeRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.parent
- *   The parent this episode belongs to.
- * @param {animeshon.multimedia.v1alpha1.Episode} request.episode
- *   The episode to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Episode]{@link animeshon.multimedia.v1alpha1.Episode}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createEpisode(request);
- */
   createEpisode(
       request?: protos.animeshon.multimedia.v1alpha1.ICreateEpisodeRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -411,6 +423,25 @@ export class EpisodeServiceClient {
     this.initialize();
     return this.innerApiCalls.createEpisode(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.multimedia.v1alpha1.Episode} request.episode
+ *   The episode to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Episode]{@link animeshon.multimedia.v1alpha1.Episode}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/episode_service.update_episode.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_EpisodeService_UpdateEpisode_async
+ */
   updateEpisode(
       request?: protos.animeshon.multimedia.v1alpha1.IUpdateEpisodeRequest,
       options?: CallOptions):
@@ -431,25 +462,6 @@ export class EpisodeServiceClient {
           protos.animeshon.multimedia.v1alpha1.IEpisode,
           protos.animeshon.multimedia.v1alpha1.IUpdateEpisodeRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.multimedia.v1alpha1.Episode} request.episode
- *   The episode to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Episode]{@link animeshon.multimedia.v1alpha1.Episode}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateEpisode(request);
- */
   updateEpisode(
       request?: protos.animeshon.multimedia.v1alpha1.IUpdateEpisodeRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -484,6 +496,22 @@ export class EpisodeServiceClient {
     this.initialize();
     return this.innerApiCalls.updateEpisode(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the episode to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/episode_service.delete_episode.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_EpisodeService_DeleteEpisode_async
+ */
   deleteEpisode(
       request?: protos.animeshon.multimedia.v1alpha1.IDeleteEpisodeRequest,
       options?: CallOptions):
@@ -504,22 +532,6 @@ export class EpisodeServiceClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.multimedia.v1alpha1.IDeleteEpisodeRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the episode to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteEpisode(request);
- */
   deleteEpisode(
       request?: protos.animeshon.multimedia.v1alpha1.IDeleteEpisodeRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -555,28 +567,7 @@ export class EpisodeServiceClient {
     return this.innerApiCalls.deleteEpisode(request, options, callback);
   }
 
-  listEpisodes(
-      request?: protos.animeshon.multimedia.v1alpha1.IListEpisodesRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.multimedia.v1alpha1.IEpisode[],
-        protos.animeshon.multimedia.v1alpha1.IListEpisodesRequest|null,
-        protos.animeshon.multimedia.v1alpha1.IListEpisodesResponse
-      ]>;
-  listEpisodes(
-      request: protos.animeshon.multimedia.v1alpha1.IListEpisodesRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.multimedia.v1alpha1.IListEpisodesRequest,
-          protos.animeshon.multimedia.v1alpha1.IListEpisodesResponse|null|undefined,
-          protos.animeshon.multimedia.v1alpha1.IEpisode>): void;
-  listEpisodes(
-      request: protos.animeshon.multimedia.v1alpha1.IListEpisodesRequest,
-      callback: PaginationCallback<
-          protos.animeshon.multimedia.v1alpha1.IListEpisodesRequest,
-          protos.animeshon.multimedia.v1alpha1.IListEpisodesResponse|null|undefined,
-          protos.animeshon.multimedia.v1alpha1.IEpisode>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -601,6 +592,27 @@ export class EpisodeServiceClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listEpisodes(
+      request?: protos.animeshon.multimedia.v1alpha1.IListEpisodesRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.multimedia.v1alpha1.IEpisode[],
+        protos.animeshon.multimedia.v1alpha1.IListEpisodesRequest|null,
+        protos.animeshon.multimedia.v1alpha1.IListEpisodesResponse
+      ]>;
+  listEpisodes(
+      request: protos.animeshon.multimedia.v1alpha1.IListEpisodesRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.multimedia.v1alpha1.IListEpisodesRequest,
+          protos.animeshon.multimedia.v1alpha1.IListEpisodesResponse|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IEpisode>): void;
+  listEpisodes(
+      request: protos.animeshon.multimedia.v1alpha1.IListEpisodesRequest,
+      callback: PaginationCallback<
+          protos.animeshon.multimedia.v1alpha1.IListEpisodesRequest,
+          protos.animeshon.multimedia.v1alpha1.IListEpisodesResponse|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IEpisode>): void;
   listEpisodes(
       request?: protos.animeshon.multimedia.v1alpha1.IListEpisodesRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -674,7 +686,8 @@ export class EpisodeServiceClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listEpisodes'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listEpisodes.createStream(
       this.innerApiCalls.listEpisodes as gax.GaxCall,
@@ -707,11 +720,8 @@ export class EpisodeServiceClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listEpisodesAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/episode_service.list_episodes.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_EpisodeService_ListEpisodes_async
  */
   listEpisodesAsync(
       request?: protos.animeshon.multimedia.v1alpha1.IListEpisodesRequest,
@@ -726,8 +736,8 @@ export class EpisodeServiceClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listEpisodes'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listEpisodes.asyncIterate(
       this.innerApiCalls['listEpisodes'] as GaxCall,

@@ -117,8 +117,8 @@ describe('v1alpha1.KnowledgeClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.knowledgeStub, undefined);
         await client.initialize();
@@ -127,8 +127,8 @@ describe('v1alpha1.KnowledgeClient', () => {
 
     it('has close method', () => {
         const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -136,8 +136,8 @@ describe('v1alpha1.KnowledgeClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -148,8 +148,8 @@ describe('v1alpha1.KnowledgeClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -168,9 +168,9 @@ describe('v1alpha1.KnowledgeClient', () => {
     describe('getContribution', () => {
         it('invokes getContribution without error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.GetContributionRequest());
             request.name = '';
@@ -192,9 +192,9 @@ describe('v1alpha1.KnowledgeClient', () => {
 
         it('invokes getContribution without error using callback', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.GetContributionRequest());
             request.name = '';
@@ -227,9 +227,9 @@ describe('v1alpha1.KnowledgeClient', () => {
 
         it('invokes getContribution with error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.GetContributionRequest());
             request.name = '';
@@ -252,9 +252,9 @@ describe('v1alpha1.KnowledgeClient', () => {
     describe('createContribution', () => {
         it('invokes createContribution without error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.CreateContributionRequest());
             request.parent = '';
@@ -276,9 +276,9 @@ describe('v1alpha1.KnowledgeClient', () => {
 
         it('invokes createContribution without error using callback', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.CreateContributionRequest());
             request.parent = '';
@@ -311,9 +311,9 @@ describe('v1alpha1.KnowledgeClient', () => {
 
         it('invokes createContribution with error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.CreateContributionRequest());
             request.parent = '';
@@ -336,9 +336,9 @@ describe('v1alpha1.KnowledgeClient', () => {
     describe('getContributionChanges', () => {
         it('invokes getContributionChanges without error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.GetContributionChangesRequest());
             request.name = '';
@@ -360,9 +360,9 @@ describe('v1alpha1.KnowledgeClient', () => {
 
         it('invokes getContributionChanges without error using callback', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.GetContributionChangesRequest());
             request.name = '';
@@ -395,9 +395,9 @@ describe('v1alpha1.KnowledgeClient', () => {
 
         it('invokes getContributionChanges with error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.GetContributionChangesRequest());
             request.name = '';
@@ -420,9 +420,9 @@ describe('v1alpha1.KnowledgeClient', () => {
     describe('reviewContribution', () => {
         it('invokes reviewContribution without error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ReviewContributionRequest());
             request.name = '';
@@ -444,9 +444,9 @@ describe('v1alpha1.KnowledgeClient', () => {
 
         it('invokes reviewContribution without error using callback', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ReviewContributionRequest());
             request.name = '';
@@ -479,9 +479,9 @@ describe('v1alpha1.KnowledgeClient', () => {
 
         it('invokes reviewContribution with error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ReviewContributionRequest());
             request.name = '';
@@ -504,9 +504,9 @@ describe('v1alpha1.KnowledgeClient', () => {
     describe('approveContribution', () => {
         it('invokes approveContribution without error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ApproveContributionRequest());
             request.name = '';
@@ -528,9 +528,9 @@ describe('v1alpha1.KnowledgeClient', () => {
 
         it('invokes approveContribution without error using callback', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ApproveContributionRequest());
             request.name = '';
@@ -563,9 +563,9 @@ describe('v1alpha1.KnowledgeClient', () => {
 
         it('invokes approveContribution with error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ApproveContributionRequest());
             request.name = '';
@@ -588,9 +588,9 @@ describe('v1alpha1.KnowledgeClient', () => {
     describe('rejectContribution', () => {
         it('invokes rejectContribution without error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.RejectContributionRequest());
             request.name = '';
@@ -612,9 +612,9 @@ describe('v1alpha1.KnowledgeClient', () => {
 
         it('invokes rejectContribution without error using callback', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.RejectContributionRequest());
             request.name = '';
@@ -647,9 +647,9 @@ describe('v1alpha1.KnowledgeClient', () => {
 
         it('invokes rejectContribution with error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.RejectContributionRequest());
             request.name = '';
@@ -672,12 +672,12 @@ describe('v1alpha1.KnowledgeClient', () => {
     describe('allocateResourceName', () => {
         it('invokes allocateResourceName without error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.AllocateResourceNameRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.AllocateResourceNameResponse());
             client.innerApiCalls.allocateResourceName = stubSimpleCall(expectedResponse);
             const [response] = await client.allocateResourceName(request);
@@ -688,12 +688,12 @@ describe('v1alpha1.KnowledgeClient', () => {
 
         it('invokes allocateResourceName without error using callback', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.AllocateResourceNameRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.AllocateResourceNameResponse());
             client.innerApiCalls.allocateResourceName = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -715,12 +715,12 @@ describe('v1alpha1.KnowledgeClient', () => {
 
         it('invokes allocateResourceName with error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.AllocateResourceNameRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.allocateResourceName = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.allocateResourceName(request), expectedError);
@@ -895,13 +895,14 @@ describe('v1alpha1.KnowledgeClient', () => {
 
         it('uses async iteration with listContributions without error', async () => {
             const client = new knowledgeModule.v1alpha1.KnowledgeClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ListContributionsRequest());
             request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedResponse = [
+            const expectedHeaderRequestParams = "parent=";
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution()),
               generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution()),
               generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.Contribution()),

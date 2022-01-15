@@ -117,8 +117,8 @@ describe('v1alpha1.KeeperClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new keeperModule.v1alpha1.KeeperClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.keeperStub, undefined);
         await client.initialize();
@@ -127,8 +127,8 @@ describe('v1alpha1.KeeperClient', () => {
 
     it('has close method', () => {
         const client = new keeperModule.v1alpha1.KeeperClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -136,8 +136,8 @@ describe('v1alpha1.KeeperClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new keeperModule.v1alpha1.KeeperClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -148,8 +148,8 @@ describe('v1alpha1.KeeperClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new keeperModule.v1alpha1.KeeperClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -168,9 +168,9 @@ describe('v1alpha1.KeeperClient', () => {
     describe('getCredentials', () => {
         it('invokes getCredentials without error', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.GetCredentialsRequest());
             request.name = '';
@@ -192,9 +192,9 @@ describe('v1alpha1.KeeperClient', () => {
 
         it('invokes getCredentials without error using callback', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.GetCredentialsRequest());
             request.name = '';
@@ -227,9 +227,9 @@ describe('v1alpha1.KeeperClient', () => {
 
         it('invokes getCredentials with error', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.GetCredentialsRequest());
             request.name = '';
@@ -252,9 +252,9 @@ describe('v1alpha1.KeeperClient', () => {
     describe('createCredentials', () => {
         it('invokes createCredentials without error', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.CreateCredentialsRequest());
             request.credentials = {};
@@ -277,9 +277,9 @@ describe('v1alpha1.KeeperClient', () => {
 
         it('invokes createCredentials without error using callback', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.CreateCredentialsRequest());
             request.credentials = {};
@@ -313,9 +313,9 @@ describe('v1alpha1.KeeperClient', () => {
 
         it('invokes createCredentials with error', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.CreateCredentialsRequest());
             request.credentials = {};
@@ -339,9 +339,9 @@ describe('v1alpha1.KeeperClient', () => {
     describe('deleteCredentials', () => {
         it('invokes deleteCredentials without error', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.DeleteCredentialsRequest());
             request.name = '';
@@ -363,9 +363,9 @@ describe('v1alpha1.KeeperClient', () => {
 
         it('invokes deleteCredentials without error using callback', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.DeleteCredentialsRequest());
             request.name = '';
@@ -398,9 +398,9 @@ describe('v1alpha1.KeeperClient', () => {
 
         it('invokes deleteCredentials with error', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.DeleteCredentialsRequest());
             request.name = '';
@@ -423,9 +423,9 @@ describe('v1alpha1.KeeperClient', () => {
     describe('actAsCredentials', () => {
         it('invokes actAsCredentials without error', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ActAsCredentialsRequest());
             request.name = '';
@@ -447,9 +447,9 @@ describe('v1alpha1.KeeperClient', () => {
 
         it('invokes actAsCredentials without error using callback', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ActAsCredentialsRequest());
             request.name = '';
@@ -482,9 +482,9 @@ describe('v1alpha1.KeeperClient', () => {
 
         it('invokes actAsCredentials with error', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ActAsCredentialsRequest());
             request.name = '';
@@ -670,13 +670,14 @@ describe('v1alpha1.KeeperClient', () => {
 
         it('uses async iteration with listCredentials without error', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ListCredentialsRequest());
             request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedResponse = [
+            const expectedHeaderRequestParams = "parent=";
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.credentials.v1alpha1.Credentials()),
               generateSampleMessage(new protos.animeshon.credentials.v1alpha1.Credentials()),
               generateSampleMessage(new protos.animeshon.credentials.v1alpha1.Credentials()),

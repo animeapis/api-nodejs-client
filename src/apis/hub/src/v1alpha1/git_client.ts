@@ -38,6 +38,7 @@ const version = require('../../../package.json').version;
 export class GitClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -49,6 +50,7 @@ export class GitClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   gitStub?: Promise<{[name: string]: Function}>;
 
@@ -90,6 +92,7 @@ export class GitClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof GitClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -111,6 +114,12 @@ export class GitClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -147,6 +156,9 @@ export class GitClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -173,7 +185,7 @@ export class GitClient {
           (this._protos as protobuf.Root).lookupService('animeshon.hub.v1alpha1.Git') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.hub.v1alpha1.Git,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -258,6 +270,24 @@ export class GitClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resource name of the repository.
+ * @param {string} request.service
+ *   The git service according to the git protocol.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [HttpBody]{@link google.api.HttpBody}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/git.advertise_references.js</caption>
+ * region_tag:hub_v1alpha1_generated_Git_AdvertiseReferences_async
+ */
   advertiseReferences(
       request?: protos.animeshon.hub.v1alpha1.IAdvertiseReferencesRequest,
       options?: CallOptions):
@@ -278,24 +308,6 @@ export class GitClient {
           protos.google.api.IHttpBody,
           protos.animeshon.hub.v1alpha1.IAdvertiseReferencesRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The resource name of the repository.
- * @param {string} request.service
- *   The git service according to the git protocol.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [HttpBody]{@link google.api.HttpBody}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.advertiseReferences(request);
- */
   advertiseReferences(
       request?: protos.animeshon.hub.v1alpha1.IAdvertiseReferencesRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -330,6 +342,24 @@ export class GitClient {
     this.initialize();
     return this.innerApiCalls.advertiseReferences(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resource name of the repository.
+ * @param {google.api.HttpBody} request.body
+ *   The request content, represented as an HttpBody.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [HttpBody]{@link google.api.HttpBody}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/git.receive_pack.js</caption>
+ * region_tag:hub_v1alpha1_generated_Git_ReceivePack_async
+ */
   receivePack(
       request?: protos.animeshon.hub.v1alpha1.IReceivePackRequest,
       options?: CallOptions):
@@ -350,24 +380,6 @@ export class GitClient {
           protos.google.api.IHttpBody,
           protos.animeshon.hub.v1alpha1.IReceivePackRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The resource name of the repository.
- * @param {google.api.HttpBody} request.body
- *   The request content, represented as an HttpBody.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [HttpBody]{@link google.api.HttpBody}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.receivePack(request);
- */
   receivePack(
       request?: protos.animeshon.hub.v1alpha1.IReceivePackRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -402,6 +414,24 @@ export class GitClient {
     this.initialize();
     return this.innerApiCalls.receivePack(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resource name of the repository.
+ * @param {google.api.HttpBody} request.body
+ *   The request content, represented as an HttpBody.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [HttpBody]{@link google.api.HttpBody}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/git.upload_pack.js</caption>
+ * region_tag:hub_v1alpha1_generated_Git_UploadPack_async
+ */
   uploadPack(
       request?: protos.animeshon.hub.v1alpha1.IUploadPackRequest,
       options?: CallOptions):
@@ -422,24 +452,6 @@ export class GitClient {
           protos.google.api.IHttpBody,
           protos.animeshon.hub.v1alpha1.IUploadPackRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The resource name of the repository.
- * @param {google.api.HttpBody} request.body
- *   The request content, represented as an HttpBody.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [HttpBody]{@link google.api.HttpBody}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.uploadPack(request);
- */
   uploadPack(
       request?: protos.animeshon.hub.v1alpha1.IUploadPackRequest,
       optionsOrCallback?: CallOptions|Callback<

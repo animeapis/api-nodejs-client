@@ -38,6 +38,7 @@ const version = require('../../../package.json').version;
 export class OAuth2Client {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -49,6 +50,7 @@ export class OAuth2Client {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   oAuth2Stub?: Promise<{[name: string]: Function}>;
 
@@ -90,6 +92,7 @@ export class OAuth2Client {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof OAuth2Client;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -111,6 +114,12 @@ export class OAuth2Client {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -147,6 +156,9 @@ export class OAuth2Client {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -173,7 +185,7 @@ export class OAuth2Client {
           (this._protos as protobuf.Root).lookupService('animeshon.credentials.v1alpha1.OAuth2') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.credentials.v1alpha1.OAuth2,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -258,6 +270,22 @@ export class OAuth2Client {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resorce name of the flow.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [SignInResponse]{@link animeshon.credentials.v1alpha1.SignInResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/o_auth2.sign_in.js</caption>
+ * region_tag:credentials_v1alpha1_generated_OAuth2_SignIn_async
+ */
   signIn(
       request?: protos.animeshon.credentials.v1alpha1.ISignInRequest,
       options?: CallOptions):
@@ -278,22 +306,6 @@ export class OAuth2Client {
           protos.animeshon.credentials.v1alpha1.ISignInResponse,
           protos.animeshon.credentials.v1alpha1.ISignInRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The resorce name of the flow.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [SignInResponse]{@link animeshon.credentials.v1alpha1.SignInResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.signIn(request);
- */
   signIn(
       request?: protos.animeshon.credentials.v1alpha1.ISignInRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -328,6 +340,26 @@ export class OAuth2Client {
     this.initialize();
     return this.innerApiCalls.signIn(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resorce name of the flow.
+ * @param {string} request.code
+ *   The OAuth 2.0 code returned from the authentication flow.
+ * @param {string} request.state
+ *   The OAuth 2.0 state returned from the authentication flow.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [ExchangeResponse]{@link animeshon.credentials.v1alpha1.ExchangeResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/o_auth2.exchange.js</caption>
+ * region_tag:credentials_v1alpha1_generated_OAuth2_Exchange_async
+ */
   exchange(
       request?: protos.animeshon.credentials.v1alpha1.IExchangeRequest,
       options?: CallOptions):
@@ -348,26 +380,6 @@ export class OAuth2Client {
           protos.animeshon.credentials.v1alpha1.IExchangeResponse,
           protos.animeshon.credentials.v1alpha1.IExchangeRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The resorce name of the flow.
- * @param {string} request.code
- *   The OAuth 2.0 code returned from the authentication flow.
- * @param {string} request.state
- *   The OAuth 2.0 state returned from the authentication flow.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [ExchangeResponse]{@link animeshon.credentials.v1alpha1.ExchangeResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.exchange(request);
- */
   exchange(
       request?: protos.animeshon.credentials.v1alpha1.IExchangeRequest,
       optionsOrCallback?: CallOptions|Callback<

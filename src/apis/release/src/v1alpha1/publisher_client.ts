@@ -40,6 +40,7 @@ const version = require('../../../package.json').version;
 export class PublisherClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -51,6 +52,7 @@ export class PublisherClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   publisherStub?: Promise<{[name: string]: Function}>;
 
@@ -92,6 +94,7 @@ export class PublisherClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof PublisherClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -113,6 +116,12 @@ export class PublisherClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -157,6 +166,9 @@ export class PublisherClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -183,7 +195,7 @@ export class PublisherClient {
           (this._protos as protobuf.Root).lookupService('animeshon.release.v1alpha1.Publisher') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.release.v1alpha1.Publisher,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -269,6 +281,22 @@ export class PublisherClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the release to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Release]{@link animeshon.release.v1alpha1.Release}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/publisher.get_release.js</caption>
+ * region_tag:release_v1alpha1_generated_Publisher_GetRelease_async
+ */
   getRelease(
       request?: protos.animeshon.release.v1alpha1.IGetReleaseRequest,
       options?: CallOptions):
@@ -289,22 +317,6 @@ export class PublisherClient {
           protos.animeshon.release.v1alpha1.IRelease,
           protos.animeshon.release.v1alpha1.IGetReleaseRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the release to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Release]{@link animeshon.release.v1alpha1.Release}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getRelease(request);
- */
   getRelease(
       request?: protos.animeshon.release.v1alpha1.IGetReleaseRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -339,6 +351,27 @@ export class PublisherClient {
     this.initialize();
     return this.innerApiCalls.getRelease(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent this release belongs to.
+ * @param {animeshon.release.v1alpha1.Release} request.release
+ *   The release to create.
+ * @param {google.protobuf.Duration} request.ttl
+ *   The time-to-live indicating for how long this release should be published.
+ *   If set to zero, the release will not have an expiration time.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Release]{@link animeshon.release.v1alpha1.Release}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/publisher.create_release.js</caption>
+ * region_tag:release_v1alpha1_generated_Publisher_CreateRelease_async
+ */
   createRelease(
       request?: protos.animeshon.release.v1alpha1.ICreateReleaseRequest,
       options?: CallOptions):
@@ -359,27 +392,6 @@ export class PublisherClient {
           protos.animeshon.release.v1alpha1.IRelease,
           protos.animeshon.release.v1alpha1.ICreateReleaseRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.parent
- *   The parent this release belongs to.
- * @param {animeshon.release.v1alpha1.Release} request.release
- *   The release to create.
- * @param {google.protobuf.Duration} request.ttl
- *   The time-to-live indicating for how long this release should be published.
- *   If set to zero, the release will not have an expiration time.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Release]{@link animeshon.release.v1alpha1.Release}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createRelease(request);
- */
   createRelease(
       request?: protos.animeshon.release.v1alpha1.ICreateReleaseRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -414,6 +426,25 @@ export class PublisherClient {
     this.initialize();
     return this.innerApiCalls.createRelease(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.release.v1alpha1.Release} request.release
+ *   The release to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Release]{@link animeshon.release.v1alpha1.Release}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/publisher.update_release.js</caption>
+ * region_tag:release_v1alpha1_generated_Publisher_UpdateRelease_async
+ */
   updateRelease(
       request?: protos.animeshon.release.v1alpha1.IUpdateReleaseRequest,
       options?: CallOptions):
@@ -434,25 +465,6 @@ export class PublisherClient {
           protos.animeshon.release.v1alpha1.IRelease,
           protos.animeshon.release.v1alpha1.IUpdateReleaseRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.release.v1alpha1.Release} request.release
- *   The release to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Release]{@link animeshon.release.v1alpha1.Release}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateRelease(request);
- */
   updateRelease(
       request?: protos.animeshon.release.v1alpha1.IUpdateReleaseRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -487,6 +499,24 @@ export class PublisherClient {
     this.initialize();
     return this.innerApiCalls.updateRelease(request, options, callback);
   }
+/**
+ * The release is soft-deleted and a grace period is granted before complete
+ * deletion. During this grace period the release can be recovered.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the release to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/publisher.delete_release.js</caption>
+ * region_tag:release_v1alpha1_generated_Publisher_DeleteRelease_async
+ */
   deleteRelease(
       request?: protos.animeshon.release.v1alpha1.IDeleteReleaseRequest,
       options?: CallOptions):
@@ -507,24 +537,6 @@ export class PublisherClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.release.v1alpha1.IDeleteReleaseRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * The release is soft-deleted and a grace period is granted before complete
- * deletion. During this grace period the release can be recovered.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the release to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteRelease(request);
- */
   deleteRelease(
       request?: protos.animeshon.release.v1alpha1.IDeleteReleaseRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -559,6 +571,23 @@ export class PublisherClient {
     this.initialize();
     return this.innerApiCalls.deleteRelease(request, options, callback);
   }
+/**
+ * This method allows to recover a release while still in the grace period.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the release to undelete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Release]{@link animeshon.release.v1alpha1.Release}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/publisher.undelete_release.js</caption>
+ * region_tag:release_v1alpha1_generated_Publisher_UndeleteRelease_async
+ */
   undeleteRelease(
       request?: protos.animeshon.release.v1alpha1.IUndeleteReleaseRequest,
       options?: CallOptions):
@@ -579,23 +608,6 @@ export class PublisherClient {
           protos.animeshon.release.v1alpha1.IRelease,
           protos.animeshon.release.v1alpha1.IUndeleteReleaseRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * This method allows to recover a release while still in the grace period.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the release to undelete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Release]{@link animeshon.release.v1alpha1.Release}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.undeleteRelease(request);
- */
   undeleteRelease(
       request?: protos.animeshon.release.v1alpha1.IUndeleteReleaseRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -630,6 +642,23 @@ export class PublisherClient {
     this.initialize();
     return this.innerApiCalls.undeleteRelease(request, options, callback);
   }
+/**
+ * The release is marked as immediately available to the public.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the release to publish.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [PublishReleaseResponse]{@link animeshon.release.v1alpha1.PublishReleaseResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/publisher.publish_release.js</caption>
+ * region_tag:release_v1alpha1_generated_Publisher_PublishRelease_async
+ */
   publishRelease(
       request?: protos.animeshon.release.v1alpha1.IPublishReleaseRequest,
       options?: CallOptions):
@@ -650,23 +679,6 @@ export class PublisherClient {
           protos.animeshon.release.v1alpha1.IPublishReleaseResponse,
           protos.animeshon.release.v1alpha1.IPublishReleaseRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * The release is marked as immediately available to the public.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the release to publish.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [PublishReleaseResponse]{@link animeshon.release.v1alpha1.PublishReleaseResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.publishRelease(request);
- */
   publishRelease(
       request?: protos.animeshon.release.v1alpha1.IPublishReleaseRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -701,6 +713,25 @@ export class PublisherClient {
     this.initialize();
     return this.innerApiCalls.publishRelease(request, options, callback);
   }
+/**
+ * The release is unpublished and marked as a draft, associated
+ * non-authoritative will automatically be marked as suspended and hidden from
+ * the general public.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the release to publish.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [UnpublishReleaseResponse]{@link animeshon.release.v1alpha1.UnpublishReleaseResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/publisher.unpublish_release.js</caption>
+ * region_tag:release_v1alpha1_generated_Publisher_UnpublishRelease_async
+ */
   unpublishRelease(
       request?: protos.animeshon.release.v1alpha1.IUnpublishReleaseRequest,
       options?: CallOptions):
@@ -721,25 +752,6 @@ export class PublisherClient {
           protos.animeshon.release.v1alpha1.IUnpublishReleaseResponse,
           protos.animeshon.release.v1alpha1.IUnpublishReleaseRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * The release is unpublished and marked as a draft, associated
- * non-authoritative will automatically be marked as suspended and hidden from
- * the general public.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the release to publish.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [UnpublishReleaseResponse]{@link animeshon.release.v1alpha1.UnpublishReleaseResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.unpublishRelease(request);
- */
   unpublishRelease(
       request?: protos.animeshon.release.v1alpha1.IUnpublishReleaseRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -774,6 +786,23 @@ export class PublisherClient {
     this.initialize();
     return this.innerApiCalls.unpublishRelease(request, options, callback);
   }
+/**
+ * The release is scheduled to be released at a specific future date and time.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the release to schedule.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [ScheduleReleaseResponse]{@link animeshon.release.v1alpha1.ScheduleReleaseResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/publisher.schedule_release.js</caption>
+ * region_tag:release_v1alpha1_generated_Publisher_ScheduleRelease_async
+ */
   scheduleRelease(
       request?: protos.animeshon.release.v1alpha1.IScheduleReleaseRequest,
       options?: CallOptions):
@@ -794,23 +823,6 @@ export class PublisherClient {
           protos.animeshon.release.v1alpha1.IScheduleReleaseResponse,
           protos.animeshon.release.v1alpha1.IScheduleReleaseRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * The release is scheduled to be released at a specific future date and time.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the release to schedule.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [ScheduleReleaseResponse]{@link animeshon.release.v1alpha1.ScheduleReleaseResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.scheduleRelease(request);
- */
   scheduleRelease(
       request?: protos.animeshon.release.v1alpha1.IScheduleReleaseRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -845,6 +857,24 @@ export class PublisherClient {
     this.initialize();
     return this.innerApiCalls.scheduleRelease(request, options, callback);
   }
+/**
+ * This method can only be called on scheduled releases. The scheduling is
+ * cancelled and the release is marked as a draft.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the release to cancel.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [CancelReleaseResponse]{@link animeshon.release.v1alpha1.CancelReleaseResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/publisher.cancel_release.js</caption>
+ * region_tag:release_v1alpha1_generated_Publisher_CancelRelease_async
+ */
   cancelRelease(
       request?: protos.animeshon.release.v1alpha1.ICancelReleaseRequest,
       options?: CallOptions):
@@ -865,24 +895,6 @@ export class PublisherClient {
           protos.animeshon.release.v1alpha1.ICancelReleaseResponse,
           protos.animeshon.release.v1alpha1.ICancelReleaseRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * This method can only be called on scheduled releases. The scheduling is
- * cancelled and the release is marked as a draft.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the release to cancel.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [CancelReleaseResponse]{@link animeshon.release.v1alpha1.CancelReleaseResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.cancelRelease(request);
- */
   cancelRelease(
       request?: protos.animeshon.release.v1alpha1.ICancelReleaseRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -917,6 +929,27 @@ export class PublisherClient {
     this.initialize();
     return this.innerApiCalls.cancelRelease(request, options, callback);
   }
+/**
+ * This method can only be called on published releases marked as active. Any
+ * non-authoritative release associated to the specified release will also be
+ * automatically marked as suspended.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the release to suspend.
+ * @param {string} request.reason
+ *   The reason why the release has been suspended.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [SuspendReleaseResponse]{@link animeshon.release.v1alpha1.SuspendReleaseResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/publisher.suspend_release.js</caption>
+ * region_tag:release_v1alpha1_generated_Publisher_SuspendRelease_async
+ */
   suspendRelease(
       request?: protos.animeshon.release.v1alpha1.ISuspendReleaseRequest,
       options?: CallOptions):
@@ -937,27 +970,6 @@ export class PublisherClient {
           protos.animeshon.release.v1alpha1.ISuspendReleaseResponse,
           protos.animeshon.release.v1alpha1.ISuspendReleaseRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * This method can only be called on published releases marked as active. Any
- * non-authoritative release associated to the specified release will also be
- * automatically marked as suspended.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the release to suspend.
- * @param {string} request.reason
- *   The reason why the release has been suspended.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [SuspendReleaseResponse]{@link animeshon.release.v1alpha1.SuspendReleaseResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.suspendRelease(request);
- */
   suspendRelease(
       request?: protos.animeshon.release.v1alpha1.ISuspendReleaseRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -993,28 +1005,7 @@ export class PublisherClient {
     return this.innerApiCalls.suspendRelease(request, options, callback);
   }
 
-  listReleases(
-      request?: protos.animeshon.release.v1alpha1.IListReleasesRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.release.v1alpha1.IRelease[],
-        protos.animeshon.release.v1alpha1.IListReleasesRequest|null,
-        protos.animeshon.release.v1alpha1.IListReleasesResponse
-      ]>;
-  listReleases(
-      request: protos.animeshon.release.v1alpha1.IListReleasesRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.release.v1alpha1.IListReleasesRequest,
-          protos.animeshon.release.v1alpha1.IListReleasesResponse|null|undefined,
-          protos.animeshon.release.v1alpha1.IRelease>): void;
-  listReleases(
-      request: protos.animeshon.release.v1alpha1.IListReleasesRequest,
-      callback: PaginationCallback<
-          protos.animeshon.release.v1alpha1.IListReleasesRequest,
-          protos.animeshon.release.v1alpha1.IListReleasesResponse|null|undefined,
-          protos.animeshon.release.v1alpha1.IRelease>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -1039,6 +1030,27 @@ export class PublisherClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listReleases(
+      request?: protos.animeshon.release.v1alpha1.IListReleasesRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.release.v1alpha1.IRelease[],
+        protos.animeshon.release.v1alpha1.IListReleasesRequest|null,
+        protos.animeshon.release.v1alpha1.IListReleasesResponse
+      ]>;
+  listReleases(
+      request: protos.animeshon.release.v1alpha1.IListReleasesRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.release.v1alpha1.IListReleasesRequest,
+          protos.animeshon.release.v1alpha1.IListReleasesResponse|null|undefined,
+          protos.animeshon.release.v1alpha1.IRelease>): void;
+  listReleases(
+      request: protos.animeshon.release.v1alpha1.IListReleasesRequest,
+      callback: PaginationCallback<
+          protos.animeshon.release.v1alpha1.IListReleasesRequest,
+          protos.animeshon.release.v1alpha1.IListReleasesResponse|null|undefined,
+          protos.animeshon.release.v1alpha1.IRelease>): void;
   listReleases(
       request?: protos.animeshon.release.v1alpha1.IListReleasesRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -1112,7 +1124,8 @@ export class PublisherClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listReleases'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listReleases.createStream(
       this.innerApiCalls.listReleases as gax.GaxCall,
@@ -1145,11 +1158,8 @@ export class PublisherClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listReleasesAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/publisher.list_releases.js</caption>
+ * region_tag:release_v1alpha1_generated_Publisher_ListReleases_async
  */
   listReleasesAsync(
       request?: protos.animeshon.release.v1alpha1.IListReleasesRequest,
@@ -1164,8 +1174,8 @@ export class PublisherClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listReleases'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listReleases.asyncIterate(
       this.innerApiCalls['listReleases'] as GaxCall,

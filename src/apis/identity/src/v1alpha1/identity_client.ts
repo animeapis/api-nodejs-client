@@ -40,6 +40,7 @@ const version = require('../../../package.json').version;
 export class IdentityClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -51,6 +52,7 @@ export class IdentityClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   identityStub?: Promise<{[name: string]: Function}>;
 
@@ -92,6 +94,7 @@ export class IdentityClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof IdentityClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -113,6 +116,12 @@ export class IdentityClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -159,6 +168,9 @@ export class IdentityClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -185,7 +197,7 @@ export class IdentityClient {
           (this._protos as protobuf.Root).lookupService('animeshon.identity.v1alpha1.Identity') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.identity.v1alpha1.Identity,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -271,6 +283,22 @@ export class IdentityClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the user to retrieve the profile from.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [UserProfile]{@link animeshon.identity.v1alpha1.UserProfile}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/identity.get_user_profile.js</caption>
+ * region_tag:identity_v1alpha1_generated_Identity_GetUserProfile_async
+ */
   getUserProfile(
       request?: protos.animeshon.identity.v1alpha1.IGetUserProfileRequest,
       options?: CallOptions):
@@ -291,22 +319,6 @@ export class IdentityClient {
           protos.animeshon.identity.v1alpha1.IUserProfile,
           protos.animeshon.identity.v1alpha1.IGetUserProfileRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the user to retrieve the profile from.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [UserProfile]{@link animeshon.identity.v1alpha1.UserProfile}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getUserProfile(request);
- */
   getUserProfile(
       request?: protos.animeshon.identity.v1alpha1.IGetUserProfileRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -341,6 +353,22 @@ export class IdentityClient {
     this.initialize();
     return this.innerApiCalls.getUserProfile(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the user to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [User]{@link animeshon.identity.v1alpha1.User}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/identity.get_user.js</caption>
+ * region_tag:identity_v1alpha1_generated_Identity_GetUser_async
+ */
   getUser(
       request?: protos.animeshon.identity.v1alpha1.IGetUserRequest,
       options?: CallOptions):
@@ -361,22 +389,6 @@ export class IdentityClient {
           protos.animeshon.identity.v1alpha1.IUser,
           protos.animeshon.identity.v1alpha1.IGetUserRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the user to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [User]{@link animeshon.identity.v1alpha1.User}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getUser(request);
- */
   getUser(
       request?: protos.animeshon.identity.v1alpha1.IGetUserRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -411,6 +423,22 @@ export class IdentityClient {
     this.initialize();
     return this.innerApiCalls.getUser(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.identity.v1alpha1.User} request.user
+ *   The user to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [User]{@link animeshon.identity.v1alpha1.User}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/identity.create_user.js</caption>
+ * region_tag:identity_v1alpha1_generated_Identity_CreateUser_async
+ */
   createUser(
       request?: protos.animeshon.identity.v1alpha1.ICreateUserRequest,
       options?: CallOptions):
@@ -431,22 +459,6 @@ export class IdentityClient {
           protos.animeshon.identity.v1alpha1.IUser,
           protos.animeshon.identity.v1alpha1.ICreateUserRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.identity.v1alpha1.User} request.user
- *   The user to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [User]{@link animeshon.identity.v1alpha1.User}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createUser(request);
- */
   createUser(
       request?: protos.animeshon.identity.v1alpha1.ICreateUserRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -471,9 +483,30 @@ export class IdentityClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.createUser(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.identity.v1alpha1.User} request.user
+ *   The user to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [User]{@link animeshon.identity.v1alpha1.User}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/identity.update_user.js</caption>
+ * region_tag:identity_v1alpha1_generated_Identity_UpdateUser_async
+ */
   updateUser(
       request?: protos.animeshon.identity.v1alpha1.IUpdateUserRequest,
       options?: CallOptions):
@@ -494,25 +527,6 @@ export class IdentityClient {
           protos.animeshon.identity.v1alpha1.IUser,
           protos.animeshon.identity.v1alpha1.IUpdateUserRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.identity.v1alpha1.User} request.user
- *   The user to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [User]{@link animeshon.identity.v1alpha1.User}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateUser(request);
- */
   updateUser(
       request?: protos.animeshon.identity.v1alpha1.IUpdateUserRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -547,6 +561,22 @@ export class IdentityClient {
     this.initialize();
     return this.innerApiCalls.updateUser(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the user to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/identity.delete_user.js</caption>
+ * region_tag:identity_v1alpha1_generated_Identity_DeleteUser_async
+ */
   deleteUser(
       request?: protos.animeshon.identity.v1alpha1.IDeleteUserRequest,
       options?: CallOptions):
@@ -567,22 +597,6 @@ export class IdentityClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.identity.v1alpha1.IDeleteUserRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the user to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteUser(request);
- */
   deleteUser(
       request?: protos.animeshon.identity.v1alpha1.IDeleteUserRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -617,6 +631,22 @@ export class IdentityClient {
     this.initialize();
     return this.innerApiCalls.deleteUser(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the user to retrieve the settings from.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [UserSettings]{@link animeshon.identity.v1alpha1.UserSettings}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/identity.get_user_settings.js</caption>
+ * region_tag:identity_v1alpha1_generated_Identity_GetUserSettings_async
+ */
   getUserSettings(
       request?: protos.animeshon.identity.v1alpha1.IGetUserSettingsRequest,
       options?: CallOptions):
@@ -637,22 +667,6 @@ export class IdentityClient {
           protos.animeshon.identity.v1alpha1.IUserSettings,
           protos.animeshon.identity.v1alpha1.IGetUserSettingsRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the user to retrieve the settings from.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [UserSettings]{@link animeshon.identity.v1alpha1.UserSettings}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getUserSettings(request);
- */
   getUserSettings(
       request?: protos.animeshon.identity.v1alpha1.IGetUserSettingsRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -687,6 +701,25 @@ export class IdentityClient {
     this.initialize();
     return this.innerApiCalls.getUserSettings(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.identity.v1alpha1.UserSettings} request.settings
+ *   The user settings to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [UserSettings]{@link animeshon.identity.v1alpha1.UserSettings}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/identity.update_user_settings.js</caption>
+ * region_tag:identity_v1alpha1_generated_Identity_UpdateUserSettings_async
+ */
   updateUserSettings(
       request?: protos.animeshon.identity.v1alpha1.IUpdateUserSettingsRequest,
       options?: CallOptions):
@@ -707,25 +740,6 @@ export class IdentityClient {
           protos.animeshon.identity.v1alpha1.IUserSettings,
           protos.animeshon.identity.v1alpha1.IUpdateUserSettingsRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.identity.v1alpha1.UserSettings} request.settings
- *   The user settings to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [UserSettings]{@link animeshon.identity.v1alpha1.UserSettings}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateUserSettings(request);
- */
   updateUserSettings(
       request?: protos.animeshon.identity.v1alpha1.IUpdateUserSettingsRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -760,6 +774,22 @@ export class IdentityClient {
     this.initialize();
     return this.innerApiCalls.updateUserSettings(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the user to retrieve the notifications from.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [UserNotifications]{@link animeshon.identity.v1alpha1.UserNotifications}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/identity.get_user_notifications.js</caption>
+ * region_tag:identity_v1alpha1_generated_Identity_GetUserNotifications_async
+ */
   getUserNotifications(
       request?: protos.animeshon.identity.v1alpha1.IGetUserNotificationsRequest,
       options?: CallOptions):
@@ -780,22 +810,6 @@ export class IdentityClient {
           protos.animeshon.identity.v1alpha1.IUserNotifications,
           protos.animeshon.identity.v1alpha1.IGetUserNotificationsRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the user to retrieve the notifications from.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [UserNotifications]{@link animeshon.identity.v1alpha1.UserNotifications}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getUserNotifications(request);
- */
   getUserNotifications(
       request?: protos.animeshon.identity.v1alpha1.IGetUserNotificationsRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -830,6 +844,25 @@ export class IdentityClient {
     this.initialize();
     return this.innerApiCalls.getUserNotifications(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.identity.v1alpha1.UserNotifications} request.notifications
+ *   The user notifications to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [UserNotifications]{@link animeshon.identity.v1alpha1.UserNotifications}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/identity.update_user_notifications.js</caption>
+ * region_tag:identity_v1alpha1_generated_Identity_UpdateUserNotifications_async
+ */
   updateUserNotifications(
       request?: protos.animeshon.identity.v1alpha1.IUpdateUserNotificationsRequest,
       options?: CallOptions):
@@ -850,25 +883,6 @@ export class IdentityClient {
           protos.animeshon.identity.v1alpha1.IUserNotifications,
           protos.animeshon.identity.v1alpha1.IUpdateUserNotificationsRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.identity.v1alpha1.UserNotifications} request.notifications
- *   The user notifications to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [UserNotifications]{@link animeshon.identity.v1alpha1.UserNotifications}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateUserNotifications(request);
- */
   updateUserNotifications(
       request?: protos.animeshon.identity.v1alpha1.IUpdateUserNotificationsRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -903,6 +917,22 @@ export class IdentityClient {
     this.initialize();
     return this.innerApiCalls.updateUserNotifications(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the group to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Group]{@link animeshon.identity.v1alpha1.Group}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/identity.get_group.js</caption>
+ * region_tag:identity_v1alpha1_generated_Identity_GetGroup_async
+ */
   getGroup(
       request?: protos.animeshon.identity.v1alpha1.IGetGroupRequest,
       options?: CallOptions):
@@ -923,22 +953,6 @@ export class IdentityClient {
           protos.animeshon.identity.v1alpha1.IGroup,
           protos.animeshon.identity.v1alpha1.IGetGroupRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the group to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Group]{@link animeshon.identity.v1alpha1.Group}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getGroup(request);
- */
   getGroup(
       request?: protos.animeshon.identity.v1alpha1.IGetGroupRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -973,6 +987,22 @@ export class IdentityClient {
     this.initialize();
     return this.innerApiCalls.getGroup(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.identity.v1alpha1.Group} request.group
+ *   The group to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Group]{@link animeshon.identity.v1alpha1.Group}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/identity.create_group.js</caption>
+ * region_tag:identity_v1alpha1_generated_Identity_CreateGroup_async
+ */
   createGroup(
       request?: protos.animeshon.identity.v1alpha1.ICreateGroupRequest,
       options?: CallOptions):
@@ -993,22 +1023,6 @@ export class IdentityClient {
           protos.animeshon.identity.v1alpha1.IGroup,
           protos.animeshon.identity.v1alpha1.ICreateGroupRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.identity.v1alpha1.Group} request.group
- *   The group to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Group]{@link animeshon.identity.v1alpha1.Group}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createGroup(request);
- */
   createGroup(
       request?: protos.animeshon.identity.v1alpha1.ICreateGroupRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1033,9 +1047,30 @@ export class IdentityClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.createGroup(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.identity.v1alpha1.Group} request.group
+ *   The group to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Group]{@link animeshon.identity.v1alpha1.Group}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/identity.update_group.js</caption>
+ * region_tag:identity_v1alpha1_generated_Identity_UpdateGroup_async
+ */
   updateGroup(
       request?: protos.animeshon.identity.v1alpha1.IUpdateGroupRequest,
       options?: CallOptions):
@@ -1056,25 +1091,6 @@ export class IdentityClient {
           protos.animeshon.identity.v1alpha1.IGroup,
           protos.animeshon.identity.v1alpha1.IUpdateGroupRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.identity.v1alpha1.Group} request.group
- *   The group to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Group]{@link animeshon.identity.v1alpha1.Group}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateGroup(request);
- */
   updateGroup(
       request?: protos.animeshon.identity.v1alpha1.IUpdateGroupRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1109,6 +1125,22 @@ export class IdentityClient {
     this.initialize();
     return this.innerApiCalls.updateGroup(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the group to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/identity.delete_group.js</caption>
+ * region_tag:identity_v1alpha1_generated_Identity_DeleteGroup_async
+ */
   deleteGroup(
       request?: protos.animeshon.identity.v1alpha1.IDeleteGroupRequest,
       options?: CallOptions):
@@ -1129,22 +1161,6 @@ export class IdentityClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.identity.v1alpha1.IDeleteGroupRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the group to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteGroup(request);
- */
   deleteGroup(
       request?: protos.animeshon.identity.v1alpha1.IDeleteGroupRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1180,28 +1196,7 @@ export class IdentityClient {
     return this.innerApiCalls.deleteGroup(request, options, callback);
   }
 
-  listUsers(
-      request?: protos.animeshon.identity.v1alpha1.IListUsersRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.identity.v1alpha1.IUser[],
-        protos.animeshon.identity.v1alpha1.IListUsersRequest|null,
-        protos.animeshon.identity.v1alpha1.IListUsersResponse
-      ]>;
-  listUsers(
-      request: protos.animeshon.identity.v1alpha1.IListUsersRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.identity.v1alpha1.IListUsersRequest,
-          protos.animeshon.identity.v1alpha1.IListUsersResponse|null|undefined,
-          protos.animeshon.identity.v1alpha1.IUser>): void;
-  listUsers(
-      request: protos.animeshon.identity.v1alpha1.IListUsersRequest,
-      callback: PaginationCallback<
-          protos.animeshon.identity.v1alpha1.IListUsersRequest,
-          protos.animeshon.identity.v1alpha1.IListUsersResponse|null|undefined,
-          protos.animeshon.identity.v1alpha1.IUser>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -1224,6 +1219,27 @@ export class IdentityClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listUsers(
+      request?: protos.animeshon.identity.v1alpha1.IListUsersRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.identity.v1alpha1.IUser[],
+        protos.animeshon.identity.v1alpha1.IListUsersRequest|null,
+        protos.animeshon.identity.v1alpha1.IListUsersResponse
+      ]>;
+  listUsers(
+      request: protos.animeshon.identity.v1alpha1.IListUsersRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.identity.v1alpha1.IListUsersRequest,
+          protos.animeshon.identity.v1alpha1.IListUsersResponse|null|undefined,
+          protos.animeshon.identity.v1alpha1.IUser>): void;
+  listUsers(
+      request: protos.animeshon.identity.v1alpha1.IListUsersRequest,
+      callback: PaginationCallback<
+          protos.animeshon.identity.v1alpha1.IListUsersRequest,
+          protos.animeshon.identity.v1alpha1.IListUsersResponse|null|undefined,
+          protos.animeshon.identity.v1alpha1.IUser>): void;
   listUsers(
       request?: protos.animeshon.identity.v1alpha1.IListUsersRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -1249,6 +1265,8 @@ export class IdentityClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.listUsers(request, options, callback);
   }
@@ -1281,7 +1299,10 @@ export class IdentityClient {
     Transform{
     request = request || {};
     options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    const defaultCallSettings = this._defaults['listUsers'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listUsers.createStream(
       this.innerApiCalls.listUsers as gax.GaxCall,
@@ -1312,11 +1333,8 @@ export class IdentityClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listUsersAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/identity.list_users.js</caption>
+ * region_tag:identity_v1alpha1_generated_Identity_ListUsers_async
  */
   listUsersAsync(
       request?: protos.animeshon.identity.v1alpha1.IListUsersRequest,
@@ -1324,8 +1342,10 @@ export class IdentityClient {
     AsyncIterable<protos.animeshon.identity.v1alpha1.IUser>{
     request = request || {};
     options = options || {};
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    const defaultCallSettings = this._defaults['listUsers'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listUsers.asyncIterate(
       this.innerApiCalls['listUsers'] as GaxCall,
@@ -1333,28 +1353,7 @@ export class IdentityClient {
       callSettings
     ) as AsyncIterable<protos.animeshon.identity.v1alpha1.IUser>;
   }
-  listGroups(
-      request?: protos.animeshon.identity.v1alpha1.IListGroupsRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.identity.v1alpha1.IGroup[],
-        protos.animeshon.identity.v1alpha1.IListGroupsRequest|null,
-        protos.animeshon.identity.v1alpha1.IListGroupsResponse
-      ]>;
-  listGroups(
-      request: protos.animeshon.identity.v1alpha1.IListGroupsRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.identity.v1alpha1.IListGroupsRequest,
-          protos.animeshon.identity.v1alpha1.IListGroupsResponse|null|undefined,
-          protos.animeshon.identity.v1alpha1.IGroup>): void;
-  listGroups(
-      request: protos.animeshon.identity.v1alpha1.IListGroupsRequest,
-      callback: PaginationCallback<
-          protos.animeshon.identity.v1alpha1.IListGroupsRequest,
-          protos.animeshon.identity.v1alpha1.IListGroupsResponse|null|undefined,
-          protos.animeshon.identity.v1alpha1.IGroup>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -1377,6 +1376,27 @@ export class IdentityClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listGroups(
+      request?: protos.animeshon.identity.v1alpha1.IListGroupsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.identity.v1alpha1.IGroup[],
+        protos.animeshon.identity.v1alpha1.IListGroupsRequest|null,
+        protos.animeshon.identity.v1alpha1.IListGroupsResponse
+      ]>;
+  listGroups(
+      request: protos.animeshon.identity.v1alpha1.IListGroupsRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.identity.v1alpha1.IListGroupsRequest,
+          protos.animeshon.identity.v1alpha1.IListGroupsResponse|null|undefined,
+          protos.animeshon.identity.v1alpha1.IGroup>): void;
+  listGroups(
+      request: protos.animeshon.identity.v1alpha1.IListGroupsRequest,
+      callback: PaginationCallback<
+          protos.animeshon.identity.v1alpha1.IListGroupsRequest,
+          protos.animeshon.identity.v1alpha1.IListGroupsResponse|null|undefined,
+          protos.animeshon.identity.v1alpha1.IGroup>): void;
   listGroups(
       request?: protos.animeshon.identity.v1alpha1.IListGroupsRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -1402,6 +1422,8 @@ export class IdentityClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.listGroups(request, options, callback);
   }
@@ -1434,7 +1456,10 @@ export class IdentityClient {
     Transform{
     request = request || {};
     options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    const defaultCallSettings = this._defaults['listGroups'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listGroups.createStream(
       this.innerApiCalls.listGroups as gax.GaxCall,
@@ -1465,11 +1490,8 @@ export class IdentityClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listGroupsAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/identity.list_groups.js</caption>
+ * region_tag:identity_v1alpha1_generated_Identity_ListGroups_async
  */
   listGroupsAsync(
       request?: protos.animeshon.identity.v1alpha1.IListGroupsRequest,
@@ -1477,8 +1499,10 @@ export class IdentityClient {
     AsyncIterable<protos.animeshon.identity.v1alpha1.IGroup>{
     request = request || {};
     options = options || {};
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    const defaultCallSettings = this._defaults['listGroups'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listGroups.asyncIterate(
       this.innerApiCalls['listGroups'] as GaxCall,

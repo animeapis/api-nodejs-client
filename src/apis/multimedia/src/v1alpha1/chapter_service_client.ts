@@ -40,6 +40,7 @@ const version = require('../../../package.json').version;
 export class ChapterServiceClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -51,6 +52,7 @@ export class ChapterServiceClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   chapterServiceStub?: Promise<{[name: string]: Function}>;
 
@@ -92,6 +94,7 @@ export class ChapterServiceClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof ChapterServiceClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -113,6 +116,12 @@ export class ChapterServiceClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -157,6 +166,9 @@ export class ChapterServiceClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -183,7 +195,7 @@ export class ChapterServiceClient {
           (this._protos as protobuf.Root).lookupService('animeshon.multimedia.v1alpha1.ChapterService') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.multimedia.v1alpha1.ChapterService,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -269,6 +281,22 @@ export class ChapterServiceClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the chapter to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Chapter]{@link animeshon.multimedia.v1alpha1.Chapter}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/chapter_service.get_chapter.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_ChapterService_GetChapter_async
+ */
   getChapter(
       request?: protos.animeshon.multimedia.v1alpha1.IGetChapterRequest,
       options?: CallOptions):
@@ -289,22 +317,6 @@ export class ChapterServiceClient {
           protos.animeshon.multimedia.v1alpha1.IChapter,
           protos.animeshon.multimedia.v1alpha1.IGetChapterRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the chapter to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Chapter]{@link animeshon.multimedia.v1alpha1.Chapter}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getChapter(request);
- */
   getChapter(
       request?: protos.animeshon.multimedia.v1alpha1.IGetChapterRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -339,6 +351,24 @@ export class ChapterServiceClient {
     this.initialize();
     return this.innerApiCalls.getChapter(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent this chapter belongs to.
+ * @param {animeshon.multimedia.v1alpha1.Chapter} request.chapter
+ *   The chapter to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Chapter]{@link animeshon.multimedia.v1alpha1.Chapter}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/chapter_service.create_chapter.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_ChapterService_CreateChapter_async
+ */
   createChapter(
       request?: protos.animeshon.multimedia.v1alpha1.ICreateChapterRequest,
       options?: CallOptions):
@@ -359,24 +389,6 @@ export class ChapterServiceClient {
           protos.animeshon.multimedia.v1alpha1.IChapter,
           protos.animeshon.multimedia.v1alpha1.ICreateChapterRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.parent
- *   The parent this chapter belongs to.
- * @param {animeshon.multimedia.v1alpha1.Chapter} request.chapter
- *   The chapter to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Chapter]{@link animeshon.multimedia.v1alpha1.Chapter}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createChapter(request);
- */
   createChapter(
       request?: protos.animeshon.multimedia.v1alpha1.ICreateChapterRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -411,6 +423,25 @@ export class ChapterServiceClient {
     this.initialize();
     return this.innerApiCalls.createChapter(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.multimedia.v1alpha1.Chapter} request.chapter
+ *   The chapter to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Chapter]{@link animeshon.multimedia.v1alpha1.Chapter}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/chapter_service.update_chapter.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_ChapterService_UpdateChapter_async
+ */
   updateChapter(
       request?: protos.animeshon.multimedia.v1alpha1.IUpdateChapterRequest,
       options?: CallOptions):
@@ -431,25 +462,6 @@ export class ChapterServiceClient {
           protos.animeshon.multimedia.v1alpha1.IChapter,
           protos.animeshon.multimedia.v1alpha1.IUpdateChapterRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.multimedia.v1alpha1.Chapter} request.chapter
- *   The chapter to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Chapter]{@link animeshon.multimedia.v1alpha1.Chapter}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateChapter(request);
- */
   updateChapter(
       request?: protos.animeshon.multimedia.v1alpha1.IUpdateChapterRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -484,6 +496,22 @@ export class ChapterServiceClient {
     this.initialize();
     return this.innerApiCalls.updateChapter(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the chapter to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/chapter_service.delete_chapter.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_ChapterService_DeleteChapter_async
+ */
   deleteChapter(
       request?: protos.animeshon.multimedia.v1alpha1.IDeleteChapterRequest,
       options?: CallOptions):
@@ -504,22 +532,6 @@ export class ChapterServiceClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.multimedia.v1alpha1.IDeleteChapterRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the chapter to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteChapter(request);
- */
   deleteChapter(
       request?: protos.animeshon.multimedia.v1alpha1.IDeleteChapterRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -555,28 +567,7 @@ export class ChapterServiceClient {
     return this.innerApiCalls.deleteChapter(request, options, callback);
   }
 
-  listChapters(
-      request?: protos.animeshon.multimedia.v1alpha1.IListChaptersRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.multimedia.v1alpha1.IChapter[],
-        protos.animeshon.multimedia.v1alpha1.IListChaptersRequest|null,
-        protos.animeshon.multimedia.v1alpha1.IListChaptersResponse
-      ]>;
-  listChapters(
-      request: protos.animeshon.multimedia.v1alpha1.IListChaptersRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.multimedia.v1alpha1.IListChaptersRequest,
-          protos.animeshon.multimedia.v1alpha1.IListChaptersResponse|null|undefined,
-          protos.animeshon.multimedia.v1alpha1.IChapter>): void;
-  listChapters(
-      request: protos.animeshon.multimedia.v1alpha1.IListChaptersRequest,
-      callback: PaginationCallback<
-          protos.animeshon.multimedia.v1alpha1.IListChaptersRequest,
-          protos.animeshon.multimedia.v1alpha1.IListChaptersResponse|null|undefined,
-          protos.animeshon.multimedia.v1alpha1.IChapter>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -601,6 +592,27 @@ export class ChapterServiceClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listChapters(
+      request?: protos.animeshon.multimedia.v1alpha1.IListChaptersRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.multimedia.v1alpha1.IChapter[],
+        protos.animeshon.multimedia.v1alpha1.IListChaptersRequest|null,
+        protos.animeshon.multimedia.v1alpha1.IListChaptersResponse
+      ]>;
+  listChapters(
+      request: protos.animeshon.multimedia.v1alpha1.IListChaptersRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.multimedia.v1alpha1.IListChaptersRequest,
+          protos.animeshon.multimedia.v1alpha1.IListChaptersResponse|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IChapter>): void;
+  listChapters(
+      request: protos.animeshon.multimedia.v1alpha1.IListChaptersRequest,
+      callback: PaginationCallback<
+          protos.animeshon.multimedia.v1alpha1.IListChaptersRequest,
+          protos.animeshon.multimedia.v1alpha1.IListChaptersResponse|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IChapter>): void;
   listChapters(
       request?: protos.animeshon.multimedia.v1alpha1.IListChaptersRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -674,7 +686,8 @@ export class ChapterServiceClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listChapters'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listChapters.createStream(
       this.innerApiCalls.listChapters as gax.GaxCall,
@@ -707,11 +720,8 @@ export class ChapterServiceClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listChaptersAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/chapter_service.list_chapters.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_ChapterService_ListChapters_async
  */
   listChaptersAsync(
       request?: protos.animeshon.multimedia.v1alpha1.IListChaptersRequest,
@@ -726,8 +736,8 @@ export class ChapterServiceClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listChapters'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listChapters.asyncIterate(
       this.innerApiCalls['listChapters'] as GaxCall,

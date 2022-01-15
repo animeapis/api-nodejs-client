@@ -40,6 +40,7 @@ const version = require('../../../package.json').version;
 export class ResourceManagerClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -51,6 +52,7 @@ export class ResourceManagerClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   resourceManagerStub?: Promise<{[name: string]: Function}>;
 
@@ -92,6 +94,7 @@ export class ResourceManagerClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof ResourceManagerClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -113,6 +116,12 @@ export class ResourceManagerClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -159,6 +168,9 @@ export class ResourceManagerClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -185,7 +197,7 @@ export class ResourceManagerClient {
           (this._protos as protobuf.Root).lookupService('animeshon.resourcemanager.v1alpha1.ResourceManager') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.resourcemanager.v1alpha1.ResourceManager,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -271,6 +283,22 @@ export class ResourceManagerClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the organization to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Organization]{@link animeshon.resourcemanager.v1alpha1.Organization}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/resource_manager.get_organization.js</caption>
+ * region_tag:resourcemanager_v1alpha1_generated_ResourceManager_GetOrganization_async
+ */
   getOrganization(
       request?: protos.animeshon.resourcemanager.v1alpha1.IGetOrganizationRequest,
       options?: CallOptions):
@@ -291,22 +319,6 @@ export class ResourceManagerClient {
           protos.animeshon.resourcemanager.v1alpha1.IOrganization,
           protos.animeshon.resourcemanager.v1alpha1.IGetOrganizationRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the organization to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Organization]{@link animeshon.resourcemanager.v1alpha1.Organization}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getOrganization(request);
- */
   getOrganization(
       request?: protos.animeshon.resourcemanager.v1alpha1.IGetOrganizationRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -341,6 +353,22 @@ export class ResourceManagerClient {
     this.initialize();
     return this.innerApiCalls.getOrganization(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.resourcemanager.v1alpha1.Organization} request.organization
+ *   The organization to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Organization]{@link animeshon.resourcemanager.v1alpha1.Organization}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/resource_manager.create_organization.js</caption>
+ * region_tag:resourcemanager_v1alpha1_generated_ResourceManager_CreateOrganization_async
+ */
   createOrganization(
       request?: protos.animeshon.resourcemanager.v1alpha1.ICreateOrganizationRequest,
       options?: CallOptions):
@@ -361,22 +389,6 @@ export class ResourceManagerClient {
           protos.animeshon.resourcemanager.v1alpha1.IOrganization,
           protos.animeshon.resourcemanager.v1alpha1.ICreateOrganizationRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.resourcemanager.v1alpha1.Organization} request.organization
- *   The organization to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Organization]{@link animeshon.resourcemanager.v1alpha1.Organization}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createOrganization(request);
- */
   createOrganization(
       request?: protos.animeshon.resourcemanager.v1alpha1.ICreateOrganizationRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -401,9 +413,30 @@ export class ResourceManagerClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.createOrganization(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.resourcemanager.v1alpha1.Organization} request.organization
+ *   The organization to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Organization]{@link animeshon.resourcemanager.v1alpha1.Organization}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/resource_manager.update_organization.js</caption>
+ * region_tag:resourcemanager_v1alpha1_generated_ResourceManager_UpdateOrganization_async
+ */
   updateOrganization(
       request?: protos.animeshon.resourcemanager.v1alpha1.IUpdateOrganizationRequest,
       options?: CallOptions):
@@ -424,25 +457,6 @@ export class ResourceManagerClient {
           protos.animeshon.resourcemanager.v1alpha1.IOrganization,
           protos.animeshon.resourcemanager.v1alpha1.IUpdateOrganizationRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.resourcemanager.v1alpha1.Organization} request.organization
- *   The organization to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Organization]{@link animeshon.resourcemanager.v1alpha1.Organization}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateOrganization(request);
- */
   updateOrganization(
       request?: protos.animeshon.resourcemanager.v1alpha1.IUpdateOrganizationRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -477,6 +491,22 @@ export class ResourceManagerClient {
     this.initialize();
     return this.innerApiCalls.updateOrganization(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the organization to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/resource_manager.delete_organization.js</caption>
+ * region_tag:resourcemanager_v1alpha1_generated_ResourceManager_DeleteOrganization_async
+ */
   deleteOrganization(
       request?: protos.animeshon.resourcemanager.v1alpha1.IDeleteOrganizationRequest,
       options?: CallOptions):
@@ -497,22 +527,6 @@ export class ResourceManagerClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.resourcemanager.v1alpha1.IDeleteOrganizationRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the organization to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteOrganization(request);
- */
   deleteOrganization(
       request?: protos.animeshon.resourcemanager.v1alpha1.IDeleteOrganizationRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -547,6 +561,22 @@ export class ResourceManagerClient {
     this.initialize();
     return this.innerApiCalls.deleteOrganization(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the team to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Team]{@link animeshon.resourcemanager.v1alpha1.Team}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/resource_manager.get_team.js</caption>
+ * region_tag:resourcemanager_v1alpha1_generated_ResourceManager_GetTeam_async
+ */
   getTeam(
       request?: protos.animeshon.resourcemanager.v1alpha1.IGetTeamRequest,
       options?: CallOptions):
@@ -567,22 +597,6 @@ export class ResourceManagerClient {
           protos.animeshon.resourcemanager.v1alpha1.ITeam,
           protos.animeshon.resourcemanager.v1alpha1.IGetTeamRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the team to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Team]{@link animeshon.resourcemanager.v1alpha1.Team}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getTeam(request);
- */
   getTeam(
       request?: protos.animeshon.resourcemanager.v1alpha1.IGetTeamRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -617,6 +631,22 @@ export class ResourceManagerClient {
     this.initialize();
     return this.innerApiCalls.getTeam(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.resourcemanager.v1alpha1.Team} request.team
+ *   The team to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Team]{@link animeshon.resourcemanager.v1alpha1.Team}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/resource_manager.create_team.js</caption>
+ * region_tag:resourcemanager_v1alpha1_generated_ResourceManager_CreateTeam_async
+ */
   createTeam(
       request?: protos.animeshon.resourcemanager.v1alpha1.ICreateTeamRequest,
       options?: CallOptions):
@@ -637,22 +667,6 @@ export class ResourceManagerClient {
           protos.animeshon.resourcemanager.v1alpha1.ITeam,
           protos.animeshon.resourcemanager.v1alpha1.ICreateTeamRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.resourcemanager.v1alpha1.Team} request.team
- *   The team to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Team]{@link animeshon.resourcemanager.v1alpha1.Team}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createTeam(request);
- */
   createTeam(
       request?: protos.animeshon.resourcemanager.v1alpha1.ICreateTeamRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -677,9 +691,30 @@ export class ResourceManagerClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.createTeam(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.resourcemanager.v1alpha1.Team} request.team
+ *   The team to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Team]{@link animeshon.resourcemanager.v1alpha1.Team}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/resource_manager.update_team.js</caption>
+ * region_tag:resourcemanager_v1alpha1_generated_ResourceManager_UpdateTeam_async
+ */
   updateTeam(
       request?: protos.animeshon.resourcemanager.v1alpha1.IUpdateTeamRequest,
       options?: CallOptions):
@@ -700,25 +735,6 @@ export class ResourceManagerClient {
           protos.animeshon.resourcemanager.v1alpha1.ITeam,
           protos.animeshon.resourcemanager.v1alpha1.IUpdateTeamRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.resourcemanager.v1alpha1.Team} request.team
- *   The team to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Team]{@link animeshon.resourcemanager.v1alpha1.Team}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateTeam(request);
- */
   updateTeam(
       request?: protos.animeshon.resourcemanager.v1alpha1.IUpdateTeamRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -753,6 +769,22 @@ export class ResourceManagerClient {
     this.initialize();
     return this.innerApiCalls.updateTeam(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the team to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/resource_manager.delete_team.js</caption>
+ * region_tag:resourcemanager_v1alpha1_generated_ResourceManager_DeleteTeam_async
+ */
   deleteTeam(
       request?: protos.animeshon.resourcemanager.v1alpha1.IDeleteTeamRequest,
       options?: CallOptions):
@@ -773,22 +805,6 @@ export class ResourceManagerClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.resourcemanager.v1alpha1.IDeleteTeamRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the team to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteTeam(request);
- */
   deleteTeam(
       request?: protos.animeshon.resourcemanager.v1alpha1.IDeleteTeamRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -824,28 +840,7 @@ export class ResourceManagerClient {
     return this.innerApiCalls.deleteTeam(request, options, callback);
   }
 
-  listOrganizations(
-      request?: protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.resourcemanager.v1alpha1.IOrganization[],
-        protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsRequest|null,
-        protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsResponse
-      ]>;
-  listOrganizations(
-      request: protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsRequest,
-          protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsResponse|null|undefined,
-          protos.animeshon.resourcemanager.v1alpha1.IOrganization>): void;
-  listOrganizations(
-      request: protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsRequest,
-      callback: PaginationCallback<
-          protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsRequest,
-          protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsResponse|null|undefined,
-          protos.animeshon.resourcemanager.v1alpha1.IOrganization>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -868,6 +863,27 @@ export class ResourceManagerClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listOrganizations(
+      request?: protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.resourcemanager.v1alpha1.IOrganization[],
+        protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsRequest|null,
+        protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsResponse
+      ]>;
+  listOrganizations(
+      request: protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsRequest,
+          protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsResponse|null|undefined,
+          protos.animeshon.resourcemanager.v1alpha1.IOrganization>): void;
+  listOrganizations(
+      request: protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsRequest,
+      callback: PaginationCallback<
+          protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsRequest,
+          protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsResponse|null|undefined,
+          protos.animeshon.resourcemanager.v1alpha1.IOrganization>): void;
   listOrganizations(
       request?: protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -893,6 +909,8 @@ export class ResourceManagerClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.listOrganizations(request, options, callback);
   }
@@ -925,7 +943,10 @@ export class ResourceManagerClient {
     Transform{
     request = request || {};
     options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    const defaultCallSettings = this._defaults['listOrganizations'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listOrganizations.createStream(
       this.innerApiCalls.listOrganizations as gax.GaxCall,
@@ -956,11 +977,8 @@ export class ResourceManagerClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listOrganizationsAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/resource_manager.list_organizations.js</caption>
+ * region_tag:resourcemanager_v1alpha1_generated_ResourceManager_ListOrganizations_async
  */
   listOrganizationsAsync(
       request?: protos.animeshon.resourcemanager.v1alpha1.IListOrganizationsRequest,
@@ -968,8 +986,10 @@ export class ResourceManagerClient {
     AsyncIterable<protos.animeshon.resourcemanager.v1alpha1.IOrganization>{
     request = request || {};
     options = options || {};
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    const defaultCallSettings = this._defaults['listOrganizations'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listOrganizations.asyncIterate(
       this.innerApiCalls['listOrganizations'] as GaxCall,
@@ -977,28 +997,7 @@ export class ResourceManagerClient {
       callSettings
     ) as AsyncIterable<protos.animeshon.resourcemanager.v1alpha1.IOrganization>;
   }
-  listTeams(
-      request?: protos.animeshon.resourcemanager.v1alpha1.IListTeamsRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.resourcemanager.v1alpha1.ITeam[],
-        protos.animeshon.resourcemanager.v1alpha1.IListTeamsRequest|null,
-        protos.animeshon.resourcemanager.v1alpha1.IListTeamsResponse
-      ]>;
-  listTeams(
-      request: protos.animeshon.resourcemanager.v1alpha1.IListTeamsRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.resourcemanager.v1alpha1.IListTeamsRequest,
-          protos.animeshon.resourcemanager.v1alpha1.IListTeamsResponse|null|undefined,
-          protos.animeshon.resourcemanager.v1alpha1.ITeam>): void;
-  listTeams(
-      request: protos.animeshon.resourcemanager.v1alpha1.IListTeamsRequest,
-      callback: PaginationCallback<
-          protos.animeshon.resourcemanager.v1alpha1.IListTeamsRequest,
-          protos.animeshon.resourcemanager.v1alpha1.IListTeamsResponse|null|undefined,
-          protos.animeshon.resourcemanager.v1alpha1.ITeam>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -1021,6 +1020,27 @@ export class ResourceManagerClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listTeams(
+      request?: protos.animeshon.resourcemanager.v1alpha1.IListTeamsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.resourcemanager.v1alpha1.ITeam[],
+        protos.animeshon.resourcemanager.v1alpha1.IListTeamsRequest|null,
+        protos.animeshon.resourcemanager.v1alpha1.IListTeamsResponse
+      ]>;
+  listTeams(
+      request: protos.animeshon.resourcemanager.v1alpha1.IListTeamsRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.resourcemanager.v1alpha1.IListTeamsRequest,
+          protos.animeshon.resourcemanager.v1alpha1.IListTeamsResponse|null|undefined,
+          protos.animeshon.resourcemanager.v1alpha1.ITeam>): void;
+  listTeams(
+      request: protos.animeshon.resourcemanager.v1alpha1.IListTeamsRequest,
+      callback: PaginationCallback<
+          protos.animeshon.resourcemanager.v1alpha1.IListTeamsRequest,
+          protos.animeshon.resourcemanager.v1alpha1.IListTeamsResponse|null|undefined,
+          protos.animeshon.resourcemanager.v1alpha1.ITeam>): void;
   listTeams(
       request?: protos.animeshon.resourcemanager.v1alpha1.IListTeamsRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -1046,6 +1066,8 @@ export class ResourceManagerClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.listTeams(request, options, callback);
   }
@@ -1078,7 +1100,10 @@ export class ResourceManagerClient {
     Transform{
     request = request || {};
     options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    const defaultCallSettings = this._defaults['listTeams'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listTeams.createStream(
       this.innerApiCalls.listTeams as gax.GaxCall,
@@ -1109,11 +1134,8 @@ export class ResourceManagerClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listTeamsAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/resource_manager.list_teams.js</caption>
+ * region_tag:resourcemanager_v1alpha1_generated_ResourceManager_ListTeams_async
  */
   listTeamsAsync(
       request?: protos.animeshon.resourcemanager.v1alpha1.IListTeamsRequest,
@@ -1121,8 +1143,10 @@ export class ResourceManagerClient {
     AsyncIterable<protos.animeshon.resourcemanager.v1alpha1.ITeam>{
     request = request || {};
     options = options || {};
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    const defaultCallSettings = this._defaults['listTeams'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listTeams.asyncIterate(
       this.innerApiCalls['listTeams'] as GaxCall,

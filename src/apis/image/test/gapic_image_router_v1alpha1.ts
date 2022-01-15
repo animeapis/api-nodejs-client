@@ -70,8 +70,8 @@ describe('v1alpha1.ImageRouterClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new imagerouterModule.v1alpha1.ImageRouterClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.imageRouterStub, undefined);
         await client.initialize();
@@ -80,8 +80,8 @@ describe('v1alpha1.ImageRouterClient', () => {
 
     it('has close method', () => {
         const client = new imagerouterModule.v1alpha1.ImageRouterClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -89,8 +89,8 @@ describe('v1alpha1.ImageRouterClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new imagerouterModule.v1alpha1.ImageRouterClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -101,8 +101,8 @@ describe('v1alpha1.ImageRouterClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new imagerouterModule.v1alpha1.ImageRouterClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -121,9 +121,9 @@ describe('v1alpha1.ImageRouterClient', () => {
     describe('getImageRoute', () => {
         it('invokes getImageRoute without error', async () => {
             const client = new imagerouterModule.v1alpha1.ImageRouterClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetImageRouteRequest());
             request.name = '';
@@ -145,9 +145,9 @@ describe('v1alpha1.ImageRouterClient', () => {
 
         it('invokes getImageRoute without error using callback', async () => {
             const client = new imagerouterModule.v1alpha1.ImageRouterClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetImageRouteRequest());
             request.name = '';
@@ -180,9 +180,9 @@ describe('v1alpha1.ImageRouterClient', () => {
 
         it('invokes getImageRoute with error', async () => {
             const client = new imagerouterModule.v1alpha1.ImageRouterClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetImageRouteRequest());
             request.name = '';
@@ -205,9 +205,9 @@ describe('v1alpha1.ImageRouterClient', () => {
     describe('routeImage', () => {
         it('invokes routeImage without error', async () => {
             const client = new imagerouterModule.v1alpha1.ImageRouterClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.RouteImageRequest());
             request.host = '';
@@ -229,9 +229,9 @@ describe('v1alpha1.ImageRouterClient', () => {
 
         it('invokes routeImage without error using callback', async () => {
             const client = new imagerouterModule.v1alpha1.ImageRouterClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.RouteImageRequest());
             request.host = '';
@@ -264,9 +264,9 @@ describe('v1alpha1.ImageRouterClient', () => {
 
         it('invokes routeImage with error', async () => {
             const client = new imagerouterModule.v1alpha1.ImageRouterClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.RouteImageRequest());
             request.host = '';

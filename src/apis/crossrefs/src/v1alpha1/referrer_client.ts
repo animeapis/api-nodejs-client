@@ -40,6 +40,7 @@ const version = require('../../../package.json').version;
 export class ReferrerClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -51,6 +52,7 @@ export class ReferrerClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   pathTemplates: {[name: string]: gax.PathTemplate};
   operationsClient: gax.OperationsClient;
@@ -94,6 +96,7 @@ export class ReferrerClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof ReferrerClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -115,6 +118,12 @@ export class ReferrerClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -236,6 +245,9 @@ export class ReferrerClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -262,7 +274,7 @@ export class ReferrerClient {
           (this._protos as protobuf.Root).lookupService('animeshon.crossrefs.v1alpha1.Referrer') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.crossrefs.v1alpha1.Referrer,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -349,6 +361,23 @@ export class ReferrerClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ * GetCrossRef returns a crossref.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resource name of the requested crossref.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [CrossRef]{@link animeshon.crossrefs.v1alpha1.CrossRef}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/referrer.get_cross_ref.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_GetCrossRef_async
+ */
   getCrossRef(
       request?: protos.animeshon.crossrefs.v1alpha1.IGetCrossRefRequest,
       options?: CallOptions):
@@ -369,23 +398,6 @@ export class ReferrerClient {
           protos.animeshon.crossrefs.v1alpha1.ICrossRef,
           protos.animeshon.crossrefs.v1alpha1.IGetCrossRefRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * GetCrossRef returns a crossref.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The resource name of the requested crossref.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [CrossRef]{@link animeshon.crossrefs.v1alpha1.CrossRef}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getCrossRef(request);
- */
   getCrossRef(
       request?: protos.animeshon.crossrefs.v1alpha1.IGetCrossRefRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -420,6 +432,22 @@ export class ReferrerClient {
     this.initialize();
     return this.innerApiCalls.getCrossRef(request, options, callback);
   }
+/**
+ * CreateCrossRef creates a new crossref.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.crossrefs.v1alpha1.CrossRef} request.crossref
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [CrossRef]{@link animeshon.crossrefs.v1alpha1.CrossRef}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/referrer.create_cross_ref.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_CreateCrossRef_async
+ */
   createCrossRef(
       request?: protos.animeshon.crossrefs.v1alpha1.ICreateCrossRefRequest,
       options?: CallOptions):
@@ -440,22 +468,6 @@ export class ReferrerClient {
           protos.animeshon.crossrefs.v1alpha1.ICrossRef,
           protos.animeshon.crossrefs.v1alpha1.ICreateCrossRefRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * CreateCrossRef creates a new crossref.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.crossrefs.v1alpha1.CrossRef} request.crossref
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [CrossRef]{@link animeshon.crossrefs.v1alpha1.CrossRef}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createCrossRef(request);
- */
   createCrossRef(
       request?: protos.animeshon.crossrefs.v1alpha1.ICreateCrossRefRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -480,9 +492,30 @@ export class ReferrerClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.createCrossRef(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.crossrefs.v1alpha1.CrossRef} request.crossref
+ *   The crossref to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [UpdateCrossRefResponse]{@link animeshon.crossrefs.v1alpha1.UpdateCrossRefResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/referrer.update_cross_ref.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_UpdateCrossRef_async
+ */
   updateCrossRef(
       request?: protos.animeshon.crossrefs.v1alpha1.IUpdateCrossRefRequest,
       options?: CallOptions):
@@ -503,25 +536,6 @@ export class ReferrerClient {
           protos.animeshon.crossrefs.v1alpha1.IUpdateCrossRefResponse,
           protos.animeshon.crossrefs.v1alpha1.IUpdateCrossRefRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.crossrefs.v1alpha1.CrossRef} request.crossref
- *   The crossref to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [UpdateCrossRefResponse]{@link animeshon.crossrefs.v1alpha1.UpdateCrossRefResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateCrossRef(request);
- */
   updateCrossRef(
       request?: protos.animeshon.crossrefs.v1alpha1.IUpdateCrossRefRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -556,6 +570,22 @@ export class ReferrerClient {
     this.initialize();
     return this.innerApiCalls.updateCrossRef(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.crossrefs.v1alpha1.CrossRefsFilterRequest} request.filter
+ *   A filter to be applied to results.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [CountCrossRefsResponse]{@link animeshon.crossrefs.v1alpha1.CountCrossRefsResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/referrer.count_cross_refs.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_CountCrossRefs_async
+ */
   countCrossRefs(
       request?: protos.animeshon.crossrefs.v1alpha1.ICountCrossRefsRequest,
       options?: CallOptions):
@@ -576,22 +606,6 @@ export class ReferrerClient {
           protos.animeshon.crossrefs.v1alpha1.ICountCrossRefsResponse,
           protos.animeshon.crossrefs.v1alpha1.ICountCrossRefsRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.crossrefs.v1alpha1.CrossRefsFilterRequest} request.filter
- *   A filter to be applied to results.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [CountCrossRefsResponse]{@link animeshon.crossrefs.v1alpha1.CountCrossRefsResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.countCrossRefs(request);
- */
   countCrossRefs(
       request?: protos.animeshon.crossrefs.v1alpha1.ICountCrossRefsRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -616,9 +630,27 @@ export class ReferrerClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.countCrossRefs(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The resource name of the requested universe.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Universe]{@link animeshon.crossrefs.v1alpha1.Universe}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/referrer.get_universe.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_GetUniverse_async
+ */
   getUniverse(
       request?: protos.animeshon.crossrefs.v1alpha1.IGetUniverseRequest,
       options?: CallOptions):
@@ -639,22 +671,6 @@ export class ReferrerClient {
           protos.animeshon.crossrefs.v1alpha1.IUniverse,
           protos.animeshon.crossrefs.v1alpha1.IGetUniverseRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The resource name of the requested universe.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Universe]{@link animeshon.crossrefs.v1alpha1.Universe}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getUniverse(request);
- */
   getUniverse(
       request?: protos.animeshon.crossrefs.v1alpha1.IGetUniverseRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -689,6 +705,25 @@ export class ReferrerClient {
     this.initialize();
     return this.innerApiCalls.getUniverse(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.crossrefs.v1alpha1.Universe} request.universe
+ *   The universe to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Universe]{@link animeshon.crossrefs.v1alpha1.Universe}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/referrer.update_universe.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_UpdateUniverse_async
+ */
   updateUniverse(
       request?: protos.animeshon.crossrefs.v1alpha1.IUpdateUniverseRequest,
       options?: CallOptions):
@@ -709,25 +744,6 @@ export class ReferrerClient {
           protos.animeshon.crossrefs.v1alpha1.IUniverse,
           protos.animeshon.crossrefs.v1alpha1.IUpdateUniverseRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.crossrefs.v1alpha1.Universe} request.universe
- *   The universe to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Universe]{@link animeshon.crossrefs.v1alpha1.Universe}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateUniverse(request);
- */
   updateUniverse(
       request?: protos.animeshon.crossrefs.v1alpha1.IUpdateUniverseRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -762,6 +778,26 @@ export class ReferrerClient {
     this.initialize();
     return this.innerApiCalls.updateUniverse(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The universe to expand.
+ * @param {number} request.depthLimit
+ *   The maximum depth to expand.
+ * @param {string} request.filter
+ *   The filter to use. Accepted values are CONTENT and CHARACTER.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [ExpandUniverseResponse]{@link animeshon.crossrefs.v1alpha1.ExpandUniverseResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/referrer.expand_universe.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_ExpandUniverse_async
+ */
   expandUniverse(
       request?: protos.animeshon.crossrefs.v1alpha1.IExpandUniverseRequest,
       options?: CallOptions):
@@ -782,26 +818,6 @@ export class ReferrerClient {
           protos.animeshon.crossrefs.v1alpha1.IExpandUniverseResponse,
           protos.animeshon.crossrefs.v1alpha1.IExpandUniverseRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The universe to expand.
- * @param {number} request.depthLimit
- *   The maximum depth to expand.
- * @param {string} request.filter
- *   The filter to use. Accepted values are CONTENT and CHARACTER.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [ExpandUniverseResponse]{@link animeshon.crossrefs.v1alpha1.ExpandUniverseResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.expandUniverse(request);
- */
   expandUniverse(
       request?: protos.animeshon.crossrefs.v1alpha1.IExpandUniverseRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -836,6 +852,21 @@ export class ReferrerClient {
     this.initialize();
     return this.innerApiCalls.expandUniverse(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Wormhole]{@link animeshon.crossrefs.v1alpha1.Wormhole}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/referrer.get_wormhole.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_GetWormhole_async
+ */
   getWormhole(
       request?: protos.animeshon.crossrefs.v1alpha1.IGetWormholeRequest,
       options?: CallOptions):
@@ -856,21 +887,6 @@ export class ReferrerClient {
           protos.animeshon.crossrefs.v1alpha1.IWormhole,
           protos.animeshon.crossrefs.v1alpha1.IGetWormholeRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Wormhole]{@link animeshon.crossrefs.v1alpha1.Wormhole}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getWormhole(request);
- */
   getWormhole(
       request?: protos.animeshon.crossrefs.v1alpha1.IGetWormholeRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -905,26 +921,6 @@ export class ReferrerClient {
     this.initialize();
     return this.innerApiCalls.getWormhole(request, options, callback);
   }
-  listWormholeCrossRefs(
-      request?: protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsResponse,
-        protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsRequest|undefined, {}|undefined
-      ]>;
-  listWormholeCrossRefs(
-      request: protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsRequest,
-      options: CallOptions,
-      callback: Callback<
-          protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsResponse,
-          protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsRequest|null|undefined,
-          {}|null|undefined>): void;
-  listWormholeCrossRefs(
-      request: protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsRequest,
-      callback: Callback<
-          protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsResponse,
-          protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsRequest|null|undefined,
-          {}|null|undefined>): void;
 /**
  *
  * @param {Object} request
@@ -949,9 +945,29 @@ export class ReferrerClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
  *   for more details and examples.
- * @example
- * const [response] = await client.listWormholeCrossRefs(request);
+ * @example <caption>include:samples/generated/v1alpha1/referrer.list_wormhole_cross_refs.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_ListWormholeCrossRefs_async
  */
+  listWormholeCrossRefs(
+      request?: protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsResponse,
+        protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsRequest|undefined, {}|undefined
+      ]>;
+  listWormholeCrossRefs(
+      request: protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsResponse,
+          protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsRequest|null|undefined,
+          {}|null|undefined>): void;
+  listWormholeCrossRefs(
+      request: protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsRequest,
+      callback: Callback<
+          protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsResponse,
+          protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsRequest|null|undefined,
+          {}|null|undefined>): void;
   listWormholeCrossRefs(
       request?: protos.animeshon.crossrefs.v1alpha1.IListWormholeCrossRefsRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -987,26 +1003,6 @@ export class ReferrerClient {
     return this.innerApiCalls.listWormholeCrossRefs(request, options, callback);
   }
 
-  analyzeCrossRefs(
-      request?: protos.animeshon.crossrefs.v1alpha1.IAnalyzeCrossRefRequest,
-      options?: CallOptions):
-      Promise<[
-        LROperation<protos.animeshon.crossrefs.v1alpha1.IAnalyzeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
-        protos.google.longrunning.IOperation|undefined, {}|undefined
-      ]>;
-  analyzeCrossRefs(
-      request: protos.animeshon.crossrefs.v1alpha1.IAnalyzeCrossRefRequest,
-      options: CallOptions,
-      callback: Callback<
-          LROperation<protos.animeshon.crossrefs.v1alpha1.IAnalyzeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
-          protos.google.longrunning.IOperation|null|undefined,
-          {}|null|undefined>): void;
-  analyzeCrossRefs(
-      request: protos.animeshon.crossrefs.v1alpha1.IAnalyzeCrossRefRequest,
-      callback: Callback<
-          LROperation<protos.animeshon.crossrefs.v1alpha1.IAnalyzeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
-          protos.google.longrunning.IOperation|null|undefined,
-          {}|null|undefined>): void;
 /**
  * Analyzes and proposes new cross-references according to their similarity.
  *
@@ -1029,10 +1025,29 @@ export class ReferrerClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
  *   for more details and examples.
- * @example
- * const [operation] = await client.analyzeCrossRefs(request);
- * const [response] = await operation.promise();
+ * @example <caption>include:samples/generated/v1alpha1/referrer.analyze_cross_refs.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_AnalyzeCrossRefs_async
  */
+  analyzeCrossRefs(
+      request?: protos.animeshon.crossrefs.v1alpha1.IAnalyzeCrossRefRequest,
+      options?: CallOptions):
+      Promise<[
+        LROperation<protos.animeshon.crossrefs.v1alpha1.IAnalyzeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
+        protos.google.longrunning.IOperation|undefined, {}|undefined
+      ]>;
+  analyzeCrossRefs(
+      request: protos.animeshon.crossrefs.v1alpha1.IAnalyzeCrossRefRequest,
+      options: CallOptions,
+      callback: Callback<
+          LROperation<protos.animeshon.crossrefs.v1alpha1.IAnalyzeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
+  analyzeCrossRefs(
+      request: protos.animeshon.crossrefs.v1alpha1.IAnalyzeCrossRefRequest,
+      callback: Callback<
+          LROperation<protos.animeshon.crossrefs.v1alpha1.IAnalyzeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
   analyzeCrossRefs(
       request?: protos.animeshon.crossrefs.v1alpha1.IAnalyzeCrossRefRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1057,6 +1072,8 @@ export class ReferrerClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.analyzeCrossRefs(request, options, callback);
   }
@@ -1069,11 +1086,8 @@ export class ReferrerClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
  *   for more details and examples.
- * @example
- * const decodedOperation = await checkAnalyzeCrossRefsProgress(name);
- * console.log(decodedOperation.result);
- * console.log(decodedOperation.done);
- * console.log(decodedOperation.metadata);
+ * @example <caption>include:samples/generated/v1alpha1/referrer.analyze_cross_refs.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_AnalyzeCrossRefs_async
  */
   async checkAnalyzeCrossRefsProgress(name: string): Promise<LROperation<protos.animeshon.crossrefs.v1alpha1.AnalyzeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.OperationMetadata>>{
     const request = new operationsProtos.google.longrunning.GetOperationRequest({name});
@@ -1081,6 +1095,25 @@ export class ReferrerClient {
     const decodeOperation = new gax.Operation(operation, this.descriptors.longrunning.analyzeCrossRefs, gax.createDefaultBackoffSettings());
     return decodeOperation as LROperation<protos.animeshon.crossrefs.v1alpha1.AnalyzeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.OperationMetadata>;
   }
+/**
+ * Imports already existing cross-references from third-parties.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {number[]} request.opts
+ *   Map of all options for the import
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing
+ *   a long running operation. Its `promise()` method returns a promise
+ *   you can `await` for.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/referrer.import_cross_refs.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_ImportCrossRefs_async
+ */
   importCrossRefs(
       request?: protos.animeshon.crossrefs.v1alpha1.IImportCrossRefRequest,
       options?: CallOptions):
@@ -1101,26 +1134,6 @@ export class ReferrerClient {
           LROperation<protos.animeshon.crossrefs.v1alpha1.IImportCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
           {}|null|undefined>): void;
-/**
- * Imports already existing cross-references from third-parties.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {number[]} request.opts
- *   Map of all options for the import
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing
- *   a long running operation. Its `promise()` method returns a promise
- *   you can `await` for.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
- *   for more details and examples.
- * @example
- * const [operation] = await client.importCrossRefs(request);
- * const [response] = await operation.promise();
- */
   importCrossRefs(
       request?: protos.animeshon.crossrefs.v1alpha1.IImportCrossRefRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1145,6 +1158,8 @@ export class ReferrerClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.importCrossRefs(request, options, callback);
   }
@@ -1157,11 +1172,8 @@ export class ReferrerClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
  *   for more details and examples.
- * @example
- * const decodedOperation = await checkImportCrossRefsProgress(name);
- * console.log(decodedOperation.result);
- * console.log(decodedOperation.done);
- * console.log(decodedOperation.metadata);
+ * @example <caption>include:samples/generated/v1alpha1/referrer.import_cross_refs.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_ImportCrossRefs_async
  */
   async checkImportCrossRefsProgress(name: string): Promise<LROperation<protos.animeshon.crossrefs.v1alpha1.ImportCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.OperationMetadata>>{
     const request = new operationsProtos.google.longrunning.GetOperationRequest({name});
@@ -1169,26 +1181,6 @@ export class ReferrerClient {
     const decodeOperation = new gax.Operation(operation, this.descriptors.longrunning.importCrossRefs, gax.createDefaultBackoffSettings());
     return decodeOperation as LROperation<protos.animeshon.crossrefs.v1alpha1.ImportCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.OperationMetadata>;
   }
-  exportCrossRefs(
-      request?: protos.animeshon.crossrefs.v1alpha1.IExportCrossRefRequest,
-      options?: CallOptions):
-      Promise<[
-        LROperation<protos.animeshon.crossrefs.v1alpha1.IExportCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
-        protos.google.longrunning.IOperation|undefined, {}|undefined
-      ]>;
-  exportCrossRefs(
-      request: protos.animeshon.crossrefs.v1alpha1.IExportCrossRefRequest,
-      options: CallOptions,
-      callback: Callback<
-          LROperation<protos.animeshon.crossrefs.v1alpha1.IExportCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
-          protos.google.longrunning.IOperation|null|undefined,
-          {}|null|undefined>): void;
-  exportCrossRefs(
-      request: protos.animeshon.crossrefs.v1alpha1.IExportCrossRefRequest,
-      callback: Callback<
-          LROperation<protos.animeshon.crossrefs.v1alpha1.IExportCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
-          protos.google.longrunning.IOperation|null|undefined,
-          {}|null|undefined>): void;
 /**
  * Exports the cross-references to Cloud Pub/Sub for a full synchronization.
  * This operation is usually called after a new import with a clean database.
@@ -1207,10 +1199,29 @@ export class ReferrerClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
  *   for more details and examples.
- * @example
- * const [operation] = await client.exportCrossRefs(request);
- * const [response] = await operation.promise();
+ * @example <caption>include:samples/generated/v1alpha1/referrer.export_cross_refs.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_ExportCrossRefs_async
  */
+  exportCrossRefs(
+      request?: protos.animeshon.crossrefs.v1alpha1.IExportCrossRefRequest,
+      options?: CallOptions):
+      Promise<[
+        LROperation<protos.animeshon.crossrefs.v1alpha1.IExportCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
+        protos.google.longrunning.IOperation|undefined, {}|undefined
+      ]>;
+  exportCrossRefs(
+      request: protos.animeshon.crossrefs.v1alpha1.IExportCrossRefRequest,
+      options: CallOptions,
+      callback: Callback<
+          LROperation<protos.animeshon.crossrefs.v1alpha1.IExportCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
+  exportCrossRefs(
+      request: protos.animeshon.crossrefs.v1alpha1.IExportCrossRefRequest,
+      callback: Callback<
+          LROperation<protos.animeshon.crossrefs.v1alpha1.IExportCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
   exportCrossRefs(
       request?: protos.animeshon.crossrefs.v1alpha1.IExportCrossRefRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1235,6 +1246,8 @@ export class ReferrerClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.exportCrossRefs(request, options, callback);
   }
@@ -1247,11 +1260,8 @@ export class ReferrerClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
  *   for more details and examples.
- * @example
- * const decodedOperation = await checkExportCrossRefsProgress(name);
- * console.log(decodedOperation.result);
- * console.log(decodedOperation.done);
- * console.log(decodedOperation.metadata);
+ * @example <caption>include:samples/generated/v1alpha1/referrer.export_cross_refs.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_ExportCrossRefs_async
  */
   async checkExportCrossRefsProgress(name: string): Promise<LROperation<protos.animeshon.crossrefs.v1alpha1.ExportCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.OperationMetadata>>{
     const request = new operationsProtos.google.longrunning.GetOperationRequest({name});
@@ -1259,26 +1269,6 @@ export class ReferrerClient {
     const decodeOperation = new gax.Operation(operation, this.descriptors.longrunning.exportCrossRefs, gax.createDefaultBackoffSettings());
     return decodeOperation as LROperation<protos.animeshon.crossrefs.v1alpha1.ExportCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.OperationMetadata>;
   }
-  initializeCrossRefs(
-      request?: protos.google.protobuf.IEmpty,
-      options?: CallOptions):
-      Promise<[
-        LROperation<protos.animeshon.crossrefs.v1alpha1.IInitializeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
-        protos.google.longrunning.IOperation|undefined, {}|undefined
-      ]>;
-  initializeCrossRefs(
-      request: protos.google.protobuf.IEmpty,
-      options: CallOptions,
-      callback: Callback<
-          LROperation<protos.animeshon.crossrefs.v1alpha1.IInitializeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
-          protos.google.longrunning.IOperation|null|undefined,
-          {}|null|undefined>): void;
-  initializeCrossRefs(
-      request: protos.google.protobuf.IEmpty,
-      callback: Callback<
-          LROperation<protos.animeshon.crossrefs.v1alpha1.IInitializeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
-          protos.google.longrunning.IOperation|null|undefined,
-          {}|null|undefined>): void;
 /**
  * Initialize the cross-references using specific namespaces for each kind.
  * This operation first analyzes the entities meeting the kind and namespace precondition
@@ -1295,10 +1285,29 @@ export class ReferrerClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
  *   for more details and examples.
- * @example
- * const [operation] = await client.initializeCrossRefs(request);
- * const [response] = await operation.promise();
+ * @example <caption>include:samples/generated/v1alpha1/referrer.initialize_cross_refs.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_InitializeCrossRefs_async
  */
+  initializeCrossRefs(
+      request?: protos.google.protobuf.IEmpty,
+      options?: CallOptions):
+      Promise<[
+        LROperation<protos.animeshon.crossrefs.v1alpha1.IInitializeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
+        protos.google.longrunning.IOperation|undefined, {}|undefined
+      ]>;
+  initializeCrossRefs(
+      request: protos.google.protobuf.IEmpty,
+      options: CallOptions,
+      callback: Callback<
+          LROperation<protos.animeshon.crossrefs.v1alpha1.IInitializeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
+  initializeCrossRefs(
+      request: protos.google.protobuf.IEmpty,
+      callback: Callback<
+          LROperation<protos.animeshon.crossrefs.v1alpha1.IInitializeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
   initializeCrossRefs(
       request?: protos.google.protobuf.IEmpty,
       optionsOrCallback?: CallOptions|Callback<
@@ -1323,6 +1332,8 @@ export class ReferrerClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.initializeCrossRefs(request, options, callback);
   }
@@ -1335,11 +1346,8 @@ export class ReferrerClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
  *   for more details and examples.
- * @example
- * const decodedOperation = await checkInitializeCrossRefsProgress(name);
- * console.log(decodedOperation.result);
- * console.log(decodedOperation.done);
- * console.log(decodedOperation.metadata);
+ * @example <caption>include:samples/generated/v1alpha1/referrer.initialize_cross_refs.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_InitializeCrossRefs_async
  */
   async checkInitializeCrossRefsProgress(name: string): Promise<LROperation<protos.animeshon.crossrefs.v1alpha1.InitializeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.OperationMetadata>>{
     const request = new operationsProtos.google.longrunning.GetOperationRequest({name});
@@ -1347,6 +1355,22 @@ export class ReferrerClient {
     const decodeOperation = new gax.Operation(operation, this.descriptors.longrunning.initializeCrossRefs, gax.createDefaultBackoffSettings());
     return decodeOperation as LROperation<protos.animeshon.crossrefs.v1alpha1.InitializeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.OperationMetadata>;
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing
+ *   a long running operation. Its `promise()` method returns a promise
+ *   you can `await` for.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/referrer.analyze_parodies.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_AnalyzeParodies_async
+ */
   analyzeParodies(
       request?: protos.google.protobuf.IEmpty,
       options?: CallOptions):
@@ -1367,23 +1391,6 @@ export class ReferrerClient {
           LROperation<protos.animeshon.crossrefs.v1alpha1.IAnalyzeParodiesResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing
- *   a long running operation. Its `promise()` method returns a promise
- *   you can `await` for.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
- *   for more details and examples.
- * @example
- * const [operation] = await client.analyzeParodies(request);
- * const [response] = await operation.promise();
- */
   analyzeParodies(
       request?: protos.google.protobuf.IEmpty,
       optionsOrCallback?: CallOptions|Callback<
@@ -1408,6 +1415,8 @@ export class ReferrerClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.analyzeParodies(request, options, callback);
   }
@@ -1420,11 +1429,8 @@ export class ReferrerClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
  *   for more details and examples.
- * @example
- * const decodedOperation = await checkAnalyzeParodiesProgress(name);
- * console.log(decodedOperation.result);
- * console.log(decodedOperation.done);
- * console.log(decodedOperation.metadata);
+ * @example <caption>include:samples/generated/v1alpha1/referrer.analyze_parodies.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_AnalyzeParodies_async
  */
   async checkAnalyzeParodiesProgress(name: string): Promise<LROperation<protos.animeshon.crossrefs.v1alpha1.AnalyzeParodiesResponse, protos.animeshon.crossrefs.v1alpha1.OperationMetadata>>{
     const request = new operationsProtos.google.longrunning.GetOperationRequest({name});
@@ -1432,6 +1438,22 @@ export class ReferrerClient {
     const decodeOperation = new gax.Operation(operation, this.descriptors.longrunning.analyzeParodies, gax.createDefaultBackoffSettings());
     return decodeOperation as LROperation<protos.animeshon.crossrefs.v1alpha1.AnalyzeParodiesResponse, protos.animeshon.crossrefs.v1alpha1.OperationMetadata>;
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing
+ *   a long running operation. Its `promise()` method returns a promise
+ *   you can `await` for.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/referrer.export_parodies.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_ExportParodies_async
+ */
   exportParodies(
       request?: protos.google.protobuf.IEmpty,
       options?: CallOptions):
@@ -1452,23 +1474,6 @@ export class ReferrerClient {
           LROperation<protos.animeshon.crossrefs.v1alpha1.IExportParodiesResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing
- *   a long running operation. Its `promise()` method returns a promise
- *   you can `await` for.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
- *   for more details and examples.
- * @example
- * const [operation] = await client.exportParodies(request);
- * const [response] = await operation.promise();
- */
   exportParodies(
       request?: protos.google.protobuf.IEmpty,
       optionsOrCallback?: CallOptions|Callback<
@@ -1493,6 +1498,8 @@ export class ReferrerClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.exportParodies(request, options, callback);
   }
@@ -1505,11 +1512,8 @@ export class ReferrerClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
  *   for more details and examples.
- * @example
- * const decodedOperation = await checkExportParodiesProgress(name);
- * console.log(decodedOperation.result);
- * console.log(decodedOperation.done);
- * console.log(decodedOperation.metadata);
+ * @example <caption>include:samples/generated/v1alpha1/referrer.export_parodies.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_ExportParodies_async
  */
   async checkExportParodiesProgress(name: string): Promise<LROperation<protos.animeshon.crossrefs.v1alpha1.ExportParodiesResponse, protos.animeshon.crossrefs.v1alpha1.OperationMetadata>>{
     const request = new operationsProtos.google.longrunning.GetOperationRequest({name});
@@ -1517,28 +1521,7 @@ export class ReferrerClient {
     const decodeOperation = new gax.Operation(operation, this.descriptors.longrunning.exportParodies, gax.createDefaultBackoffSettings());
     return decodeOperation as LROperation<protos.animeshon.crossrefs.v1alpha1.ExportParodiesResponse, protos.animeshon.crossrefs.v1alpha1.OperationMetadata>;
   }
-  listCrossRefs(
-      request?: protos.animeshon.crossrefs.v1alpha1.IListCrossRefsRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.crossrefs.v1alpha1.ICrossRef[],
-        protos.animeshon.crossrefs.v1alpha1.IListCrossRefsRequest|null,
-        protos.animeshon.crossrefs.v1alpha1.IListCrossRefsResponse
-      ]>;
-  listCrossRefs(
-      request: protos.animeshon.crossrefs.v1alpha1.IListCrossRefsRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.crossrefs.v1alpha1.IListCrossRefsRequest,
-          protos.animeshon.crossrefs.v1alpha1.IListCrossRefsResponse|null|undefined,
-          protos.animeshon.crossrefs.v1alpha1.ICrossRef>): void;
-  listCrossRefs(
-      request: protos.animeshon.crossrefs.v1alpha1.IListCrossRefsRequest,
-      callback: PaginationCallback<
-          protos.animeshon.crossrefs.v1alpha1.IListCrossRefsRequest,
-          protos.animeshon.crossrefs.v1alpha1.IListCrossRefsResponse|null|undefined,
-          protos.animeshon.crossrefs.v1alpha1.ICrossRef>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -1566,6 +1549,27 @@ export class ReferrerClient {
  */
   listCrossRefs(
       request?: protos.animeshon.crossrefs.v1alpha1.IListCrossRefsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.crossrefs.v1alpha1.ICrossRef[],
+        protos.animeshon.crossrefs.v1alpha1.IListCrossRefsRequest|null,
+        protos.animeshon.crossrefs.v1alpha1.IListCrossRefsResponse
+      ]>;
+  listCrossRefs(
+      request: protos.animeshon.crossrefs.v1alpha1.IListCrossRefsRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.crossrefs.v1alpha1.IListCrossRefsRequest,
+          protos.animeshon.crossrefs.v1alpha1.IListCrossRefsResponse|null|undefined,
+          protos.animeshon.crossrefs.v1alpha1.ICrossRef>): void;
+  listCrossRefs(
+      request: protos.animeshon.crossrefs.v1alpha1.IListCrossRefsRequest,
+      callback: PaginationCallback<
+          protos.animeshon.crossrefs.v1alpha1.IListCrossRefsRequest,
+          protos.animeshon.crossrefs.v1alpha1.IListCrossRefsResponse|null|undefined,
+          protos.animeshon.crossrefs.v1alpha1.ICrossRef>): void;
+  listCrossRefs(
+      request?: protos.animeshon.crossrefs.v1alpha1.IListCrossRefsRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
           protos.animeshon.crossrefs.v1alpha1.IListCrossRefsRequest,
           protos.animeshon.crossrefs.v1alpha1.IListCrossRefsResponse|null|undefined,
@@ -1589,6 +1593,8 @@ export class ReferrerClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.listCrossRefs(request, options, callback);
   }
@@ -1624,7 +1630,10 @@ export class ReferrerClient {
     Transform{
     request = request || {};
     options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    const defaultCallSettings = this._defaults['listCrossRefs'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listCrossRefs.createStream(
       this.innerApiCalls.listCrossRefs as gax.GaxCall,
@@ -1658,11 +1667,8 @@ export class ReferrerClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listCrossRefsAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/referrer.list_cross_refs.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_ListCrossRefs_async
  */
   listCrossRefsAsync(
       request?: protos.animeshon.crossrefs.v1alpha1.IListCrossRefsRequest,
@@ -1670,8 +1676,10 @@ export class ReferrerClient {
     AsyncIterable<protos.animeshon.crossrefs.v1alpha1.ICrossRef>{
     request = request || {};
     options = options || {};
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    const defaultCallSettings = this._defaults['listCrossRefs'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listCrossRefs.asyncIterate(
       this.innerApiCalls['listCrossRefs'] as GaxCall,
@@ -1803,6 +1811,7 @@ export class ReferrerClient {
       return this.referrerStub!.then(stub => {
         this._terminated = true;
         stub.close();
+        this.operationsClient.close();
       });
     }
     return Promise.resolve();

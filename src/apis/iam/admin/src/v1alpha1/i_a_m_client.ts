@@ -40,6 +40,7 @@ const version = require('../../../package.json').version;
 export class IAMClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -51,6 +52,7 @@ export class IAMClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   iAMStub?: Promise<{[name: string]: Function}>;
 
@@ -92,6 +94,7 @@ export class IAMClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof IAMClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -113,6 +116,12 @@ export class IAMClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -161,6 +170,9 @@ export class IAMClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -187,7 +199,7 @@ export class IAMClient {
           (this._protos as protobuf.Root).lookupService('animeshon.iam.admin.v1alpha1.IAM') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.iam.admin.v1alpha1.IAM,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -273,6 +285,22 @@ export class IAMClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the service account to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [ServiceAccount]{@link animeshon.iam.admin.v1alpha1.ServiceAccount}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/i_a_m.get_service_account.js</caption>
+ * region_tag:iam_v1alpha1_generated_IAM_GetServiceAccount_async
+ */
   getServiceAccount(
       request?: protos.animeshon.iam.admin.v1alpha1.IGetServiceAccountRequest,
       options?: CallOptions):
@@ -293,22 +321,6 @@ export class IAMClient {
           protos.animeshon.iam.admin.v1alpha1.IServiceAccount,
           protos.animeshon.iam.admin.v1alpha1.IGetServiceAccountRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the service account to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [ServiceAccount]{@link animeshon.iam.admin.v1alpha1.ServiceAccount}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getServiceAccount(request);
- */
   getServiceAccount(
       request?: protos.animeshon.iam.admin.v1alpha1.IGetServiceAccountRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -343,6 +355,22 @@ export class IAMClient {
     this.initialize();
     return this.innerApiCalls.getServiceAccount(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.iam.admin.v1alpha1.ServiceAccount} request.serviceAccount
+ *   The service account to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [ServiceAccount]{@link animeshon.iam.admin.v1alpha1.ServiceAccount}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/i_a_m.create_service_account.js</caption>
+ * region_tag:iam_v1alpha1_generated_IAM_CreateServiceAccount_async
+ */
   createServiceAccount(
       request?: protos.animeshon.iam.admin.v1alpha1.ICreateServiceAccountRequest,
       options?: CallOptions):
@@ -363,22 +391,6 @@ export class IAMClient {
           protos.animeshon.iam.admin.v1alpha1.IServiceAccount,
           protos.animeshon.iam.admin.v1alpha1.ICreateServiceAccountRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.iam.admin.v1alpha1.ServiceAccount} request.serviceAccount
- *   The service account to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [ServiceAccount]{@link animeshon.iam.admin.v1alpha1.ServiceAccount}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createServiceAccount(request);
- */
   createServiceAccount(
       request?: protos.animeshon.iam.admin.v1alpha1.ICreateServiceAccountRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -413,6 +425,25 @@ export class IAMClient {
     this.initialize();
     return this.innerApiCalls.createServiceAccount(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.iam.admin.v1alpha1.ServiceAccount} request.serviceAccount
+ *   The service account to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [ServiceAccount]{@link animeshon.iam.admin.v1alpha1.ServiceAccount}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/i_a_m.update_service_account.js</caption>
+ * region_tag:iam_v1alpha1_generated_IAM_UpdateServiceAccount_async
+ */
   updateServiceAccount(
       request?: protos.animeshon.iam.admin.v1alpha1.IUpdateServiceAccountRequest,
       options?: CallOptions):
@@ -433,25 +464,6 @@ export class IAMClient {
           protos.animeshon.iam.admin.v1alpha1.IServiceAccount,
           protos.animeshon.iam.admin.v1alpha1.IUpdateServiceAccountRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.iam.admin.v1alpha1.ServiceAccount} request.serviceAccount
- *   The service account to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [ServiceAccount]{@link animeshon.iam.admin.v1alpha1.ServiceAccount}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateServiceAccount(request);
- */
   updateServiceAccount(
       request?: protos.animeshon.iam.admin.v1alpha1.IUpdateServiceAccountRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -486,6 +498,22 @@ export class IAMClient {
     this.initialize();
     return this.innerApiCalls.updateServiceAccount(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the service account to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/i_a_m.delete_service_account.js</caption>
+ * region_tag:iam_v1alpha1_generated_IAM_DeleteServiceAccount_async
+ */
   deleteServiceAccount(
       request?: protos.animeshon.iam.admin.v1alpha1.IDeleteServiceAccountRequest,
       options?: CallOptions):
@@ -506,22 +534,6 @@ export class IAMClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.iam.admin.v1alpha1.IDeleteServiceAccountRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the service account to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteServiceAccount(request);
- */
   deleteServiceAccount(
       request?: protos.animeshon.iam.admin.v1alpha1.IDeleteServiceAccountRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -556,6 +568,22 @@ export class IAMClient {
     this.initialize();
     return this.innerApiCalls.deleteServiceAccount(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the role to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Role]{@link animeshon.iam.admin.v1alpha1.Role}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/i_a_m.get_role.js</caption>
+ * region_tag:iam_v1alpha1_generated_IAM_GetRole_async
+ */
   getRole(
       request?: protos.animeshon.iam.admin.v1alpha1.IGetRoleRequest,
       options?: CallOptions):
@@ -576,22 +604,6 @@ export class IAMClient {
           protos.animeshon.iam.admin.v1alpha1.IRole,
           protos.animeshon.iam.admin.v1alpha1.IGetRoleRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the role to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Role]{@link animeshon.iam.admin.v1alpha1.Role}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getRole(request);
- */
   getRole(
       request?: protos.animeshon.iam.admin.v1alpha1.IGetRoleRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -626,6 +638,22 @@ export class IAMClient {
     this.initialize();
     return this.innerApiCalls.getRole(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.iam.admin.v1alpha1.Role} request.role
+ *   The role to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Role]{@link animeshon.iam.admin.v1alpha1.Role}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/i_a_m.create_role.js</caption>
+ * region_tag:iam_v1alpha1_generated_IAM_CreateRole_async
+ */
   createRole(
       request?: protos.animeshon.iam.admin.v1alpha1.ICreateRoleRequest,
       options?: CallOptions):
@@ -646,22 +674,6 @@ export class IAMClient {
           protos.animeshon.iam.admin.v1alpha1.IRole,
           protos.animeshon.iam.admin.v1alpha1.ICreateRoleRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.iam.admin.v1alpha1.Role} request.role
- *   The role to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Role]{@link animeshon.iam.admin.v1alpha1.Role}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createRole(request);
- */
   createRole(
       request?: protos.animeshon.iam.admin.v1alpha1.ICreateRoleRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -696,6 +708,25 @@ export class IAMClient {
     this.initialize();
     return this.innerApiCalls.createRole(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.iam.admin.v1alpha1.Role} request.role
+ *   The role to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Role]{@link animeshon.iam.admin.v1alpha1.Role}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/i_a_m.update_role.js</caption>
+ * region_tag:iam_v1alpha1_generated_IAM_UpdateRole_async
+ */
   updateRole(
       request?: protos.animeshon.iam.admin.v1alpha1.IUpdateRoleRequest,
       options?: CallOptions):
@@ -716,25 +747,6 @@ export class IAMClient {
           protos.animeshon.iam.admin.v1alpha1.IRole,
           protos.animeshon.iam.admin.v1alpha1.IUpdateRoleRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.iam.admin.v1alpha1.Role} request.role
- *   The role to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Role]{@link animeshon.iam.admin.v1alpha1.Role}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateRole(request);
- */
   updateRole(
       request?: protos.animeshon.iam.admin.v1alpha1.IUpdateRoleRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -769,6 +781,22 @@ export class IAMClient {
     this.initialize();
     return this.innerApiCalls.updateRole(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the role to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/i_a_m.delete_role.js</caption>
+ * region_tag:iam_v1alpha1_generated_IAM_DeleteRole_async
+ */
   deleteRole(
       request?: protos.animeshon.iam.admin.v1alpha1.IDeleteRoleRequest,
       options?: CallOptions):
@@ -789,22 +817,6 @@ export class IAMClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.iam.admin.v1alpha1.IDeleteRoleRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the role to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteRole(request);
- */
   deleteRole(
       request?: protos.animeshon.iam.admin.v1alpha1.IDeleteRoleRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -839,6 +851,22 @@ export class IAMClient {
     this.initialize();
     return this.innerApiCalls.deleteRole(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the permission to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Permission]{@link animeshon.iam.admin.v1alpha1.Permission}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/i_a_m.get_permission.js</caption>
+ * region_tag:iam_v1alpha1_generated_IAM_GetPermission_async
+ */
   getPermission(
       request?: protos.animeshon.iam.admin.v1alpha1.IGetPermissionRequest,
       options?: CallOptions):
@@ -859,22 +887,6 @@ export class IAMClient {
           protos.animeshon.iam.admin.v1alpha1.IPermission,
           protos.animeshon.iam.admin.v1alpha1.IGetPermissionRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the permission to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Permission]{@link animeshon.iam.admin.v1alpha1.Permission}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getPermission(request);
- */
   getPermission(
       request?: protos.animeshon.iam.admin.v1alpha1.IGetPermissionRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -909,6 +921,22 @@ export class IAMClient {
     this.initialize();
     return this.innerApiCalls.getPermission(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.iam.admin.v1alpha1.Permission} request.permission
+ *   The permission to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Permission]{@link animeshon.iam.admin.v1alpha1.Permission}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/i_a_m.create_permission.js</caption>
+ * region_tag:iam_v1alpha1_generated_IAM_CreatePermission_async
+ */
   createPermission(
       request?: protos.animeshon.iam.admin.v1alpha1.ICreatePermissionRequest,
       options?: CallOptions):
@@ -929,22 +957,6 @@ export class IAMClient {
           protos.animeshon.iam.admin.v1alpha1.IPermission,
           protos.animeshon.iam.admin.v1alpha1.ICreatePermissionRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.iam.admin.v1alpha1.Permission} request.permission
- *   The permission to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Permission]{@link animeshon.iam.admin.v1alpha1.Permission}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createPermission(request);
- */
   createPermission(
       request?: protos.animeshon.iam.admin.v1alpha1.ICreatePermissionRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -979,6 +991,25 @@ export class IAMClient {
     this.initialize();
     return this.innerApiCalls.createPermission(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.iam.admin.v1alpha1.Permission} request.permission
+ *   The permission to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Permission]{@link animeshon.iam.admin.v1alpha1.Permission}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/i_a_m.update_permission.js</caption>
+ * region_tag:iam_v1alpha1_generated_IAM_UpdatePermission_async
+ */
   updatePermission(
       request?: protos.animeshon.iam.admin.v1alpha1.IUpdatePermissionRequest,
       options?: CallOptions):
@@ -999,25 +1030,6 @@ export class IAMClient {
           protos.animeshon.iam.admin.v1alpha1.IPermission,
           protos.animeshon.iam.admin.v1alpha1.IUpdatePermissionRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.iam.admin.v1alpha1.Permission} request.permission
- *   The permission to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Permission]{@link animeshon.iam.admin.v1alpha1.Permission}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updatePermission(request);
- */
   updatePermission(
       request?: protos.animeshon.iam.admin.v1alpha1.IUpdatePermissionRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1052,6 +1064,22 @@ export class IAMClient {
     this.initialize();
     return this.innerApiCalls.updatePermission(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the permission to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/i_a_m.delete_permission.js</caption>
+ * region_tag:iam_v1alpha1_generated_IAM_DeletePermission_async
+ */
   deletePermission(
       request?: protos.animeshon.iam.admin.v1alpha1.IDeletePermissionRequest,
       options?: CallOptions):
@@ -1072,22 +1100,6 @@ export class IAMClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.iam.admin.v1alpha1.IDeletePermissionRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the permission to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deletePermission(request);
- */
   deletePermission(
       request?: protos.animeshon.iam.admin.v1alpha1.IDeletePermissionRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -1123,28 +1135,7 @@ export class IAMClient {
     return this.innerApiCalls.deletePermission(request, options, callback);
   }
 
-  listServiceAccounts(
-      request?: protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.iam.admin.v1alpha1.IServiceAccount[],
-        protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsRequest|null,
-        protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsResponse
-      ]>;
-  listServiceAccounts(
-      request: protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsRequest,
-          protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsResponse|null|undefined,
-          protos.animeshon.iam.admin.v1alpha1.IServiceAccount>): void;
-  listServiceAccounts(
-      request: protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsRequest,
-      callback: PaginationCallback<
-          protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsRequest,
-          protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsResponse|null|undefined,
-          protos.animeshon.iam.admin.v1alpha1.IServiceAccount>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -1169,6 +1160,27 @@ export class IAMClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listServiceAccounts(
+      request?: protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.iam.admin.v1alpha1.IServiceAccount[],
+        protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsRequest|null,
+        protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsResponse
+      ]>;
+  listServiceAccounts(
+      request: protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsRequest,
+          protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsResponse|null|undefined,
+          protos.animeshon.iam.admin.v1alpha1.IServiceAccount>): void;
+  listServiceAccounts(
+      request: protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsRequest,
+      callback: PaginationCallback<
+          protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsRequest,
+          protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsResponse|null|undefined,
+          protos.animeshon.iam.admin.v1alpha1.IServiceAccount>): void;
   listServiceAccounts(
       request?: protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -1242,7 +1254,8 @@ export class IAMClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listServiceAccounts'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listServiceAccounts.createStream(
       this.innerApiCalls.listServiceAccounts as gax.GaxCall,
@@ -1275,11 +1288,8 @@ export class IAMClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listServiceAccountsAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/i_a_m.list_service_accounts.js</caption>
+ * region_tag:iam_v1alpha1_generated_IAM_ListServiceAccounts_async
  */
   listServiceAccountsAsync(
       request?: protos.animeshon.iam.admin.v1alpha1.IListServiceAccountsRequest,
@@ -1294,8 +1304,8 @@ export class IAMClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listServiceAccounts'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listServiceAccounts.asyncIterate(
       this.innerApiCalls['listServiceAccounts'] as GaxCall,
@@ -1303,28 +1313,7 @@ export class IAMClient {
       callSettings
     ) as AsyncIterable<protos.animeshon.iam.admin.v1alpha1.IServiceAccount>;
   }
-  listRoles(
-      request?: protos.animeshon.iam.admin.v1alpha1.IListRolesRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.iam.admin.v1alpha1.IRole[],
-        protos.animeshon.iam.admin.v1alpha1.IListRolesRequest|null,
-        protos.animeshon.iam.admin.v1alpha1.IListRolesResponse
-      ]>;
-  listRoles(
-      request: protos.animeshon.iam.admin.v1alpha1.IListRolesRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.iam.admin.v1alpha1.IListRolesRequest,
-          protos.animeshon.iam.admin.v1alpha1.IListRolesResponse|null|undefined,
-          protos.animeshon.iam.admin.v1alpha1.IRole>): void;
-  listRoles(
-      request: protos.animeshon.iam.admin.v1alpha1.IListRolesRequest,
-      callback: PaginationCallback<
-          protos.animeshon.iam.admin.v1alpha1.IListRolesRequest,
-          protos.animeshon.iam.admin.v1alpha1.IListRolesResponse|null|undefined,
-          protos.animeshon.iam.admin.v1alpha1.IRole>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -1347,6 +1336,27 @@ export class IAMClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listRoles(
+      request?: protos.animeshon.iam.admin.v1alpha1.IListRolesRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.iam.admin.v1alpha1.IRole[],
+        protos.animeshon.iam.admin.v1alpha1.IListRolesRequest|null,
+        protos.animeshon.iam.admin.v1alpha1.IListRolesResponse
+      ]>;
+  listRoles(
+      request: protos.animeshon.iam.admin.v1alpha1.IListRolesRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.iam.admin.v1alpha1.IListRolesRequest,
+          protos.animeshon.iam.admin.v1alpha1.IListRolesResponse|null|undefined,
+          protos.animeshon.iam.admin.v1alpha1.IRole>): void;
+  listRoles(
+      request: protos.animeshon.iam.admin.v1alpha1.IListRolesRequest,
+      callback: PaginationCallback<
+          protos.animeshon.iam.admin.v1alpha1.IListRolesRequest,
+          protos.animeshon.iam.admin.v1alpha1.IListRolesResponse|null|undefined,
+          protos.animeshon.iam.admin.v1alpha1.IRole>): void;
   listRoles(
       request?: protos.animeshon.iam.admin.v1alpha1.IListRolesRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -1372,6 +1382,8 @@ export class IAMClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.listRoles(request, options, callback);
   }
@@ -1404,7 +1416,10 @@ export class IAMClient {
     Transform{
     request = request || {};
     options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    const defaultCallSettings = this._defaults['listRoles'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listRoles.createStream(
       this.innerApiCalls.listRoles as gax.GaxCall,
@@ -1435,11 +1450,8 @@ export class IAMClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listRolesAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/i_a_m.list_roles.js</caption>
+ * region_tag:iam_v1alpha1_generated_IAM_ListRoles_async
  */
   listRolesAsync(
       request?: protos.animeshon.iam.admin.v1alpha1.IListRolesRequest,
@@ -1447,8 +1459,10 @@ export class IAMClient {
     AsyncIterable<protos.animeshon.iam.admin.v1alpha1.IRole>{
     request = request || {};
     options = options || {};
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    const defaultCallSettings = this._defaults['listRoles'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listRoles.asyncIterate(
       this.innerApiCalls['listRoles'] as GaxCall,
@@ -1456,28 +1470,7 @@ export class IAMClient {
       callSettings
     ) as AsyncIterable<protos.animeshon.iam.admin.v1alpha1.IRole>;
   }
-  listPermissions(
-      request?: protos.animeshon.iam.admin.v1alpha1.IListPermissionsRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.iam.admin.v1alpha1.IPermission[],
-        protos.animeshon.iam.admin.v1alpha1.IListPermissionsRequest|null,
-        protos.animeshon.iam.admin.v1alpha1.IListPermissionsResponse
-      ]>;
-  listPermissions(
-      request: protos.animeshon.iam.admin.v1alpha1.IListPermissionsRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.iam.admin.v1alpha1.IListPermissionsRequest,
-          protos.animeshon.iam.admin.v1alpha1.IListPermissionsResponse|null|undefined,
-          protos.animeshon.iam.admin.v1alpha1.IPermission>): void;
-  listPermissions(
-      request: protos.animeshon.iam.admin.v1alpha1.IListPermissionsRequest,
-      callback: PaginationCallback<
-          protos.animeshon.iam.admin.v1alpha1.IListPermissionsRequest,
-          protos.animeshon.iam.admin.v1alpha1.IListPermissionsResponse|null|undefined,
-          protos.animeshon.iam.admin.v1alpha1.IPermission>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -1500,6 +1493,27 @@ export class IAMClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listPermissions(
+      request?: protos.animeshon.iam.admin.v1alpha1.IListPermissionsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.iam.admin.v1alpha1.IPermission[],
+        protos.animeshon.iam.admin.v1alpha1.IListPermissionsRequest|null,
+        protos.animeshon.iam.admin.v1alpha1.IListPermissionsResponse
+      ]>;
+  listPermissions(
+      request: protos.animeshon.iam.admin.v1alpha1.IListPermissionsRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.iam.admin.v1alpha1.IListPermissionsRequest,
+          protos.animeshon.iam.admin.v1alpha1.IListPermissionsResponse|null|undefined,
+          protos.animeshon.iam.admin.v1alpha1.IPermission>): void;
+  listPermissions(
+      request: protos.animeshon.iam.admin.v1alpha1.IListPermissionsRequest,
+      callback: PaginationCallback<
+          protos.animeshon.iam.admin.v1alpha1.IListPermissionsRequest,
+          protos.animeshon.iam.admin.v1alpha1.IListPermissionsResponse|null|undefined,
+          protos.animeshon.iam.admin.v1alpha1.IPermission>): void;
   listPermissions(
       request?: protos.animeshon.iam.admin.v1alpha1.IListPermissionsRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -1525,6 +1539,8 @@ export class IAMClient {
       options = optionsOrCallback as CallOptions;
     }
     options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.listPermissions(request, options, callback);
   }
@@ -1557,7 +1573,10 @@ export class IAMClient {
     Transform{
     request = request || {};
     options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    const defaultCallSettings = this._defaults['listPermissions'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listPermissions.createStream(
       this.innerApiCalls.listPermissions as gax.GaxCall,
@@ -1588,11 +1607,8 @@ export class IAMClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listPermissionsAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/i_a_m.list_permissions.js</caption>
+ * region_tag:iam_v1alpha1_generated_IAM_ListPermissions_async
  */
   listPermissionsAsync(
       request?: protos.animeshon.iam.admin.v1alpha1.IListPermissionsRequest,
@@ -1600,8 +1616,10 @@ export class IAMClient {
     AsyncIterable<protos.animeshon.iam.admin.v1alpha1.IPermission>{
     request = request || {};
     options = options || {};
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    const defaultCallSettings = this._defaults['listPermissions'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listPermissions.asyncIterate(
       this.innerApiCalls['listPermissions'] as GaxCall,

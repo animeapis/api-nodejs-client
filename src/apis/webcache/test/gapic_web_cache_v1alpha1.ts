@@ -117,8 +117,8 @@ describe('v1alpha1.WebCacheClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new webcacheModule.v1alpha1.WebCacheClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.webCacheStub, undefined);
         await client.initialize();
@@ -127,8 +127,8 @@ describe('v1alpha1.WebCacheClient', () => {
 
     it('has close method', () => {
         const client = new webcacheModule.v1alpha1.WebCacheClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -136,8 +136,8 @@ describe('v1alpha1.WebCacheClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new webcacheModule.v1alpha1.WebCacheClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -148,8 +148,8 @@ describe('v1alpha1.WebCacheClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new webcacheModule.v1alpha1.WebCacheClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -168,12 +168,12 @@ describe('v1alpha1.WebCacheClient', () => {
     describe('createCache', () => {
         it('invokes createCache without error', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.CreateCacheRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache());
             client.innerApiCalls.createCache = stubSimpleCall(expectedResponse);
             const [response] = await client.createCache(request);
@@ -184,12 +184,12 @@ describe('v1alpha1.WebCacheClient', () => {
 
         it('invokes createCache without error using callback', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.CreateCacheRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache());
             client.innerApiCalls.createCache = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -211,12 +211,12 @@ describe('v1alpha1.WebCacheClient', () => {
 
         it('invokes createCache with error', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.CreateCacheRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.createCache = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createCache(request), expectedError);
@@ -228,9 +228,9 @@ describe('v1alpha1.WebCacheClient', () => {
     describe('getCache', () => {
         it('invokes getCache without error', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.GetCacheRequest());
             request.name = '';
@@ -252,9 +252,9 @@ describe('v1alpha1.WebCacheClient', () => {
 
         it('invokes getCache without error using callback', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.GetCacheRequest());
             request.name = '';
@@ -287,9 +287,9 @@ describe('v1alpha1.WebCacheClient', () => {
 
         it('invokes getCache with error', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.GetCacheRequest());
             request.name = '';
@@ -312,9 +312,9 @@ describe('v1alpha1.WebCacheClient', () => {
     describe('deleteCache', () => {
         it('invokes deleteCache without error', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.DeleteCacheRequest());
             request.name = '';
@@ -336,9 +336,9 @@ describe('v1alpha1.WebCacheClient', () => {
 
         it('invokes deleteCache without error using callback', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.DeleteCacheRequest());
             request.name = '';
@@ -371,9 +371,9 @@ describe('v1alpha1.WebCacheClient', () => {
 
         it('invokes deleteCache with error', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.DeleteCacheRequest());
             request.name = '';
@@ -401,7 +401,7 @@ describe('v1alpha1.WebCacheClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.ListCachesRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache()),
               generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache()),
@@ -421,7 +421,7 @@ describe('v1alpha1.WebCacheClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.ListCachesRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache()),
               generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache()),
@@ -452,7 +452,7 @@ describe('v1alpha1.WebCacheClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.ListCachesRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.listCaches = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listCaches(request), expectedError);
@@ -521,11 +521,12 @@ describe('v1alpha1.WebCacheClient', () => {
 
         it('uses async iteration with listCaches without error', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.ListCachesRequest());const expectedResponse = [
+            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.ListCachesRequest());
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache()),
               generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache()),
               generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache()),

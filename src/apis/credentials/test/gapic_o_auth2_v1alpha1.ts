@@ -70,8 +70,8 @@ describe('v1alpha1.OAuth2Client', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new oauth2Module.v1alpha1.OAuth2Client({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.oAuth2Stub, undefined);
         await client.initialize();
@@ -80,8 +80,8 @@ describe('v1alpha1.OAuth2Client', () => {
 
     it('has close method', () => {
         const client = new oauth2Module.v1alpha1.OAuth2Client({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -89,8 +89,8 @@ describe('v1alpha1.OAuth2Client', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new oauth2Module.v1alpha1.OAuth2Client({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -101,8 +101,8 @@ describe('v1alpha1.OAuth2Client', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new oauth2Module.v1alpha1.OAuth2Client({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -121,9 +121,9 @@ describe('v1alpha1.OAuth2Client', () => {
     describe('signIn', () => {
         it('invokes signIn without error', async () => {
             const client = new oauth2Module.v1alpha1.OAuth2Client({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.SignInRequest());
             request.name = '';
@@ -145,9 +145,9 @@ describe('v1alpha1.OAuth2Client', () => {
 
         it('invokes signIn without error using callback', async () => {
             const client = new oauth2Module.v1alpha1.OAuth2Client({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.SignInRequest());
             request.name = '';
@@ -180,9 +180,9 @@ describe('v1alpha1.OAuth2Client', () => {
 
         it('invokes signIn with error', async () => {
             const client = new oauth2Module.v1alpha1.OAuth2Client({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.SignInRequest());
             request.name = '';
@@ -205,9 +205,9 @@ describe('v1alpha1.OAuth2Client', () => {
     describe('exchange', () => {
         it('invokes exchange without error', async () => {
             const client = new oauth2Module.v1alpha1.OAuth2Client({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ExchangeRequest());
             request.name = '';
@@ -229,9 +229,9 @@ describe('v1alpha1.OAuth2Client', () => {
 
         it('invokes exchange without error using callback', async () => {
             const client = new oauth2Module.v1alpha1.OAuth2Client({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ExchangeRequest());
             request.name = '';
@@ -264,9 +264,9 @@ describe('v1alpha1.OAuth2Client', () => {
 
         it('invokes exchange with error', async () => {
             const client = new oauth2Module.v1alpha1.OAuth2Client({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ExchangeRequest());
             request.name = '';

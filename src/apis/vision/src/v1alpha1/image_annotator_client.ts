@@ -40,6 +40,7 @@ const version = require('../../../package.json').version;
 export class ImageAnnotatorClient {
   private _terminated = false;
   private _opts: ClientOptions;
+  private _providedCustomServicePath: boolean;
   private _gaxModule: typeof gax | typeof gax.fallback;
   private _gaxGrpc: gax.GrpcClient | gax.fallback.GrpcClient;
   private _protos: {};
@@ -51,6 +52,7 @@ export class ImageAnnotatorClient {
     longrunning: {},
     batching: {},
   };
+  warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   imageAnnotatorStub?: Promise<{[name: string]: Function}>;
 
@@ -92,6 +94,7 @@ export class ImageAnnotatorClient {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof ImageAnnotatorClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
+    this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
     const clientConfig = opts?.clientConfig ?? {};
     const fallback = opts?.fallback ?? (typeof window !== 'undefined' && typeof window?.fetch === 'function');
@@ -113,6 +116,12 @@ export class ImageAnnotatorClient {
 
     // Save the auth object to the client, for use by other methods.
     this.auth = (this._gaxGrpc.auth as gax.GoogleAuth);
+
+    // Set useJWTAccessWithScope on the auth object.
+    this.auth.useJWTAccessWithScope = true;
+
+    // Set defaultServicePath on the auth object.
+    this.auth.defaultServicePath = staticMembers.servicePath;
 
     // Set the default scopes in auth client if needed.
     if (servicePath === staticMembers.servicePath) {
@@ -159,6 +168,9 @@ export class ImageAnnotatorClient {
     // of calling the API is handled in `google-gax`, with this code
     // merely providing the destination and request information.
     this.innerApiCalls = {};
+
+    // Add a warn function to the client constructor so it can be easily tested.
+    this.warn = gax.warn;
   }
 
   /**
@@ -185,7 +197,7 @@ export class ImageAnnotatorClient {
           (this._protos as protobuf.Root).lookupService('animeshon.vision.v1alpha1.ImageAnnotator') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this._protos as any).animeshon.vision.v1alpha1.ImageAnnotator,
-        this._opts) as Promise<{[method: string]: Function}>;
+        this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
@@ -271,6 +283,24 @@ export class ImageAnnotatorClient {
   // -------------------
   // -- Service calls --
   // -------------------
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent image to be analyzed.
+ * @param {string[]} request.features
+ *   A list of features to analyze.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [AnalyzeImageResponse]{@link animeshon.vision.v1alpha1.AnalyzeImageResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/image_annotator.analyze_image.js</caption>
+ * region_tag:vision_v1alpha1_generated_ImageAnnotator_AnalyzeImage_async
+ */
   analyzeImage(
       request?: protos.animeshon.vision.v1alpha1.IAnalyzeImageRequest,
       options?: CallOptions):
@@ -291,24 +321,6 @@ export class ImageAnnotatorClient {
           protos.animeshon.vision.v1alpha1.IAnalyzeImageResponse,
           protos.animeshon.vision.v1alpha1.IAnalyzeImageRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.parent
- *   The parent image to be analyzed.
- * @param {string[]} request.features
- *   A list of features to analyze.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [AnalyzeImageResponse]{@link animeshon.vision.v1alpha1.AnalyzeImageResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.analyzeImage(request);
- */
   analyzeImage(
       request?: protos.animeshon.vision.v1alpha1.IAnalyzeImageRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -343,6 +355,25 @@ export class ImageAnnotatorClient {
     this.initialize();
     return this.innerApiCalls.analyzeImage(request, options, callback);
   }
+/**
+ * Note: to fetch the latest available report use "latest" as report id.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the image analysis to retrieve.
+ * @param {google.protobuf.FieldMask} request.fieldMask
+ *   FieldMask that represents which fields should be retrieved.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [ImageAnalysis]{@link animeshon.vision.v1alpha1.ImageAnalysis}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/image_annotator.get_image_analysis.js</caption>
+ * region_tag:vision_v1alpha1_generated_ImageAnnotator_GetImageAnalysis_async
+ */
   getImageAnalysis(
       request?: protos.animeshon.vision.v1alpha1.IGetImageAnalysisRequest,
       options?: CallOptions):
@@ -363,25 +394,6 @@ export class ImageAnnotatorClient {
           protos.animeshon.vision.v1alpha1.IImageAnalysis,
           protos.animeshon.vision.v1alpha1.IGetImageAnalysisRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- * Note: to fetch the latest available report use "latest" as report id.
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the image analysis to retrieve.
- * @param {google.protobuf.FieldMask} request.fieldMask
- *   FieldMask that represents which fields should be retrieved.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [ImageAnalysis]{@link animeshon.vision.v1alpha1.ImageAnalysis}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getImageAnalysis(request);
- */
   getImageAnalysis(
       request?: protos.animeshon.vision.v1alpha1.IGetImageAnalysisRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -416,6 +428,22 @@ export class ImageAnnotatorClient {
     this.initialize();
     return this.innerApiCalls.getImageAnalysis(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the analysis to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/image_annotator.delete_image_analysis.js</caption>
+ * region_tag:vision_v1alpha1_generated_ImageAnnotator_DeleteImageAnalysis_async
+ */
   deleteImageAnalysis(
       request?: protos.animeshon.vision.v1alpha1.IDeleteImageAnalysisRequest,
       options?: CallOptions):
@@ -436,22 +464,6 @@ export class ImageAnnotatorClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.vision.v1alpha1.IDeleteImageAnalysisRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the analysis to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteImageAnalysis(request);
- */
   deleteImageAnalysis(
       request?: protos.animeshon.vision.v1alpha1.IDeleteImageAnalysisRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -486,6 +498,24 @@ export class ImageAnnotatorClient {
     this.initialize();
     return this.innerApiCalls.deleteImageAnalysis(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ *   The parent this image annotation belongs to.
+ * @param {animeshon.vision.v1alpha1.ImageAnnotation} request.annotation
+ *   The image annotation to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [ImageAnnotation]{@link animeshon.vision.v1alpha1.ImageAnnotation}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/image_annotator.create_image_annotation.js</caption>
+ * region_tag:vision_v1alpha1_generated_ImageAnnotator_CreateImageAnnotation_async
+ */
   createImageAnnotation(
       request?: protos.animeshon.vision.v1alpha1.ICreateImageAnnotationRequest,
       options?: CallOptions):
@@ -506,24 +536,6 @@ export class ImageAnnotatorClient {
           protos.animeshon.vision.v1alpha1.IImageAnnotation,
           protos.animeshon.vision.v1alpha1.ICreateImageAnnotationRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.parent
- *   The parent this image annotation belongs to.
- * @param {animeshon.vision.v1alpha1.ImageAnnotation} request.annotation
- *   The image annotation to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [ImageAnnotation]{@link animeshon.vision.v1alpha1.ImageAnnotation}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.createImageAnnotation(request);
- */
   createImageAnnotation(
       request?: protos.animeshon.vision.v1alpha1.ICreateImageAnnotationRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -558,6 +570,22 @@ export class ImageAnnotatorClient {
     this.initialize();
     return this.innerApiCalls.createImageAnnotation(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the image annotation to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [ImageAnnotation]{@link animeshon.vision.v1alpha1.ImageAnnotation}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/image_annotator.get_image_annotation.js</caption>
+ * region_tag:vision_v1alpha1_generated_ImageAnnotator_GetImageAnnotation_async
+ */
   getImageAnnotation(
       request?: protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest,
       options?: CallOptions):
@@ -578,22 +606,6 @@ export class ImageAnnotatorClient {
           protos.animeshon.vision.v1alpha1.IImageAnnotation,
           protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the image annotation to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [ImageAnnotation]{@link animeshon.vision.v1alpha1.ImageAnnotation}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.getImageAnnotation(request);
- */
   getImageAnnotation(
       request?: protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -628,6 +640,25 @@ export class ImageAnnotatorClient {
     this.initialize();
     return this.innerApiCalls.getImageAnnotation(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {animeshon.vision.v1alpha1.ImageAnnotation} request.annotation
+ *   The image annotation to update.
+ * @param {google.protobuf.FieldMask} request.updateMask
+ *   The field mask to determine which fields are to be updated. If empty, the
+ *   server will assume all fields are to be updated.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [ImageAnnotation]{@link animeshon.vision.v1alpha1.ImageAnnotation}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/image_annotator.update_image_annotation.js</caption>
+ * region_tag:vision_v1alpha1_generated_ImageAnnotator_UpdateImageAnnotation_async
+ */
   updateImageAnnotation(
       request?: protos.animeshon.vision.v1alpha1.IUpdateImageAnnotationRequest,
       options?: CallOptions):
@@ -648,25 +679,6 @@ export class ImageAnnotatorClient {
           protos.animeshon.vision.v1alpha1.IImageAnnotation,
           protos.animeshon.vision.v1alpha1.IUpdateImageAnnotationRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {animeshon.vision.v1alpha1.ImageAnnotation} request.annotation
- *   The image annotation to update.
- * @param {google.protobuf.FieldMask} request.updateMask
- *   The field mask to determine which fields are to be updated. If empty, the
- *   server will assume all fields are to be updated.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [ImageAnnotation]{@link animeshon.vision.v1alpha1.ImageAnnotation}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.updateImageAnnotation(request);
- */
   updateImageAnnotation(
       request?: protos.animeshon.vision.v1alpha1.IUpdateImageAnnotationRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -701,6 +713,22 @@ export class ImageAnnotatorClient {
     this.initialize();
     return this.innerApiCalls.updateImageAnnotation(request, options, callback);
   }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The image annotation to delete.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/image_annotator.delete_image_annotation.js</caption>
+ * region_tag:vision_v1alpha1_generated_ImageAnnotator_DeleteImageAnnotation_async
+ */
   deleteImageAnnotation(
       request?: protos.animeshon.vision.v1alpha1.IDeleteImageAnnotationRequest,
       options?: CallOptions):
@@ -721,22 +749,6 @@ export class ImageAnnotatorClient {
           protos.google.protobuf.IEmpty,
           protos.animeshon.vision.v1alpha1.IDeleteImageAnnotationRequest|null|undefined,
           {}|null|undefined>): void;
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The image annotation to delete.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Empty]{@link google.protobuf.Empty}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example
- * const [response] = await client.deleteImageAnnotation(request);
- */
   deleteImageAnnotation(
       request?: protos.animeshon.vision.v1alpha1.IDeleteImageAnnotationRequest,
       optionsOrCallback?: CallOptions|Callback<
@@ -772,28 +784,7 @@ export class ImageAnnotatorClient {
     return this.innerApiCalls.deleteImageAnnotation(request, options, callback);
   }
 
-  listImageAnalyses(
-      request?: protos.animeshon.vision.v1alpha1.IListImageAnalysesRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.vision.v1alpha1.IImageAnalysis[],
-        protos.animeshon.vision.v1alpha1.IListImageAnalysesRequest|null,
-        protos.animeshon.vision.v1alpha1.IListImageAnalysesResponse
-      ]>;
-  listImageAnalyses(
-      request: protos.animeshon.vision.v1alpha1.IListImageAnalysesRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.vision.v1alpha1.IListImageAnalysesRequest,
-          protos.animeshon.vision.v1alpha1.IListImageAnalysesResponse|null|undefined,
-          protos.animeshon.vision.v1alpha1.IImageAnalysis>): void;
-  listImageAnalyses(
-      request: protos.animeshon.vision.v1alpha1.IListImageAnalysesRequest,
-      callback: PaginationCallback<
-          protos.animeshon.vision.v1alpha1.IListImageAnalysesRequest,
-          protos.animeshon.vision.v1alpha1.IListImageAnalysesResponse|null|undefined,
-          protos.animeshon.vision.v1alpha1.IImageAnalysis>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -816,6 +807,27 @@ export class ImageAnnotatorClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listImageAnalyses(
+      request?: protos.animeshon.vision.v1alpha1.IListImageAnalysesRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.vision.v1alpha1.IImageAnalysis[],
+        protos.animeshon.vision.v1alpha1.IListImageAnalysesRequest|null,
+        protos.animeshon.vision.v1alpha1.IListImageAnalysesResponse
+      ]>;
+  listImageAnalyses(
+      request: protos.animeshon.vision.v1alpha1.IListImageAnalysesRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.vision.v1alpha1.IListImageAnalysesRequest,
+          protos.animeshon.vision.v1alpha1.IListImageAnalysesResponse|null|undefined,
+          protos.animeshon.vision.v1alpha1.IImageAnalysis>): void;
+  listImageAnalyses(
+      request: protos.animeshon.vision.v1alpha1.IListImageAnalysesRequest,
+      callback: PaginationCallback<
+          protos.animeshon.vision.v1alpha1.IListImageAnalysesRequest,
+          protos.animeshon.vision.v1alpha1.IListImageAnalysesResponse|null|undefined,
+          protos.animeshon.vision.v1alpha1.IImageAnalysis>): void;
   listImageAnalyses(
       request?: protos.animeshon.vision.v1alpha1.IListImageAnalysesRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -887,7 +899,8 @@ export class ImageAnnotatorClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listImageAnalyses'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listImageAnalyses.createStream(
       this.innerApiCalls.listImageAnalyses as gax.GaxCall,
@@ -918,11 +931,8 @@ export class ImageAnnotatorClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listImageAnalysesAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/image_annotator.list_image_analyses.js</caption>
+ * region_tag:vision_v1alpha1_generated_ImageAnnotator_ListImageAnalyses_async
  */
   listImageAnalysesAsync(
       request?: protos.animeshon.vision.v1alpha1.IListImageAnalysesRequest,
@@ -937,8 +947,8 @@ export class ImageAnnotatorClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listImageAnalyses'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listImageAnalyses.asyncIterate(
       this.innerApiCalls['listImageAnalyses'] as GaxCall,
@@ -946,28 +956,7 @@ export class ImageAnnotatorClient {
       callSettings
     ) as AsyncIterable<protos.animeshon.vision.v1alpha1.IImageAnalysis>;
   }
-  listImageAnnotations(
-      request?: protos.animeshon.vision.v1alpha1.IListImageAnnotationsRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.vision.v1alpha1.IImageAnnotation[],
-        protos.animeshon.vision.v1alpha1.IListImageAnnotationsRequest|null,
-        protos.animeshon.vision.v1alpha1.IListImageAnnotationsResponse
-      ]>;
-  listImageAnnotations(
-      request: protos.animeshon.vision.v1alpha1.IListImageAnnotationsRequest,
-      options: CallOptions,
-      callback: PaginationCallback<
-          protos.animeshon.vision.v1alpha1.IListImageAnnotationsRequest,
-          protos.animeshon.vision.v1alpha1.IListImageAnnotationsResponse|null|undefined,
-          protos.animeshon.vision.v1alpha1.IImageAnnotation>): void;
-  listImageAnnotations(
-      request: protos.animeshon.vision.v1alpha1.IListImageAnnotationsRequest,
-      callback: PaginationCallback<
-          protos.animeshon.vision.v1alpha1.IListImageAnnotationsRequest,
-          protos.animeshon.vision.v1alpha1.IListImageAnnotationsResponse|null|undefined,
-          protos.animeshon.vision.v1alpha1.IImageAnnotation>): void;
-/**
+ /**
  *
  * @param {Object} request
  *   The request object that will be sent.
@@ -995,6 +984,27 @@ export class ImageAnnotatorClient {
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
+  listImageAnnotations(
+      request?: protos.animeshon.vision.v1alpha1.IListImageAnnotationsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.vision.v1alpha1.IImageAnnotation[],
+        protos.animeshon.vision.v1alpha1.IListImageAnnotationsRequest|null,
+        protos.animeshon.vision.v1alpha1.IListImageAnnotationsResponse
+      ]>;
+  listImageAnnotations(
+      request: protos.animeshon.vision.v1alpha1.IListImageAnnotationsRequest,
+      options: CallOptions,
+      callback: PaginationCallback<
+          protos.animeshon.vision.v1alpha1.IListImageAnnotationsRequest,
+          protos.animeshon.vision.v1alpha1.IListImageAnnotationsResponse|null|undefined,
+          protos.animeshon.vision.v1alpha1.IImageAnnotation>): void;
+  listImageAnnotations(
+      request: protos.animeshon.vision.v1alpha1.IListImageAnnotationsRequest,
+      callback: PaginationCallback<
+          protos.animeshon.vision.v1alpha1.IListImageAnnotationsRequest,
+          protos.animeshon.vision.v1alpha1.IListImageAnnotationsResponse|null|undefined,
+          protos.animeshon.vision.v1alpha1.IImageAnnotation>): void;
   listImageAnnotations(
       request?: protos.animeshon.vision.v1alpha1.IListImageAnnotationsRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
@@ -1071,7 +1081,8 @@ export class ImageAnnotatorClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listImageAnnotations'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listImageAnnotations.createStream(
       this.innerApiCalls.listImageAnnotations as gax.GaxCall,
@@ -1107,11 +1118,8 @@ export class ImageAnnotatorClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example
- * const iterable = client.listImageAnnotationsAsync(request);
- * for await (const response of iterable) {
- *   // process response
- * }
+ * @example <caption>include:samples/generated/v1alpha1/image_annotator.list_image_annotations.js</caption>
+ * region_tag:vision_v1alpha1_generated_ImageAnnotator_ListImageAnnotations_async
  */
   listImageAnnotationsAsync(
       request?: protos.animeshon.vision.v1alpha1.IListImageAnnotationsRequest,
@@ -1126,8 +1134,8 @@ export class ImageAnnotatorClient {
     ] = gax.routingHeader.fromParams({
       'parent': request.parent || '',
     });
-    options = options || {};
-    const callSettings = new gax.CallSettings(options);
+    const defaultCallSettings = this._defaults['listImageAnnotations'];
+    const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listImageAnnotations.asyncIterate(
       this.innerApiCalls['listImageAnnotations'] as GaxCall,

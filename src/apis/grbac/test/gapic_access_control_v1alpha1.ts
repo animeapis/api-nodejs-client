@@ -70,8 +70,8 @@ describe('v1alpha1.AccessControlClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.accessControlStub, undefined);
         await client.initialize();
@@ -80,8 +80,8 @@ describe('v1alpha1.AccessControlClient', () => {
 
     it('has close method', () => {
         const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -89,8 +89,8 @@ describe('v1alpha1.AccessControlClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -101,8 +101,8 @@ describe('v1alpha1.AccessControlClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -121,12 +121,12 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('testIamPolicy', () => {
         it('invokes testIamPolicy without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.TestIamPolicyRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
             client.innerApiCalls.testIamPolicy = stubSimpleCall(expectedResponse);
             const [response] = await client.testIamPolicy(request);
@@ -137,12 +137,12 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes testIamPolicy without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.TestIamPolicyRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
             client.innerApiCalls.testIamPolicy = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -164,12 +164,12 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes testIamPolicy with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.TestIamPolicyRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.testIamPolicy = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.testIamPolicy(request), expectedError);
@@ -181,12 +181,12 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('getIamPolicy', () => {
         it('invokes getIamPolicy without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.iam.v1.GetIamPolicyRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.iam.v1.Policy());
             client.innerApiCalls.getIamPolicy = stubSimpleCall(expectedResponse);
             const [response] = await client.getIamPolicy(request);
@@ -197,12 +197,12 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes getIamPolicy without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.iam.v1.GetIamPolicyRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.iam.v1.Policy());
             client.innerApiCalls.getIamPolicy = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -224,12 +224,12 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes getIamPolicy with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.iam.v1.GetIamPolicyRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.getIamPolicy = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getIamPolicy(request), expectedError);
@@ -241,12 +241,12 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('setIamPolicy', () => {
         it('invokes setIamPolicy without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.iam.v1.SetIamPolicyRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.iam.v1.Policy());
             client.innerApiCalls.setIamPolicy = stubSimpleCall(expectedResponse);
             const [response] = await client.setIamPolicy(request);
@@ -257,12 +257,12 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes setIamPolicy without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.iam.v1.SetIamPolicyRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = generateSampleMessage(new protos.google.iam.v1.Policy());
             client.innerApiCalls.setIamPolicy = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -284,12 +284,12 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes setIamPolicy with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.google.iam.v1.SetIamPolicyRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.setIamPolicy = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.setIamPolicy(request), expectedError);
@@ -301,9 +301,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('getResource', () => {
         it('invokes getResource without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetResourceRequest());
             request.name = '';
@@ -325,9 +325,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes getResource without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetResourceRequest());
             request.name = '';
@@ -360,9 +360,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes getResource with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetResourceRequest());
             request.name = '';
@@ -385,9 +385,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('createResource', () => {
         it('invokes createResource without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateResourceRequest());
             request.resource = {};
@@ -410,9 +410,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes createResource without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateResourceRequest());
             request.resource = {};
@@ -446,9 +446,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes createResource with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateResourceRequest());
             request.resource = {};
@@ -472,9 +472,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('transferResource', () => {
         it('invokes transferResource without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.TransferResourceRequest());
             request.name = '';
@@ -496,9 +496,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes transferResource without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.TransferResourceRequest());
             request.name = '';
@@ -531,9 +531,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes transferResource with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.TransferResourceRequest());
             request.name = '';
@@ -556,9 +556,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('deleteResource', () => {
         it('invokes deleteResource without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteResourceRequest());
             request.name = '';
@@ -580,9 +580,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes deleteResource without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteResourceRequest());
             request.name = '';
@@ -615,9 +615,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes deleteResource with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteResourceRequest());
             request.name = '';
@@ -640,9 +640,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('createSubject', () => {
         it('invokes createSubject without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateSubjectRequest());
             request.subject = {};
@@ -665,9 +665,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes createSubject without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateSubjectRequest());
             request.subject = {};
@@ -701,9 +701,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes createSubject with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateSubjectRequest());
             request.subject = {};
@@ -727,9 +727,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('deleteSubject', () => {
         it('invokes deleteSubject without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteSubjectRequest());
             request.name = '';
@@ -751,9 +751,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes deleteSubject without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteSubjectRequest());
             request.name = '';
@@ -786,9 +786,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes deleteSubject with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteSubjectRequest());
             request.name = '';
@@ -811,9 +811,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('getGroup', () => {
         it('invokes getGroup without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetGroupRequest());
             request.name = '';
@@ -835,9 +835,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes getGroup without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetGroupRequest());
             request.name = '';
@@ -870,9 +870,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes getGroup with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetGroupRequest());
             request.name = '';
@@ -895,9 +895,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('createGroup', () => {
         it('invokes createGroup without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateGroupRequest());
             request.group = {};
@@ -920,9 +920,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes createGroup without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateGroupRequest());
             request.group = {};
@@ -956,9 +956,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes createGroup with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateGroupRequest());
             request.group = {};
@@ -982,9 +982,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('updateGroup', () => {
         it('invokes updateGroup without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.UpdateGroupRequest());
             request.group = {};
@@ -1007,9 +1007,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes updateGroup without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.UpdateGroupRequest());
             request.group = {};
@@ -1043,9 +1043,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes updateGroup with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.UpdateGroupRequest());
             request.group = {};
@@ -1069,9 +1069,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('addGroupMember', () => {
         it('invokes addGroupMember without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.AddGroupMemberRequest());
             request.group = '';
@@ -1093,9 +1093,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes addGroupMember without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.AddGroupMemberRequest());
             request.group = '';
@@ -1128,9 +1128,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes addGroupMember with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.AddGroupMemberRequest());
             request.group = '';
@@ -1153,9 +1153,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('removeGroupMember', () => {
         it('invokes removeGroupMember without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.RemoveGroupMemberRequest());
             request.group = '';
@@ -1177,9 +1177,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes removeGroupMember without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.RemoveGroupMemberRequest());
             request.group = '';
@@ -1212,9 +1212,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes removeGroupMember with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.RemoveGroupMemberRequest());
             request.group = '';
@@ -1237,9 +1237,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('deleteGroup', () => {
         it('invokes deleteGroup without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteGroupRequest());
             request.name = '';
@@ -1261,9 +1261,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes deleteGroup without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteGroupRequest());
             request.name = '';
@@ -1296,9 +1296,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes deleteGroup with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteGroupRequest());
             request.name = '';
@@ -1321,9 +1321,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('createPermission', () => {
         it('invokes createPermission without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreatePermissionRequest());
             request.permission = {};
@@ -1346,9 +1346,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes createPermission without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreatePermissionRequest());
             request.permission = {};
@@ -1382,9 +1382,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes createPermission with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreatePermissionRequest());
             request.permission = {};
@@ -1408,9 +1408,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('deletePermission', () => {
         it('invokes deletePermission without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeletePermissionRequest());
             request.name = '';
@@ -1432,9 +1432,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes deletePermission without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeletePermissionRequest());
             request.name = '';
@@ -1467,9 +1467,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes deletePermission with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeletePermissionRequest());
             request.name = '';
@@ -1492,9 +1492,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('getRole', () => {
         it('invokes getRole without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetRoleRequest());
             request.name = '';
@@ -1516,9 +1516,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes getRole without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetRoleRequest());
             request.name = '';
@@ -1551,9 +1551,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes getRole with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetRoleRequest());
             request.name = '';
@@ -1576,9 +1576,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('createRole', () => {
         it('invokes createRole without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateRoleRequest());
             request.role = {};
@@ -1601,9 +1601,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes createRole without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateRoleRequest());
             request.role = {};
@@ -1637,9 +1637,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes createRole with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateRoleRequest());
             request.role = {};
@@ -1663,9 +1663,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('updateRole', () => {
         it('invokes updateRole without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.UpdateRoleRequest());
             request.role = {};
@@ -1688,9 +1688,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes updateRole without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.UpdateRoleRequest());
             request.role = {};
@@ -1724,9 +1724,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes updateRole with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.UpdateRoleRequest());
             request.role = {};
@@ -1750,9 +1750,9 @@ describe('v1alpha1.AccessControlClient', () => {
     describe('deleteRole', () => {
         it('invokes deleteRole without error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteRoleRequest());
             request.name = '';
@@ -1774,9 +1774,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes deleteRole without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteRoleRequest());
             request.name = '';
@@ -1809,9 +1809,9 @@ describe('v1alpha1.AccessControlClient', () => {
 
         it('invokes deleteRole with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteRoleRequest());
             request.name = '';

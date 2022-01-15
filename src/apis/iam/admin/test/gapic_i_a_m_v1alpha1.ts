@@ -117,8 +117,8 @@ describe('v1alpha1.IAMClient', () => {
 
     it('has initialize method and supports deferred initialization', async () => {
         const client = new iamModule.v1alpha1.IAMClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         assert.strictEqual(client.iAMStub, undefined);
         await client.initialize();
@@ -127,8 +127,8 @@ describe('v1alpha1.IAMClient', () => {
 
     it('has close method', () => {
         const client = new iamModule.v1alpha1.IAMClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.close();
     });
@@ -136,8 +136,8 @@ describe('v1alpha1.IAMClient', () => {
     it('has getProjectId method', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new iamModule.v1alpha1.IAMClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
         const result = await client.getProjectId();
@@ -148,8 +148,8 @@ describe('v1alpha1.IAMClient', () => {
     it('has getProjectId method with callback', async () => {
         const fakeProjectId = 'fake-project-id';
         const client = new iamModule.v1alpha1.IAMClient({
-            credentials: { client_email: 'bogus', private_key: 'bogus' },
-            projectId: 'bogus',
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
         });
         client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
         const promise = new Promise((resolve, reject) => {
@@ -168,9 +168,9 @@ describe('v1alpha1.IAMClient', () => {
     describe('getServiceAccount', () => {
         it('invokes getServiceAccount without error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetServiceAccountRequest());
             request.name = '';
@@ -192,9 +192,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes getServiceAccount without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetServiceAccountRequest());
             request.name = '';
@@ -227,9 +227,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes getServiceAccount with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetServiceAccountRequest());
             request.name = '';
@@ -252,9 +252,9 @@ describe('v1alpha1.IAMClient', () => {
     describe('createServiceAccount', () => {
         it('invokes createServiceAccount without error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreateServiceAccountRequest());
             request.serviceAccount = {};
@@ -277,9 +277,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes createServiceAccount without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreateServiceAccountRequest());
             request.serviceAccount = {};
@@ -313,9 +313,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes createServiceAccount with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreateServiceAccountRequest());
             request.serviceAccount = {};
@@ -339,9 +339,9 @@ describe('v1alpha1.IAMClient', () => {
     describe('updateServiceAccount', () => {
         it('invokes updateServiceAccount without error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdateServiceAccountRequest());
             request.serviceAccount = {};
@@ -364,9 +364,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes updateServiceAccount without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdateServiceAccountRequest());
             request.serviceAccount = {};
@@ -400,9 +400,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes updateServiceAccount with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdateServiceAccountRequest());
             request.serviceAccount = {};
@@ -426,9 +426,9 @@ describe('v1alpha1.IAMClient', () => {
     describe('deleteServiceAccount', () => {
         it('invokes deleteServiceAccount without error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeleteServiceAccountRequest());
             request.name = '';
@@ -450,9 +450,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes deleteServiceAccount without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeleteServiceAccountRequest());
             request.name = '';
@@ -485,9 +485,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes deleteServiceAccount with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeleteServiceAccountRequest());
             request.name = '';
@@ -510,9 +510,9 @@ describe('v1alpha1.IAMClient', () => {
     describe('getRole', () => {
         it('invokes getRole without error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetRoleRequest());
             request.name = '';
@@ -534,9 +534,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes getRole without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetRoleRequest());
             request.name = '';
@@ -569,9 +569,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes getRole with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetRoleRequest());
             request.name = '';
@@ -594,9 +594,9 @@ describe('v1alpha1.IAMClient', () => {
     describe('createRole', () => {
         it('invokes createRole without error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreateRoleRequest());
             request.role = {};
@@ -619,9 +619,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes createRole without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreateRoleRequest());
             request.role = {};
@@ -655,9 +655,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes createRole with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreateRoleRequest());
             request.role = {};
@@ -681,9 +681,9 @@ describe('v1alpha1.IAMClient', () => {
     describe('updateRole', () => {
         it('invokes updateRole without error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdateRoleRequest());
             request.role = {};
@@ -706,9 +706,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes updateRole without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdateRoleRequest());
             request.role = {};
@@ -742,9 +742,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes updateRole with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdateRoleRequest());
             request.role = {};
@@ -768,9 +768,9 @@ describe('v1alpha1.IAMClient', () => {
     describe('deleteRole', () => {
         it('invokes deleteRole without error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeleteRoleRequest());
             request.name = '';
@@ -792,9 +792,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes deleteRole without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeleteRoleRequest());
             request.name = '';
@@ -827,9 +827,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes deleteRole with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeleteRoleRequest());
             request.name = '';
@@ -852,9 +852,9 @@ describe('v1alpha1.IAMClient', () => {
     describe('getPermission', () => {
         it('invokes getPermission without error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetPermissionRequest());
             request.name = '';
@@ -876,9 +876,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes getPermission without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetPermissionRequest());
             request.name = '';
@@ -911,9 +911,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes getPermission with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetPermissionRequest());
             request.name = '';
@@ -936,9 +936,9 @@ describe('v1alpha1.IAMClient', () => {
     describe('createPermission', () => {
         it('invokes createPermission without error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreatePermissionRequest());
             request.permission = {};
@@ -961,9 +961,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes createPermission without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreatePermissionRequest());
             request.permission = {};
@@ -997,9 +997,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes createPermission with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreatePermissionRequest());
             request.permission = {};
@@ -1023,9 +1023,9 @@ describe('v1alpha1.IAMClient', () => {
     describe('updatePermission', () => {
         it('invokes updatePermission without error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdatePermissionRequest());
             request.permission = {};
@@ -1048,9 +1048,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes updatePermission without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdatePermissionRequest());
             request.permission = {};
@@ -1084,9 +1084,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes updatePermission with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdatePermissionRequest());
             request.permission = {};
@@ -1110,9 +1110,9 @@ describe('v1alpha1.IAMClient', () => {
     describe('deletePermission', () => {
         it('invokes deletePermission without error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeletePermissionRequest());
             request.name = '';
@@ -1134,9 +1134,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes deletePermission without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeletePermissionRequest());
             request.name = '';
@@ -1169,9 +1169,9 @@ describe('v1alpha1.IAMClient', () => {
 
         it('invokes deletePermission with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeletePermissionRequest());
             request.name = '';
@@ -1357,13 +1357,14 @@ describe('v1alpha1.IAMClient', () => {
 
         it('uses async iteration with listServiceAccounts without error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest());
             request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedResponse = [
+            const expectedHeaderRequestParams = "parent=";
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()),
@@ -1421,7 +1422,7 @@ describe('v1alpha1.IAMClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role()),
@@ -1441,7 +1442,7 @@ describe('v1alpha1.IAMClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role()),
@@ -1472,7 +1473,7 @@ describe('v1alpha1.IAMClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.listRoles = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listRoles(request), expectedError);
@@ -1541,11 +1542,12 @@ describe('v1alpha1.IAMClient', () => {
 
         it('uses async iteration with listRoles without error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest());const expectedResponse = [
+            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest());
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role()),
@@ -1591,7 +1593,7 @@ describe('v1alpha1.IAMClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission()),
@@ -1611,7 +1613,7 @@ describe('v1alpha1.IAMClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission()),
@@ -1642,7 +1644,7 @@ describe('v1alpha1.IAMClient', () => {
             });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest());
-            const expectedOptions = {};
+            const expectedOptions = {otherArgs: {headers: {}}};;
             const expectedError = new Error('expected');
             client.innerApiCalls.listPermissions = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listPermissions(request), expectedError);
@@ -1711,11 +1713,12 @@ describe('v1alpha1.IAMClient', () => {
 
         it('uses async iteration with listPermissions without error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
-                credentials: {client_email: 'bogus', private_key: 'bogus'},
-                projectId: 'bogus',
-            });
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest());const expectedResponse = [
+            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest());
+            const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission()),
