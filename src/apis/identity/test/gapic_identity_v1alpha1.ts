@@ -906,6 +906,90 @@ describe('v1alpha1.IdentityClient', () => {
         });
     });
 
+    describe('getUserDefaults', () => {
+        it('invokes getUserDefaults without error', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserDefaultsRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UserDefaults());
+            client.innerApiCalls.getUserDefaults = stubSimpleCall(expectedResponse);
+            const [response] = await client.getUserDefaults(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.getUserDefaults as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes getUserDefaults without error using callback', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserDefaultsRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UserDefaults());
+            client.innerApiCalls.getUserDefaults = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.getUserDefaults(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.identity.v1alpha1.IUserDefaults|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.getUserDefaults as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes getUserDefaults with error', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserDefaultsRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.getUserDefaults = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.getUserDefaults(request), expectedError);
+            assert((client.innerApiCalls.getUserDefaults as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
     describe('getGroup', () => {
         it('invokes getGroup without error', async () => {
             const client = new identityModule.v1alpha1.IdentityClient({

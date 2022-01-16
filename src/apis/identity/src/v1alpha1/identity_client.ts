@@ -202,7 +202,7 @@ export class IdentityClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const identityStubMethods =
-        ['getUserProfile', 'getUser', 'listUsers', 'createUser', 'updateUser', 'deleteUser', 'getUserSettings', 'updateUserSettings', 'getUserNotifications', 'updateUserNotifications', 'getGroup', 'listGroups', 'createGroup', 'updateGroup', 'deleteGroup'];
+        ['getUserProfile', 'getUser', 'listUsers', 'createUser', 'updateUser', 'deleteUser', 'getUserSettings', 'updateUserSettings', 'getUserNotifications', 'updateUserNotifications', 'getUserDefaults', 'getGroup', 'listGroups', 'createGroup', 'updateGroup', 'deleteGroup'];
     for (const methodName of identityStubMethods) {
       const callPromise = this.identityStub.then(
         stub => (...args: Array<{}>) => {
@@ -916,6 +916,76 @@ export class IdentityClient {
     });
     this.initialize();
     return this.innerApiCalls.updateUserNotifications(request, options, callback);
+  }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the user to retrieve the defaults from.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [UserDefaults]{@link animeshon.identity.v1alpha1.UserDefaults}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/identity.get_user_defaults.js</caption>
+ * region_tag:identity_v1alpha1_generated_Identity_GetUserDefaults_async
+ */
+  getUserDefaults(
+      request?: protos.animeshon.identity.v1alpha1.IGetUserDefaultsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.identity.v1alpha1.IUserDefaults,
+        protos.animeshon.identity.v1alpha1.IGetUserDefaultsRequest|undefined, {}|undefined
+      ]>;
+  getUserDefaults(
+      request: protos.animeshon.identity.v1alpha1.IGetUserDefaultsRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.identity.v1alpha1.IUserDefaults,
+          protos.animeshon.identity.v1alpha1.IGetUserDefaultsRequest|null|undefined,
+          {}|null|undefined>): void;
+  getUserDefaults(
+      request: protos.animeshon.identity.v1alpha1.IGetUserDefaultsRequest,
+      callback: Callback<
+          protos.animeshon.identity.v1alpha1.IUserDefaults,
+          protos.animeshon.identity.v1alpha1.IGetUserDefaultsRequest|null|undefined,
+          {}|null|undefined>): void;
+  getUserDefaults(
+      request?: protos.animeshon.identity.v1alpha1.IGetUserDefaultsRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.animeshon.identity.v1alpha1.IUserDefaults,
+          protos.animeshon.identity.v1alpha1.IGetUserDefaultsRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.animeshon.identity.v1alpha1.IUserDefaults,
+          protos.animeshon.identity.v1alpha1.IGetUserDefaultsRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.animeshon.identity.v1alpha1.IUserDefaults,
+        protos.animeshon.identity.v1alpha1.IGetUserDefaultsRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'name': request.name || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.getUserDefaults(request, options, callback);
   }
 /**
  *

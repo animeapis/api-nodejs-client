@@ -55,6 +55,11 @@
                 "updateUserNotifications"
               ]
             },
+            "GetUserDefaults": {
+              "methods": [
+                "getUserDefaults"
+              ]
+            },
             "GetGroup": {
               "methods": [
                 "getGroup"
@@ -137,6 +142,11 @@
             "UpdateUserNotifications": {
               "methods": [
                 "updateUserNotifications"
+              ]
+            },
+            "GetUserDefaults": {
+              "methods": [
+                "getUserDefaults"
               ]
             },
             "GetGroup": {
