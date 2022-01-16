@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://www.github.com/animeapis/api-nodejs-client/compare/release-v1.0.2...release-v1.1.0) (2022-01-16)
+
+
+### Features
+
+* **all:** upgrade Bazel dependencies ([4764b01](https://www.github.com/animeapis/api-nodejs-client/commit/4764b01edd2eae7cf1fc3b7d384f94598393ba8f))
+
 ### [1.0.2](https://www.github.com/animeapis/api-nodejs-client/compare/release-v1.0.1...release-v1.0.2) (2022-01-05)
 
 
