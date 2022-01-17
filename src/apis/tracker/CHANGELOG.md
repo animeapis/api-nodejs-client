@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://www.github.com/animeapis/api-nodejs-client/compare/tracker-v1.2.1...tracker-v1.3.0) (2022-01-16)
+
+
+### Features
+
+* **all:** upgrade Bazel dependencies ([4764b01](https://www.github.com/animeapis/api-nodejs-client/commit/4764b01edd2eae7cf1fc3b7d384f94598393ba8f))
+
 ### [1.2.1](https://www.github.com/animeapis/api-nodejs-client/compare/tracker-v1.2.0...tracker-v1.2.1) (2022-01-05)
 
 

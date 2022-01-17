@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.0](https://www.github.com/animeapis/api-nodejs-client/compare/identity-v1.4.1...identity-v1.5.0) (2022-01-16)
+
+
+### Features
+
+* **all:** upgrade Bazel dependencies ([4764b01](https://www.github.com/animeapis/api-nodejs-client/commit/4764b01edd2eae7cf1fc3b7d384f94598393ba8f))
+* **identity:** add method for user default values ([f0dafdf](https://www.github.com/animeapis/api-nodejs-client/commit/f0dafdf17dcf98202c51d52ff7caf17d403828be))
+
 ### [1.4.1](https://www.github.com/animeapis/api-nodejs-client/compare/identity-v1.4.0...identity-v1.4.1) (2022-01-05)
 
 
