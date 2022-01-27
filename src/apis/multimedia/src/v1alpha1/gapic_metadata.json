@@ -30,6 +30,11 @@
                 "deleteChapter"
               ]
             },
+            "ReconcileChapters": {
+              "methods": [
+                "reconcileChapters"
+              ]
+            },
             "ListChapters": {
               "methods": [
                 "listChapters",
@@ -60,6 +65,11 @@
             "DeleteChapter": {
               "methods": [
                 "deleteChapter"
+              ]
+            },
+            "ReconcileChapters": {
+              "methods": [
+                "reconcileChapters"
               ]
             },
             "ListChapters": {
@@ -98,6 +108,11 @@
                 "deleteEpisode"
               ]
             },
+            "ReconcileEpisodes": {
+              "methods": [
+                "reconcileEpisodes"
+              ]
+            },
             "ListEpisodes": {
               "methods": [
                 "listEpisodes",
@@ -128,6 +143,11 @@
             "DeleteEpisode": {
               "methods": [
                 "deleteEpisode"
+              ]
+            },
+            "ReconcileEpisodes": {
+              "methods": [
+                "reconcileEpisodes"
               ]
             },
             "ListEpisodes": {

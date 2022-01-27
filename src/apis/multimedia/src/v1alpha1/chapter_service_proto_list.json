@@ -1,4 +1,5 @@
 [
   "../../protos/animeshon/multimedia/v1alpha1/chapter.proto",
-  "../../protos/animeshon/multimedia/v1alpha1/episode.proto"
+  "../../protos/animeshon/multimedia/v1alpha1/episode.proto",
+  "../../protos/animeshon/multimedia/v1alpha1/longrunning.proto"
 ]

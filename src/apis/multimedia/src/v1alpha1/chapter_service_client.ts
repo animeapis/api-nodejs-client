@@ -18,7 +18,7 @@
 
 /* global window */
 import * as gax from 'google-gax';
-import {Callback, CallOptions, Descriptors, ClientOptions, PaginationCallback, GaxCall} from 'google-gax';
+import {Callback, CallOptions, Descriptors, ClientOptions, LROperation, PaginationCallback, GaxCall} from 'google-gax';
 
 import { Transform } from 'stream';
 import { RequestType } from 'google-gax/build/src/apitypes';
@@ -30,7 +30,7 @@ import jsonProtos = require('../../protos/protos.json');
  * This file defines retry strategy and timeouts for all API methods in this library.
  */
 import * as gapicConfig from './chapter_service_client_config.json';
-
+import { operationsProtos } from 'google-gax';
 const version = require('../../../package.json').version;
 
 /**
@@ -54,6 +54,7 @@ export class ChapterServiceClient {
   };
   warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
+  operationsClient: gax.OperationsClient;
   chapterServiceStub?: Promise<{[name: string]: Function}>;
 
   /**
@@ -157,6 +158,28 @@ export class ChapterServiceClient {
           new this._gaxModule.PageDescriptor('pageToken', 'nextPageToken', 'chapters')
     };
 
+    const protoFilesRoot = this._gaxModule.protobuf.Root.fromJSON(jsonProtos);
+
+    // This API contains "long-running operations", which return a
+    // an Operation object that allows for tracking of the operation,
+    // rather than holding a request open.
+
+    this.operationsClient = this._gaxModule.lro({
+      auth: this.auth,
+      grpc: 'grpc' in this._gaxGrpc ? this._gaxGrpc.grpc : undefined
+    }).operationsClient(opts);
+    const reconcileChaptersResponse = protoFilesRoot.lookup(
+      '.animeshon.multimedia.v1alpha1.ReconcileChaptersResponse') as gax.protobuf.Type;
+    const reconcileChaptersMetadata = protoFilesRoot.lookup(
+      '.animeshon.multimedia.v1alpha1.OperationMetadata') as gax.protobuf.Type;
+
+    this.descriptors.longrunning = {
+      reconcileChapters: new this._gaxModule.LongrunningDescriptor(
+        this.operationsClient,
+        reconcileChaptersResponse.decode.bind(reconcileChaptersResponse),
+        reconcileChaptersMetadata.decode.bind(reconcileChaptersMetadata))
+    };
+
     // Put together the default options sent with requests.
     this._defaults = this._gaxGrpc.constructSettings(
         'animeshon.multimedia.v1alpha1.ChapterService', gapicConfig as gax.ClientConfig,
@@ -200,7 +223,7 @@ export class ChapterServiceClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const chapterServiceStubMethods =
-        ['getChapter', 'listChapters', 'createChapter', 'updateChapter', 'deleteChapter'];
+        ['getChapter', 'listChapters', 'createChapter', 'updateChapter', 'deleteChapter', 'reconcileChapters'];
     for (const methodName of chapterServiceStubMethods) {
       const callPromise = this.chapterServiceStub.then(
         stub => (...args: Array<{}>) => {
@@ -216,6 +239,7 @@ export class ChapterServiceClient {
 
       const descriptor =
         this.descriptors.page[methodName] ||
+        this.descriptors.longrunning[methodName] ||
         undefined;
       const apiCall = this._gaxModule.createApiCall(
         callPromise,
@@ -567,6 +591,96 @@ export class ChapterServiceClient {
     return this.innerApiCalls.deleteChapter(request, options, callback);
   }
 
+/**
+ * Reconcile chapters with the search and knowledge base.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing
+ *   a long running operation. Its `promise()` method returns a promise
+ *   you can `await` for.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/chapter_service.reconcile_chapters.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_ChapterService_ReconcileChapters_async
+ */
+  reconcileChapters(
+      request?: protos.animeshon.multimedia.v1alpha1.IReconcileChaptersRequest,
+      options?: CallOptions):
+      Promise<[
+        LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileChaptersResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+        protos.google.longrunning.IOperation|undefined, {}|undefined
+      ]>;
+  reconcileChapters(
+      request: protos.animeshon.multimedia.v1alpha1.IReconcileChaptersRequest,
+      options: CallOptions,
+      callback: Callback<
+          LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileChaptersResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
+  reconcileChapters(
+      request: protos.animeshon.multimedia.v1alpha1.IReconcileChaptersRequest,
+      callback: Callback<
+          LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileChaptersResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
+  reconcileChapters(
+      request?: protos.animeshon.multimedia.v1alpha1.IReconcileChaptersRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileChaptersResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileChaptersResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileChaptersResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+        protos.google.longrunning.IOperation|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'parent': request.parent || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.reconcileChapters(request, options, callback);
+  }
+/**
+ * Check the status of the long running operation returned by `reconcileChapters()`.
+ * @param {String} name
+ *   The operation name that will be passed.
+ * @returns {Promise} - The promise which resolves to an object.
+ *   The decoded operation object has result and metadata field to get information from.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/chapter_service.reconcile_chapters.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_ChapterService_ReconcileChapters_async
+ */
+  async checkReconcileChaptersProgress(name: string): Promise<LROperation<protos.animeshon.multimedia.v1alpha1.ReconcileChaptersResponse, protos.animeshon.multimedia.v1alpha1.OperationMetadata>>{
+    const request = new operationsProtos.google.longrunning.GetOperationRequest({name});
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new gax.Operation(operation, this.descriptors.longrunning.reconcileChapters, gax.createDefaultBackoffSettings());
+    return decodeOperation as LROperation<protos.animeshon.multimedia.v1alpha1.ReconcileChaptersResponse, protos.animeshon.multimedia.v1alpha1.OperationMetadata>;
+  }
  /**
  *
  * @param {Object} request
@@ -758,6 +872,7 @@ export class ChapterServiceClient {
       return this.chapterServiceStub!.then(stub => {
         this._terminated = true;
         stub.close();
+        this.operationsClient.close();
       });
     }
     return Promise.resolve();

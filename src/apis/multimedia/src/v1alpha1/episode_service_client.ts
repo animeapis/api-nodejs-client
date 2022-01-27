@@ -18,7 +18,7 @@
 
 /* global window */
 import * as gax from 'google-gax';
-import {Callback, CallOptions, Descriptors, ClientOptions, PaginationCallback, GaxCall} from 'google-gax';
+import {Callback, CallOptions, Descriptors, ClientOptions, LROperation, PaginationCallback, GaxCall} from 'google-gax';
 
 import { Transform } from 'stream';
 import { RequestType } from 'google-gax/build/src/apitypes';
@@ -30,7 +30,7 @@ import jsonProtos = require('../../protos/protos.json');
  * This file defines retry strategy and timeouts for all API methods in this library.
  */
 import * as gapicConfig from './episode_service_client_config.json';
-
+import { operationsProtos } from 'google-gax';
 const version = require('../../../package.json').version;
 
 /**
@@ -54,6 +54,7 @@ export class EpisodeServiceClient {
   };
   warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
+  operationsClient: gax.OperationsClient;
   episodeServiceStub?: Promise<{[name: string]: Function}>;
 
   /**
@@ -157,6 +158,28 @@ export class EpisodeServiceClient {
           new this._gaxModule.PageDescriptor('pageToken', 'nextPageToken', 'episodes')
     };
 
+    const protoFilesRoot = this._gaxModule.protobuf.Root.fromJSON(jsonProtos);
+
+    // This API contains "long-running operations", which return a
+    // an Operation object that allows for tracking of the operation,
+    // rather than holding a request open.
+
+    this.operationsClient = this._gaxModule.lro({
+      auth: this.auth,
+      grpc: 'grpc' in this._gaxGrpc ? this._gaxGrpc.grpc : undefined
+    }).operationsClient(opts);
+    const reconcileEpisodesResponse = protoFilesRoot.lookup(
+      '.animeshon.multimedia.v1alpha1.ReconcileEpisodesResponse') as gax.protobuf.Type;
+    const reconcileEpisodesMetadata = protoFilesRoot.lookup(
+      '.animeshon.multimedia.v1alpha1.OperationMetadata') as gax.protobuf.Type;
+
+    this.descriptors.longrunning = {
+      reconcileEpisodes: new this._gaxModule.LongrunningDescriptor(
+        this.operationsClient,
+        reconcileEpisodesResponse.decode.bind(reconcileEpisodesResponse),
+        reconcileEpisodesMetadata.decode.bind(reconcileEpisodesMetadata))
+    };
+
     // Put together the default options sent with requests.
     this._defaults = this._gaxGrpc.constructSettings(
         'animeshon.multimedia.v1alpha1.EpisodeService', gapicConfig as gax.ClientConfig,
@@ -200,7 +223,7 @@ export class EpisodeServiceClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const episodeServiceStubMethods =
-        ['getEpisode', 'listEpisodes', 'createEpisode', 'updateEpisode', 'deleteEpisode'];
+        ['getEpisode', 'listEpisodes', 'createEpisode', 'updateEpisode', 'deleteEpisode', 'reconcileEpisodes'];
     for (const methodName of episodeServiceStubMethods) {
       const callPromise = this.episodeServiceStub.then(
         stub => (...args: Array<{}>) => {
@@ -216,6 +239,7 @@ export class EpisodeServiceClient {
 
       const descriptor =
         this.descriptors.page[methodName] ||
+        this.descriptors.longrunning[methodName] ||
         undefined;
       const apiCall = this._gaxModule.createApiCall(
         callPromise,
@@ -567,6 +591,96 @@ export class EpisodeServiceClient {
     return this.innerApiCalls.deleteEpisode(request, options, callback);
   }
 
+/**
+ * Reconcile episodes with the search and knowledge base.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing
+ *   a long running operation. Its `promise()` method returns a promise
+ *   you can `await` for.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/episode_service.reconcile_episodes.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_EpisodeService_ReconcileEpisodes_async
+ */
+  reconcileEpisodes(
+      request?: protos.animeshon.multimedia.v1alpha1.IReconcileEpisodesRequest,
+      options?: CallOptions):
+      Promise<[
+        LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileEpisodesResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+        protos.google.longrunning.IOperation|undefined, {}|undefined
+      ]>;
+  reconcileEpisodes(
+      request: protos.animeshon.multimedia.v1alpha1.IReconcileEpisodesRequest,
+      options: CallOptions,
+      callback: Callback<
+          LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileEpisodesResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
+  reconcileEpisodes(
+      request: protos.animeshon.multimedia.v1alpha1.IReconcileEpisodesRequest,
+      callback: Callback<
+          LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileEpisodesResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
+  reconcileEpisodes(
+      request?: protos.animeshon.multimedia.v1alpha1.IReconcileEpisodesRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileEpisodesResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileEpisodesResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileEpisodesResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+        protos.google.longrunning.IOperation|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'parent': request.parent || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.reconcileEpisodes(request, options, callback);
+  }
+/**
+ * Check the status of the long running operation returned by `reconcileEpisodes()`.
+ * @param {String} name
+ *   The operation name that will be passed.
+ * @returns {Promise} - The promise which resolves to an object.
+ *   The decoded operation object has result and metadata field to get information from.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/episode_service.reconcile_episodes.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_EpisodeService_ReconcileEpisodes_async
+ */
+  async checkReconcileEpisodesProgress(name: string): Promise<LROperation<protos.animeshon.multimedia.v1alpha1.ReconcileEpisodesResponse, protos.animeshon.multimedia.v1alpha1.OperationMetadata>>{
+    const request = new operationsProtos.google.longrunning.GetOperationRequest({name});
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new gax.Operation(operation, this.descriptors.longrunning.reconcileEpisodes, gax.createDefaultBackoffSettings());
+    return decodeOperation as LROperation<protos.animeshon.multimedia.v1alpha1.ReconcileEpisodesResponse, protos.animeshon.multimedia.v1alpha1.OperationMetadata>;
+  }
  /**
  *
  * @param {Object} request
@@ -758,6 +872,7 @@ export class EpisodeServiceClient {
       return this.episodeServiceStub!.then(stub => {
         this._terminated = true;
         stub.close();
+        this.operationsClient.close();
       });
     }
     return Promise.resolve();
