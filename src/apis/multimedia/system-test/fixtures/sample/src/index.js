@@ -21,8 +21,11 @@
 const multimedia = require('@animeapis/multimedia');
 
 function main() {
+  const animeServiceClient = new multimedia.AnimeServiceClient();
   const chapterServiceClient = new multimedia.ChapterServiceClient();
   const episodeServiceClient = new multimedia.EpisodeServiceClient();
+  const graphicNovelServiceClient = new multimedia.GraphicNovelServiceClient();
+  const lightNovelServiceClient = new multimedia.LightNovelServiceClient();
 }
 
 main();

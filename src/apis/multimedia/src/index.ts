@@ -17,11 +17,17 @@
 // ** All changes to this file may be overwritten. **
 
 import * as v1alpha1 from './v1alpha1';
+const AnimeServiceClient = v1alpha1.AnimeServiceClient;
+type AnimeServiceClient = v1alpha1.AnimeServiceClient;
 const ChapterServiceClient = v1alpha1.ChapterServiceClient;
 type ChapterServiceClient = v1alpha1.ChapterServiceClient;
 const EpisodeServiceClient = v1alpha1.EpisodeServiceClient;
 type EpisodeServiceClient = v1alpha1.EpisodeServiceClient;
-export {v1alpha1, ChapterServiceClient, EpisodeServiceClient};
-export default {v1alpha1, ChapterServiceClient, EpisodeServiceClient};
+const GraphicNovelServiceClient = v1alpha1.GraphicNovelServiceClient;
+type GraphicNovelServiceClient = v1alpha1.GraphicNovelServiceClient;
+const LightNovelServiceClient = v1alpha1.LightNovelServiceClient;
+type LightNovelServiceClient = v1alpha1.LightNovelServiceClient;
+export {v1alpha1, AnimeServiceClient, ChapterServiceClient, EpisodeServiceClient, GraphicNovelServiceClient, LightNovelServiceClient};
+export default {v1alpha1, AnimeServiceClient, ChapterServiceClient, EpisodeServiceClient, GraphicNovelServiceClient, LightNovelServiceClient};
 import * as protos from '../protos/protos';
 export {protos}

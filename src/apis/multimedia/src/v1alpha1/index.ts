@@ -16,5 +16,8 @@
 // ** https://github.com/googleapis/gapic-generator-typescript **
 // ** All changes to this file may be overwritten. **
 
+export {AnimeServiceClient} from './anime_service_client';
 export {ChapterServiceClient} from './chapter_service_client';
 export {EpisodeServiceClient} from './episode_service_client';
+export {GraphicNovelServiceClient} from './graphic_novel_service_client';
+export {LightNovelServiceClient} from './light_novel_service_client';

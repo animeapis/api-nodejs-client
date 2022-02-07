@@ -17,8 +17,8 @@ const path = require('path');
 module.exports = {
   entry: './src/index.ts',
   output: {
-    library: 'ChapterService',
-    filename: './chapter-service.js',
+    library: 'AnimeService',
+    filename: './anime-service.js',
   },
   node: {
     child_process: 'empty',

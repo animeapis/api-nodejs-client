@@ -5,6 +5,84 @@
   "protoPackage": "animeshon.multimedia.v1alpha1",
   "libraryPackage": "@animeapis/multimedia",
   "services": {
+    "AnimeService": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "AnimeServiceClient",
+          "rpcs": {
+            "GetAnime": {
+              "methods": [
+                "getAnime"
+              ]
+            },
+            "CreateAnime": {
+              "methods": [
+                "createAnime"
+              ]
+            },
+            "UpdateAnime": {
+              "methods": [
+                "updateAnime"
+              ]
+            },
+            "DeleteAnime": {
+              "methods": [
+                "deleteAnime"
+              ]
+            },
+            "ReconcileAnimes": {
+              "methods": [
+                "reconcileAnimes"
+              ]
+            },
+            "ListAnimes": {
+              "methods": [
+                "listAnimes",
+                "listAnimesStream",
+                "listAnimesAsync"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "AnimeServiceClient",
+          "rpcs": {
+            "GetAnime": {
+              "methods": [
+                "getAnime"
+              ]
+            },
+            "CreateAnime": {
+              "methods": [
+                "createAnime"
+              ]
+            },
+            "UpdateAnime": {
+              "methods": [
+                "updateAnime"
+              ]
+            },
+            "DeleteAnime": {
+              "methods": [
+                "deleteAnime"
+              ]
+            },
+            "ReconcileAnimes": {
+              "methods": [
+                "reconcileAnimes"
+              ]
+            },
+            "ListAnimes": {
+              "methods": [
+                "listAnimes",
+                "listAnimesStream",
+                "listAnimesAsync"
+              ]
+            }
+          }
+        }
+      }
+    },
     "ChapterService": {
       "clients": {
         "grpc": {
@@ -155,6 +233,162 @@
                 "listEpisodes",
                 "listEpisodesStream",
                 "listEpisodesAsync"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "GraphicNovelService": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "GraphicNovelServiceClient",
+          "rpcs": {
+            "GetGraphicNovel": {
+              "methods": [
+                "getGraphicNovel"
+              ]
+            },
+            "CreateGraphicNovel": {
+              "methods": [
+                "createGraphicNovel"
+              ]
+            },
+            "UpdateGraphicNovel": {
+              "methods": [
+                "updateGraphicNovel"
+              ]
+            },
+            "DeleteGraphicNovel": {
+              "methods": [
+                "deleteGraphicNovel"
+              ]
+            },
+            "ReconcileGraphicNovels": {
+              "methods": [
+                "reconcileGraphicNovels"
+              ]
+            },
+            "ListGraphicNovels": {
+              "methods": [
+                "listGraphicNovels",
+                "listGraphicNovelsStream",
+                "listGraphicNovelsAsync"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "GraphicNovelServiceClient",
+          "rpcs": {
+            "GetGraphicNovel": {
+              "methods": [
+                "getGraphicNovel"
+              ]
+            },
+            "CreateGraphicNovel": {
+              "methods": [
+                "createGraphicNovel"
+              ]
+            },
+            "UpdateGraphicNovel": {
+              "methods": [
+                "updateGraphicNovel"
+              ]
+            },
+            "DeleteGraphicNovel": {
+              "methods": [
+                "deleteGraphicNovel"
+              ]
+            },
+            "ReconcileGraphicNovels": {
+              "methods": [
+                "reconcileGraphicNovels"
+              ]
+            },
+            "ListGraphicNovels": {
+              "methods": [
+                "listGraphicNovels",
+                "listGraphicNovelsStream",
+                "listGraphicNovelsAsync"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "LightNovelService": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "LightNovelServiceClient",
+          "rpcs": {
+            "GetLightNovel": {
+              "methods": [
+                "getLightNovel"
+              ]
+            },
+            "CreateLightNovel": {
+              "methods": [
+                "createLightNovel"
+              ]
+            },
+            "UpdateLightNovel": {
+              "methods": [
+                "updateLightNovel"
+              ]
+            },
+            "DeleteLightNovel": {
+              "methods": [
+                "deleteLightNovel"
+              ]
+            },
+            "ReconcileLightNovels": {
+              "methods": [
+                "reconcileLightNovels"
+              ]
+            },
+            "ListLightNovels": {
+              "methods": [
+                "listLightNovels",
+                "listLightNovelsStream",
+                "listLightNovelsAsync"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "LightNovelServiceClient",
+          "rpcs": {
+            "GetLightNovel": {
+              "methods": [
+                "getLightNovel"
+              ]
+            },
+            "CreateLightNovel": {
+              "methods": [
+                "createLightNovel"
+              ]
+            },
+            "UpdateLightNovel": {
+              "methods": [
+                "updateLightNovel"
+              ]
+            },
+            "DeleteLightNovel": {
+              "methods": [
+                "deleteLightNovel"
+              ]
+            },
+            "ReconcileLightNovels": {
+              "methods": [
+                "reconcileLightNovels"
+              ]
+            },
+            "ListLightNovels": {
+              "methods": [
+                "listLightNovels",
+                "listLightNovelsStream",
+                "listLightNovelsAsync"
               ]
             }
           }
