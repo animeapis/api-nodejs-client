@@ -16,36 +16,34 @@
 'use strict';
 
 function main(name) {
-  // [START multimedia_v1alpha1_generated_GraphicNovelService_ReconcileGraphicNovels_async]
+  // [START multimedia_v1alpha1_generated_VisualNovelService_DeleteVisualNovel_async]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
   /**
-   *  The name of the graphic novel to reconcile.
-   *  Use the wildcard `graphicNovels/-` to reconcile all graphic novels.
+   *  The name of the visual novel to delete.
    */
   // const name = 'abc123'
 
   // Imports the Multimedia library
-  const {GraphicNovelServiceClient} = require('@animeapis/multimedia').v1alpha1;
+  const {VisualNovelServiceClient} = require('@animeapis/multimedia').v1alpha1;
 
   // Instantiates a client
-  const multimediaClient = new GraphicNovelServiceClient();
+  const multimediaClient = new VisualNovelServiceClient();
 
-  async function callReconcileGraphicNovels() {
+  async function callDeleteVisualNovel() {
     // Construct request
     const request = {
       name,
     };
 
     // Run request
-    const [operation] = await multimediaClient.reconcileGraphicNovels(request);
-    const [response] = await operation.promise();
+    const response = await multimediaClient.deleteVisualNovel(request);
     console.log(response);
   }
 
-  callReconcileGraphicNovels();
-  // [END multimedia_v1alpha1_generated_GraphicNovelService_ReconcileGraphicNovels_async]
+  callDeleteVisualNovel();
+  // [END multimedia_v1alpha1_generated_VisualNovelService_DeleteVisualNovel_async]
 }
 
 process.on('unhandledRejection', err => {

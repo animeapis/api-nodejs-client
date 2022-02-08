@@ -15,37 +15,44 @@
 
 'use strict';
 
-function main(name) {
-  // [START multimedia_v1alpha1_generated_GraphicNovelService_ReconcileGraphicNovels_async]
+function main() {
+  // [START multimedia_v1alpha1_generated_VisualNovelService_ListVisualNovels_async]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
   /**
-   *  The name of the graphic novel to reconcile.
-   *  Use the wildcard `graphicNovels/-` to reconcile all graphic novels.
+   *  If unspecified, server will pick an appropriate default.
    */
-  // const name = 'abc123'
+  // const pageSize = 1234
+  /**
+   *  The value returned from the previous call.
+   */
+  // const pageToken = 'abc123'
+  /**
+   *  A filter to be applied to results.
+   */
+  // const filter = 'abc123'
 
   // Imports the Multimedia library
-  const {GraphicNovelServiceClient} = require('@animeapis/multimedia').v1alpha1;
+  const {VisualNovelServiceClient} = require('@animeapis/multimedia').v1alpha1;
 
   // Instantiates a client
-  const multimediaClient = new GraphicNovelServiceClient();
+  const multimediaClient = new VisualNovelServiceClient();
 
-  async function callReconcileGraphicNovels() {
+  async function callListVisualNovels() {
     // Construct request
     const request = {
-      name,
     };
 
     // Run request
-    const [operation] = await multimediaClient.reconcileGraphicNovels(request);
-    const [response] = await operation.promise();
-    console.log(response);
+    const iterable = await multimediaClient.listVisualNovelsAsync(request);
+    for await (const response of iterable) {
+        console.log(response);
+    }
   }
 
-  callReconcileGraphicNovels();
-  // [END multimedia_v1alpha1_generated_GraphicNovelService_ReconcileGraphicNovels_async]
+  callListVisualNovels();
+  // [END multimedia_v1alpha1_generated_VisualNovelService_ListVisualNovels_async]
 }
 
 process.on('unhandledRejection', err => {

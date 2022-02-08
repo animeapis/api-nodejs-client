@@ -21,3 +21,4 @@ export {ChapterServiceClient} from './chapter_service_client';
 export {EpisodeServiceClient} from './episode_service_client';
 export {GraphicNovelServiceClient} from './graphic_novel_service_client';
 export {LightNovelServiceClient} from './light_novel_service_client';
+export {VisualNovelServiceClient} from './visual_novel_service_client';

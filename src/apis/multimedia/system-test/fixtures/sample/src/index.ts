@@ -16,7 +16,7 @@
 // ** https://github.com/googleapis/gapic-generator-typescript **
 // ** All changes to this file may be overwritten. **
 
-import {AnimeServiceClient, ChapterServiceClient, EpisodeServiceClient, GraphicNovelServiceClient, LightNovelServiceClient} from '@animeapis/multimedia';
+import {AnimeServiceClient, ChapterServiceClient, EpisodeServiceClient, GraphicNovelServiceClient, LightNovelServiceClient, VisualNovelServiceClient} from '@animeapis/multimedia';
 
 // check that the client class type name can be used
 function doStuffWithAnimeServiceClient(client: AnimeServiceClient) {
@@ -32,6 +32,9 @@ function doStuffWithGraphicNovelServiceClient(client: GraphicNovelServiceClient)
   client.close();
 }
 function doStuffWithLightNovelServiceClient(client: LightNovelServiceClient) {
+  client.close();
+}
+function doStuffWithVisualNovelServiceClient(client: VisualNovelServiceClient) {
   client.close();
 }
 
@@ -51,6 +54,9 @@ function main() {
   // check that the client instance can be created
   const lightNovelServiceClient = new LightNovelServiceClient();
   doStuffWithLightNovelServiceClient(lightNovelServiceClient);
+  // check that the client instance can be created
+  const visualNovelServiceClient = new VisualNovelServiceClient();
+  doStuffWithVisualNovelServiceClient(visualNovelServiceClient);
 }
 
 main();

@@ -27,7 +27,9 @@ const GraphicNovelServiceClient = v1alpha1.GraphicNovelServiceClient;
 type GraphicNovelServiceClient = v1alpha1.GraphicNovelServiceClient;
 const LightNovelServiceClient = v1alpha1.LightNovelServiceClient;
 type LightNovelServiceClient = v1alpha1.LightNovelServiceClient;
-export {v1alpha1, AnimeServiceClient, ChapterServiceClient, EpisodeServiceClient, GraphicNovelServiceClient, LightNovelServiceClient};
-export default {v1alpha1, AnimeServiceClient, ChapterServiceClient, EpisodeServiceClient, GraphicNovelServiceClient, LightNovelServiceClient};
+const VisualNovelServiceClient = v1alpha1.VisualNovelServiceClient;
+type VisualNovelServiceClient = v1alpha1.VisualNovelServiceClient;
+export {v1alpha1, AnimeServiceClient, ChapterServiceClient, EpisodeServiceClient, GraphicNovelServiceClient, LightNovelServiceClient, VisualNovelServiceClient};
+export default {v1alpha1, AnimeServiceClient, ChapterServiceClient, EpisodeServiceClient, GraphicNovelServiceClient, LightNovelServiceClient, VisualNovelServiceClient};
 import * as protos from '../protos/protos';
 export {protos}

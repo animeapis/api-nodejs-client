@@ -591,7 +591,7 @@ export class GraphicNovelServiceClient {
  *   The request object that will be sent.
  * @param {string} request.name
  *   The name of the graphic novel to reconcile.
- *   Use the wildcard`graphicNovels/-` to reconcile all graphic novels.
+ *   Use the wildcard `graphicNovels/-` to reconcile all graphic novels.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.

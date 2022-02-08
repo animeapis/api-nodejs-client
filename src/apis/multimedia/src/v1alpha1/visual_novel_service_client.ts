@@ -26,10 +26,10 @@ import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
 /**
  * Client JSON configuration object, loaded from
- * `src/v1alpha1/light_novel_service_client_config.json`.
+ * `src/v1alpha1/visual_novel_service_client_config.json`.
  * This file defines retry strategy and timeouts for all API methods in this library.
  */
-import * as gapicConfig from './light_novel_service_client_config.json';
+import * as gapicConfig from './visual_novel_service_client_config.json';
 import { operationsProtos } from 'google-gax';
 const version = require('../../../package.json').version;
 
@@ -37,7 +37,7 @@ const version = require('../../../package.json').version;
  * @class
  * @memberof v1alpha1
  */
-export class LightNovelServiceClient {
+export class VisualNovelServiceClient {
   private _terminated = false;
   private _opts: ClientOptions;
   private _providedCustomServicePath: boolean;
@@ -55,10 +55,10 @@ export class LightNovelServiceClient {
   warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
   operationsClient: gax.OperationsClient;
-  lightNovelServiceStub?: Promise<{[name: string]: Function}>;
+  visualNovelServiceStub?: Promise<{[name: string]: Function}>;
 
   /**
-   * Construct an instance of LightNovelServiceClient.
+   * Construct an instance of VisualNovelServiceClient.
    *
    * @param {object} [options] - The configuration object.
    * The options accepted by the constructor are described in detail
@@ -93,7 +93,7 @@ export class LightNovelServiceClient {
    */
   constructor(opts?: ClientOptions) {
     // Ensure that options include all the required fields.
-    const staticMembers = this.constructor as typeof LightNovelServiceClient;
+    const staticMembers = this.constructor as typeof VisualNovelServiceClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
     this._providedCustomServicePath = !!(opts?.servicePath || opts?.apiEndpoint);
     const port = opts?.port || staticMembers.port;
@@ -154,8 +154,8 @@ export class LightNovelServiceClient {
     // (e.g. 50 results at a time, with tokens to get subsequent
     // pages). Denote the keys used for pagination and results.
     this.descriptors.page = {
-      listLightNovels:
-          new this._gaxModule.PageDescriptor('pageToken', 'nextPageToken', 'lightNovels')
+      listVisualNovels:
+          new this._gaxModule.PageDescriptor('pageToken', 'nextPageToken', 'visualNovels')
     };
 
     const protoFilesRoot = this._gaxModule.protobuf.Root.fromJSON(jsonProtos);
@@ -168,21 +168,21 @@ export class LightNovelServiceClient {
       auth: this.auth,
       grpc: 'grpc' in this._gaxGrpc ? this._gaxGrpc.grpc : undefined
     }).operationsClient(opts);
-    const reconcileLightNovelsResponse = protoFilesRoot.lookup(
-      '.animeshon.multimedia.v1alpha1.ReconcileLightNovelsResponse') as gax.protobuf.Type;
-    const reconcileLightNovelsMetadata = protoFilesRoot.lookup(
+    const reconcileVisualNovelsResponse = protoFilesRoot.lookup(
+      '.animeshon.multimedia.v1alpha1.ReconcileVisualNovelsResponse') as gax.protobuf.Type;
+    const reconcileVisualNovelsMetadata = protoFilesRoot.lookup(
       '.animeshon.multimedia.v1alpha1.OperationMetadata') as gax.protobuf.Type;
 
     this.descriptors.longrunning = {
-      reconcileLightNovels: new this._gaxModule.LongrunningDescriptor(
+      reconcileVisualNovels: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
-        reconcileLightNovelsResponse.decode.bind(reconcileLightNovelsResponse),
-        reconcileLightNovelsMetadata.decode.bind(reconcileLightNovelsMetadata))
+        reconcileVisualNovelsResponse.decode.bind(reconcileVisualNovelsResponse),
+        reconcileVisualNovelsMetadata.decode.bind(reconcileVisualNovelsMetadata))
     };
 
     // Put together the default options sent with requests.
     this._defaults = this._gaxGrpc.constructSettings(
-        'animeshon.multimedia.v1alpha1.LightNovelService', gapicConfig as gax.ClientConfig,
+        'animeshon.multimedia.v1alpha1.VisualNovelService', gapicConfig as gax.ClientConfig,
         opts.clientConfig || {}, {'x-goog-api-client': clientHeader.join(' ')});
 
     // Set up a dictionary of "inner API calls"; the core implementation
@@ -207,25 +207,25 @@ export class LightNovelServiceClient {
    */
   initialize() {
     // If the client stub promise is already initialized, return immediately.
-    if (this.lightNovelServiceStub) {
-      return this.lightNovelServiceStub;
+    if (this.visualNovelServiceStub) {
+      return this.visualNovelServiceStub;
     }
 
     // Put together the "service stub" for
-    // animeshon.multimedia.v1alpha1.LightNovelService.
-    this.lightNovelServiceStub = this._gaxGrpc.createStub(
+    // animeshon.multimedia.v1alpha1.VisualNovelService.
+    this.visualNovelServiceStub = this._gaxGrpc.createStub(
         this._opts.fallback ?
-          (this._protos as protobuf.Root).lookupService('animeshon.multimedia.v1alpha1.LightNovelService') :
+          (this._protos as protobuf.Root).lookupService('animeshon.multimedia.v1alpha1.VisualNovelService') :
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (this._protos as any).animeshon.multimedia.v1alpha1.LightNovelService,
+          (this._protos as any).animeshon.multimedia.v1alpha1.VisualNovelService,
         this._opts, this._providedCustomServicePath) as Promise<{[method: string]: Function}>;
 
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
-    const lightNovelServiceStubMethods =
-        ['getLightNovel', 'listLightNovels', 'createLightNovel', 'updateLightNovel', 'deleteLightNovel', 'reconcileLightNovels'];
-    for (const methodName of lightNovelServiceStubMethods) {
-      const callPromise = this.lightNovelServiceStub.then(
+    const visualNovelServiceStubMethods =
+        ['getVisualNovel', 'listVisualNovels', 'createVisualNovel', 'updateVisualNovel', 'deleteVisualNovel', 'reconcileVisualNovels'];
+    for (const methodName of visualNovelServiceStubMethods) {
+      const callPromise = this.visualNovelServiceStub.then(
         stub => (...args: Array<{}>) => {
           if (this._terminated) {
             return Promise.reject('The client has already been closed.');
@@ -250,7 +250,7 @@ export class LightNovelServiceClient {
       this.innerApiCalls[methodName] = apiCall;
     }
 
-    return this.lightNovelServiceStub;
+    return this.visualNovelServiceStub;
   }
 
   /**
@@ -310,50 +310,50 @@ export class LightNovelServiceClient {
  * @param {Object} request
  *   The request object that will be sent.
  * @param {string} request.name
- *   The name of the light novel to retrieve.
+ *   The name of the visual novel to retrieve.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [LightNovel]{@link animeshon.multimedia.v1alpha1.LightNovel}.
+ *   The first element of the array is an object representing [VisualNovel]{@link animeshon.multimedia.v1alpha1.VisualNovel}.
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
  *   for more details and examples.
- * @example <caption>include:samples/generated/v1alpha1/light_novel_service.get_light_novel.js</caption>
- * region_tag:multimedia_v1alpha1_generated_LightNovelService_GetLightNovel_async
+ * @example <caption>include:samples/generated/v1alpha1/visual_novel_service.get_visual_novel.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_VisualNovelService_GetVisualNovel_async
  */
-  getLightNovel(
-      request?: protos.animeshon.multimedia.v1alpha1.IGetLightNovelRequest,
+  getVisualNovel(
+      request?: protos.animeshon.multimedia.v1alpha1.IGetVisualNovelRequest,
       options?: CallOptions):
       Promise<[
-        protos.animeshon.multimedia.v1alpha1.ILightNovel,
-        protos.animeshon.multimedia.v1alpha1.IGetLightNovelRequest|undefined, {}|undefined
+        protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+        protos.animeshon.multimedia.v1alpha1.IGetVisualNovelRequest|undefined, {}|undefined
       ]>;
-  getLightNovel(
-      request: protos.animeshon.multimedia.v1alpha1.IGetLightNovelRequest,
+  getVisualNovel(
+      request: protos.animeshon.multimedia.v1alpha1.IGetVisualNovelRequest,
       options: CallOptions,
       callback: Callback<
-          protos.animeshon.multimedia.v1alpha1.ILightNovel,
-          protos.animeshon.multimedia.v1alpha1.IGetLightNovelRequest|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+          protos.animeshon.multimedia.v1alpha1.IGetVisualNovelRequest|null|undefined,
           {}|null|undefined>): void;
-  getLightNovel(
-      request: protos.animeshon.multimedia.v1alpha1.IGetLightNovelRequest,
+  getVisualNovel(
+      request: protos.animeshon.multimedia.v1alpha1.IGetVisualNovelRequest,
       callback: Callback<
-          protos.animeshon.multimedia.v1alpha1.ILightNovel,
-          protos.animeshon.multimedia.v1alpha1.IGetLightNovelRequest|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+          protos.animeshon.multimedia.v1alpha1.IGetVisualNovelRequest|null|undefined,
           {}|null|undefined>): void;
-  getLightNovel(
-      request?: protos.animeshon.multimedia.v1alpha1.IGetLightNovelRequest,
+  getVisualNovel(
+      request?: protos.animeshon.multimedia.v1alpha1.IGetVisualNovelRequest,
       optionsOrCallback?: CallOptions|Callback<
-          protos.animeshon.multimedia.v1alpha1.ILightNovel,
-          protos.animeshon.multimedia.v1alpha1.IGetLightNovelRequest|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+          protos.animeshon.multimedia.v1alpha1.IGetVisualNovelRequest|null|undefined,
           {}|null|undefined>,
       callback?: Callback<
-          protos.animeshon.multimedia.v1alpha1.ILightNovel,
-          protos.animeshon.multimedia.v1alpha1.IGetLightNovelRequest|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+          protos.animeshon.multimedia.v1alpha1.IGetVisualNovelRequest|null|undefined,
           {}|null|undefined>):
       Promise<[
-        protos.animeshon.multimedia.v1alpha1.ILightNovel,
-        protos.animeshon.multimedia.v1alpha1.IGetLightNovelRequest|undefined, {}|undefined
+        protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+        protos.animeshon.multimedia.v1alpha1.IGetVisualNovelRequest|undefined, {}|undefined
       ]>|void {
     request = request || {};
     let options: CallOptions;
@@ -373,57 +373,57 @@ export class LightNovelServiceClient {
       'name': request.name || '',
     });
     this.initialize();
-    return this.innerApiCalls.getLightNovel(request, options, callback);
+    return this.innerApiCalls.getVisualNovel(request, options, callback);
   }
 /**
  *
  * @param {Object} request
  *   The request object that will be sent.
- * @param {animeshon.multimedia.v1alpha1.LightNovel} request.lightNovel
- *   The light novel to create.
+ * @param {animeshon.multimedia.v1alpha1.VisualNovel} request.visualNovel
+ *   The visual novel to create.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [LightNovel]{@link animeshon.multimedia.v1alpha1.LightNovel}.
+ *   The first element of the array is an object representing [VisualNovel]{@link animeshon.multimedia.v1alpha1.VisualNovel}.
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
  *   for more details and examples.
- * @example <caption>include:samples/generated/v1alpha1/light_novel_service.create_light_novel.js</caption>
- * region_tag:multimedia_v1alpha1_generated_LightNovelService_CreateLightNovel_async
+ * @example <caption>include:samples/generated/v1alpha1/visual_novel_service.create_visual_novel.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_VisualNovelService_CreateVisualNovel_async
  */
-  createLightNovel(
-      request?: protos.animeshon.multimedia.v1alpha1.ICreateLightNovelRequest,
+  createVisualNovel(
+      request?: protos.animeshon.multimedia.v1alpha1.ICreateVisualNovelRequest,
       options?: CallOptions):
       Promise<[
-        protos.animeshon.multimedia.v1alpha1.ILightNovel,
-        protos.animeshon.multimedia.v1alpha1.ICreateLightNovelRequest|undefined, {}|undefined
+        protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+        protos.animeshon.multimedia.v1alpha1.ICreateVisualNovelRequest|undefined, {}|undefined
       ]>;
-  createLightNovel(
-      request: protos.animeshon.multimedia.v1alpha1.ICreateLightNovelRequest,
+  createVisualNovel(
+      request: protos.animeshon.multimedia.v1alpha1.ICreateVisualNovelRequest,
       options: CallOptions,
       callback: Callback<
-          protos.animeshon.multimedia.v1alpha1.ILightNovel,
-          protos.animeshon.multimedia.v1alpha1.ICreateLightNovelRequest|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+          protos.animeshon.multimedia.v1alpha1.ICreateVisualNovelRequest|null|undefined,
           {}|null|undefined>): void;
-  createLightNovel(
-      request: protos.animeshon.multimedia.v1alpha1.ICreateLightNovelRequest,
+  createVisualNovel(
+      request: protos.animeshon.multimedia.v1alpha1.ICreateVisualNovelRequest,
       callback: Callback<
-          protos.animeshon.multimedia.v1alpha1.ILightNovel,
-          protos.animeshon.multimedia.v1alpha1.ICreateLightNovelRequest|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+          protos.animeshon.multimedia.v1alpha1.ICreateVisualNovelRequest|null|undefined,
           {}|null|undefined>): void;
-  createLightNovel(
-      request?: protos.animeshon.multimedia.v1alpha1.ICreateLightNovelRequest,
+  createVisualNovel(
+      request?: protos.animeshon.multimedia.v1alpha1.ICreateVisualNovelRequest,
       optionsOrCallback?: CallOptions|Callback<
-          protos.animeshon.multimedia.v1alpha1.ILightNovel,
-          protos.animeshon.multimedia.v1alpha1.ICreateLightNovelRequest|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+          protos.animeshon.multimedia.v1alpha1.ICreateVisualNovelRequest|null|undefined,
           {}|null|undefined>,
       callback?: Callback<
-          protos.animeshon.multimedia.v1alpha1.ILightNovel,
-          protos.animeshon.multimedia.v1alpha1.ICreateLightNovelRequest|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+          protos.animeshon.multimedia.v1alpha1.ICreateVisualNovelRequest|null|undefined,
           {}|null|undefined>):
       Promise<[
-        protos.animeshon.multimedia.v1alpha1.ILightNovel,
-        protos.animeshon.multimedia.v1alpha1.ICreateLightNovelRequest|undefined, {}|undefined
+        protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+        protos.animeshon.multimedia.v1alpha1.ICreateVisualNovelRequest|undefined, {}|undefined
       ]>|void {
     request = request || {};
     let options: CallOptions;
@@ -438,60 +438,60 @@ export class LightNovelServiceClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
-    return this.innerApiCalls.createLightNovel(request, options, callback);
+    return this.innerApiCalls.createVisualNovel(request, options, callback);
   }
 /**
  *
  * @param {Object} request
  *   The request object that will be sent.
- * @param {animeshon.multimedia.v1alpha1.LightNovel} request.lightNovel
- *   The light novel to update.
+ * @param {animeshon.multimedia.v1alpha1.VisualNovel} request.visualNovel
+ *   The visual novel to update.
  * @param {google.protobuf.FieldMask} request.updateMask
  *   The field mask to determine which fields are to be updated. If empty, the
  *   server will assume all fields are to be updated.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [LightNovel]{@link animeshon.multimedia.v1alpha1.LightNovel}.
+ *   The first element of the array is an object representing [VisualNovel]{@link animeshon.multimedia.v1alpha1.VisualNovel}.
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
  *   for more details and examples.
- * @example <caption>include:samples/generated/v1alpha1/light_novel_service.update_light_novel.js</caption>
- * region_tag:multimedia_v1alpha1_generated_LightNovelService_UpdateLightNovel_async
+ * @example <caption>include:samples/generated/v1alpha1/visual_novel_service.update_visual_novel.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_VisualNovelService_UpdateVisualNovel_async
  */
-  updateLightNovel(
-      request?: protos.animeshon.multimedia.v1alpha1.IUpdateLightNovelRequest,
+  updateVisualNovel(
+      request?: protos.animeshon.multimedia.v1alpha1.IUpdateVisualNovelRequest,
       options?: CallOptions):
       Promise<[
-        protos.animeshon.multimedia.v1alpha1.ILightNovel,
-        protos.animeshon.multimedia.v1alpha1.IUpdateLightNovelRequest|undefined, {}|undefined
+        protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+        protos.animeshon.multimedia.v1alpha1.IUpdateVisualNovelRequest|undefined, {}|undefined
       ]>;
-  updateLightNovel(
-      request: protos.animeshon.multimedia.v1alpha1.IUpdateLightNovelRequest,
+  updateVisualNovel(
+      request: protos.animeshon.multimedia.v1alpha1.IUpdateVisualNovelRequest,
       options: CallOptions,
       callback: Callback<
-          protos.animeshon.multimedia.v1alpha1.ILightNovel,
-          protos.animeshon.multimedia.v1alpha1.IUpdateLightNovelRequest|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+          protos.animeshon.multimedia.v1alpha1.IUpdateVisualNovelRequest|null|undefined,
           {}|null|undefined>): void;
-  updateLightNovel(
-      request: protos.animeshon.multimedia.v1alpha1.IUpdateLightNovelRequest,
+  updateVisualNovel(
+      request: protos.animeshon.multimedia.v1alpha1.IUpdateVisualNovelRequest,
       callback: Callback<
-          protos.animeshon.multimedia.v1alpha1.ILightNovel,
-          protos.animeshon.multimedia.v1alpha1.IUpdateLightNovelRequest|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+          protos.animeshon.multimedia.v1alpha1.IUpdateVisualNovelRequest|null|undefined,
           {}|null|undefined>): void;
-  updateLightNovel(
-      request?: protos.animeshon.multimedia.v1alpha1.IUpdateLightNovelRequest,
+  updateVisualNovel(
+      request?: protos.animeshon.multimedia.v1alpha1.IUpdateVisualNovelRequest,
       optionsOrCallback?: CallOptions|Callback<
-          protos.animeshon.multimedia.v1alpha1.ILightNovel,
-          protos.animeshon.multimedia.v1alpha1.IUpdateLightNovelRequest|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+          protos.animeshon.multimedia.v1alpha1.IUpdateVisualNovelRequest|null|undefined,
           {}|null|undefined>,
       callback?: Callback<
-          protos.animeshon.multimedia.v1alpha1.ILightNovel,
-          protos.animeshon.multimedia.v1alpha1.IUpdateLightNovelRequest|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+          protos.animeshon.multimedia.v1alpha1.IUpdateVisualNovelRequest|null|undefined,
           {}|null|undefined>):
       Promise<[
-        protos.animeshon.multimedia.v1alpha1.ILightNovel,
-        protos.animeshon.multimedia.v1alpha1.IUpdateLightNovelRequest|undefined, {}|undefined
+        protos.animeshon.multimedia.v1alpha1.IVisualNovel,
+        protos.animeshon.multimedia.v1alpha1.IUpdateVisualNovelRequest|undefined, {}|undefined
       ]>|void {
     request = request || {};
     let options: CallOptions;
@@ -508,17 +508,17 @@ export class LightNovelServiceClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'light_novel.name': request.lightNovel!.name || '',
+      'visual_novel.name': request.visualNovel!.name || '',
     });
     this.initialize();
-    return this.innerApiCalls.updateLightNovel(request, options, callback);
+    return this.innerApiCalls.updateVisualNovel(request, options, callback);
   }
 /**
  *
  * @param {Object} request
  *   The request object that will be sent.
  * @param {string} request.name
- *   The name of the light novel to delete.
+ *   The name of the visual novel to delete.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
@@ -526,42 +526,42 @@ export class LightNovelServiceClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
  *   for more details and examples.
- * @example <caption>include:samples/generated/v1alpha1/light_novel_service.delete_light_novel.js</caption>
- * region_tag:multimedia_v1alpha1_generated_LightNovelService_DeleteLightNovel_async
+ * @example <caption>include:samples/generated/v1alpha1/visual_novel_service.delete_visual_novel.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_VisualNovelService_DeleteVisualNovel_async
  */
-  deleteLightNovel(
-      request?: protos.animeshon.multimedia.v1alpha1.IDeleteLightNovelRequest,
+  deleteVisualNovel(
+      request?: protos.animeshon.multimedia.v1alpha1.IDeleteVisualNovelRequest,
       options?: CallOptions):
       Promise<[
         protos.google.protobuf.IEmpty,
-        protos.animeshon.multimedia.v1alpha1.IDeleteLightNovelRequest|undefined, {}|undefined
+        protos.animeshon.multimedia.v1alpha1.IDeleteVisualNovelRequest|undefined, {}|undefined
       ]>;
-  deleteLightNovel(
-      request: protos.animeshon.multimedia.v1alpha1.IDeleteLightNovelRequest,
+  deleteVisualNovel(
+      request: protos.animeshon.multimedia.v1alpha1.IDeleteVisualNovelRequest,
       options: CallOptions,
       callback: Callback<
           protos.google.protobuf.IEmpty,
-          protos.animeshon.multimedia.v1alpha1.IDeleteLightNovelRequest|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IDeleteVisualNovelRequest|null|undefined,
           {}|null|undefined>): void;
-  deleteLightNovel(
-      request: protos.animeshon.multimedia.v1alpha1.IDeleteLightNovelRequest,
+  deleteVisualNovel(
+      request: protos.animeshon.multimedia.v1alpha1.IDeleteVisualNovelRequest,
       callback: Callback<
           protos.google.protobuf.IEmpty,
-          protos.animeshon.multimedia.v1alpha1.IDeleteLightNovelRequest|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IDeleteVisualNovelRequest|null|undefined,
           {}|null|undefined>): void;
-  deleteLightNovel(
-      request?: protos.animeshon.multimedia.v1alpha1.IDeleteLightNovelRequest,
+  deleteVisualNovel(
+      request?: protos.animeshon.multimedia.v1alpha1.IDeleteVisualNovelRequest,
       optionsOrCallback?: CallOptions|Callback<
           protos.google.protobuf.IEmpty,
-          protos.animeshon.multimedia.v1alpha1.IDeleteLightNovelRequest|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IDeleteVisualNovelRequest|null|undefined,
           {}|null|undefined>,
       callback?: Callback<
           protos.google.protobuf.IEmpty,
-          protos.animeshon.multimedia.v1alpha1.IDeleteLightNovelRequest|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IDeleteVisualNovelRequest|null|undefined,
           {}|null|undefined>):
       Promise<[
         protos.google.protobuf.IEmpty,
-        protos.animeshon.multimedia.v1alpha1.IDeleteLightNovelRequest|undefined, {}|undefined
+        protos.animeshon.multimedia.v1alpha1.IDeleteVisualNovelRequest|undefined, {}|undefined
       ]>|void {
     request = request || {};
     let options: CallOptions;
@@ -581,17 +581,17 @@ export class LightNovelServiceClient {
       'name': request.name || '',
     });
     this.initialize();
-    return this.innerApiCalls.deleteLightNovel(request, options, callback);
+    return this.innerApiCalls.deleteVisualNovel(request, options, callback);
   }
 
 /**
- * Reconcile light novels with the search and knowledge base.
+ * Reconcile visual novels with the search and knowledge base.
  *
  * @param {Object} request
  *   The request object that will be sent.
  * @param {string} request.name
- *   The name of the light novel to reconcile.
- *   Use the wildcard `lightNovels/-` to reconcile all light novels.
+ *   The name of the visual novel to reconcile.
+ *   Use the wildcard `visualNovels/-` to reconcile all visual novels.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
@@ -601,41 +601,41 @@ export class LightNovelServiceClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
  *   for more details and examples.
- * @example <caption>include:samples/generated/v1alpha1/light_novel_service.reconcile_light_novels.js</caption>
- * region_tag:multimedia_v1alpha1_generated_LightNovelService_ReconcileLightNovels_async
+ * @example <caption>include:samples/generated/v1alpha1/visual_novel_service.reconcile_visual_novels.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_VisualNovelService_ReconcileVisualNovels_async
  */
-  reconcileLightNovels(
-      request?: protos.animeshon.multimedia.v1alpha1.IReconcileLightNovelsRequest,
+  reconcileVisualNovels(
+      request?: protos.animeshon.multimedia.v1alpha1.IReconcileVisualNovelsRequest,
       options?: CallOptions):
       Promise<[
-        LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileLightNovelsResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+        LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileVisualNovelsResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
         protos.google.longrunning.IOperation|undefined, {}|undefined
       ]>;
-  reconcileLightNovels(
-      request: protos.animeshon.multimedia.v1alpha1.IReconcileLightNovelsRequest,
+  reconcileVisualNovels(
+      request: protos.animeshon.multimedia.v1alpha1.IReconcileVisualNovelsRequest,
       options: CallOptions,
       callback: Callback<
-          LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileLightNovelsResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileVisualNovelsResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
           {}|null|undefined>): void;
-  reconcileLightNovels(
-      request: protos.animeshon.multimedia.v1alpha1.IReconcileLightNovelsRequest,
+  reconcileVisualNovels(
+      request: protos.animeshon.multimedia.v1alpha1.IReconcileVisualNovelsRequest,
       callback: Callback<
-          LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileLightNovelsResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileVisualNovelsResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
           {}|null|undefined>): void;
-  reconcileLightNovels(
-      request?: protos.animeshon.multimedia.v1alpha1.IReconcileLightNovelsRequest,
+  reconcileVisualNovels(
+      request?: protos.animeshon.multimedia.v1alpha1.IReconcileVisualNovelsRequest,
       optionsOrCallback?: CallOptions|Callback<
-          LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileLightNovelsResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileVisualNovelsResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
           {}|null|undefined>,
       callback?: Callback<
-          LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileLightNovelsResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileVisualNovelsResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
           protos.google.longrunning.IOperation|null|undefined,
           {}|null|undefined>):
       Promise<[
-        LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileLightNovelsResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+        LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileVisualNovelsResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
         protos.google.longrunning.IOperation|undefined, {}|undefined
       ]>|void {
     request = request || {};
@@ -656,10 +656,10 @@ export class LightNovelServiceClient {
       'name': request.name || '',
     });
     this.initialize();
-    return this.innerApiCalls.reconcileLightNovels(request, options, callback);
+    return this.innerApiCalls.reconcileVisualNovels(request, options, callback);
   }
 /**
- * Check the status of the long running operation returned by `reconcileLightNovels()`.
+ * Check the status of the long running operation returned by `reconcileVisualNovels()`.
  * @param {String} name
  *   The operation name that will be passed.
  * @returns {Promise} - The promise which resolves to an object.
@@ -667,14 +667,14 @@ export class LightNovelServiceClient {
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
  *   for more details and examples.
- * @example <caption>include:samples/generated/v1alpha1/light_novel_service.reconcile_light_novels.js</caption>
- * region_tag:multimedia_v1alpha1_generated_LightNovelService_ReconcileLightNovels_async
+ * @example <caption>include:samples/generated/v1alpha1/visual_novel_service.reconcile_visual_novels.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_VisualNovelService_ReconcileVisualNovels_async
  */
-  async checkReconcileLightNovelsProgress(name: string): Promise<LROperation<protos.animeshon.multimedia.v1alpha1.ReconcileLightNovelsResponse, protos.animeshon.multimedia.v1alpha1.OperationMetadata>>{
+  async checkReconcileVisualNovelsProgress(name: string): Promise<LROperation<protos.animeshon.multimedia.v1alpha1.ReconcileVisualNovelsResponse, protos.animeshon.multimedia.v1alpha1.OperationMetadata>>{
     const request = new operationsProtos.google.longrunning.GetOperationRequest({name});
     const [operation] = await this.operationsClient.getOperation(request);
-    const decodeOperation = new gax.Operation(operation, this.descriptors.longrunning.reconcileLightNovels, gax.createDefaultBackoffSettings());
-    return decodeOperation as LROperation<protos.animeshon.multimedia.v1alpha1.ReconcileLightNovelsResponse, protos.animeshon.multimedia.v1alpha1.OperationMetadata>;
+    const decodeOperation = new gax.Operation(operation, this.descriptors.longrunning.reconcileVisualNovels, gax.createDefaultBackoffSettings());
+    return decodeOperation as LROperation<protos.animeshon.multimedia.v1alpha1.ReconcileVisualNovelsResponse, protos.animeshon.multimedia.v1alpha1.OperationMetadata>;
   }
  /**
  *
@@ -689,51 +689,51 @@ export class LightNovelServiceClient {
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is Array of [LightNovel]{@link animeshon.multimedia.v1alpha1.LightNovel}.
+ *   The first element of the array is Array of [VisualNovel]{@link animeshon.multimedia.v1alpha1.VisualNovel}.
  *   The client library will perform auto-pagination by default: it will call the API as many
  *   times as needed and will merge results from all the pages into this array.
  *   Note that it can affect your quota.
- *   We recommend using `listLightNovelsAsync()`
+ *   We recommend using `listVisualNovelsAsync()`
  *   method described below for async iteration which you can stop as needed.
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
-  listLightNovels(
-      request?: protos.animeshon.multimedia.v1alpha1.IListLightNovelsRequest,
+  listVisualNovels(
+      request?: protos.animeshon.multimedia.v1alpha1.IListVisualNovelsRequest,
       options?: CallOptions):
       Promise<[
-        protos.animeshon.multimedia.v1alpha1.ILightNovel[],
-        protos.animeshon.multimedia.v1alpha1.IListLightNovelsRequest|null,
-        protos.animeshon.multimedia.v1alpha1.IListLightNovelsResponse
+        protos.animeshon.multimedia.v1alpha1.IVisualNovel[],
+        protos.animeshon.multimedia.v1alpha1.IListVisualNovelsRequest|null,
+        protos.animeshon.multimedia.v1alpha1.IListVisualNovelsResponse
       ]>;
-  listLightNovels(
-      request: protos.animeshon.multimedia.v1alpha1.IListLightNovelsRequest,
+  listVisualNovels(
+      request: protos.animeshon.multimedia.v1alpha1.IListVisualNovelsRequest,
       options: CallOptions,
       callback: PaginationCallback<
-          protos.animeshon.multimedia.v1alpha1.IListLightNovelsRequest,
-          protos.animeshon.multimedia.v1alpha1.IListLightNovelsResponse|null|undefined,
-          protos.animeshon.multimedia.v1alpha1.ILightNovel>): void;
-  listLightNovels(
-      request: protos.animeshon.multimedia.v1alpha1.IListLightNovelsRequest,
+          protos.animeshon.multimedia.v1alpha1.IListVisualNovelsRequest,
+          protos.animeshon.multimedia.v1alpha1.IListVisualNovelsResponse|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IVisualNovel>): void;
+  listVisualNovels(
+      request: protos.animeshon.multimedia.v1alpha1.IListVisualNovelsRequest,
       callback: PaginationCallback<
-          protos.animeshon.multimedia.v1alpha1.IListLightNovelsRequest,
-          protos.animeshon.multimedia.v1alpha1.IListLightNovelsResponse|null|undefined,
-          protos.animeshon.multimedia.v1alpha1.ILightNovel>): void;
-  listLightNovels(
-      request?: protos.animeshon.multimedia.v1alpha1.IListLightNovelsRequest,
+          protos.animeshon.multimedia.v1alpha1.IListVisualNovelsRequest,
+          protos.animeshon.multimedia.v1alpha1.IListVisualNovelsResponse|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IVisualNovel>): void;
+  listVisualNovels(
+      request?: protos.animeshon.multimedia.v1alpha1.IListVisualNovelsRequest,
       optionsOrCallback?: CallOptions|PaginationCallback<
-          protos.animeshon.multimedia.v1alpha1.IListLightNovelsRequest,
-          protos.animeshon.multimedia.v1alpha1.IListLightNovelsResponse|null|undefined,
-          protos.animeshon.multimedia.v1alpha1.ILightNovel>,
+          protos.animeshon.multimedia.v1alpha1.IListVisualNovelsRequest,
+          protos.animeshon.multimedia.v1alpha1.IListVisualNovelsResponse|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IVisualNovel>,
       callback?: PaginationCallback<
-          protos.animeshon.multimedia.v1alpha1.IListLightNovelsRequest,
-          protos.animeshon.multimedia.v1alpha1.IListLightNovelsResponse|null|undefined,
-          protos.animeshon.multimedia.v1alpha1.ILightNovel>):
+          protos.animeshon.multimedia.v1alpha1.IListVisualNovelsRequest,
+          protos.animeshon.multimedia.v1alpha1.IListVisualNovelsResponse|null|undefined,
+          protos.animeshon.multimedia.v1alpha1.IVisualNovel>):
       Promise<[
-        protos.animeshon.multimedia.v1alpha1.ILightNovel[],
-        protos.animeshon.multimedia.v1alpha1.IListLightNovelsRequest|null,
-        protos.animeshon.multimedia.v1alpha1.IListLightNovelsResponse
+        protos.animeshon.multimedia.v1alpha1.IVisualNovel[],
+        protos.animeshon.multimedia.v1alpha1.IListVisualNovelsRequest|null,
+        protos.animeshon.multimedia.v1alpha1.IListVisualNovelsResponse
       ]>|void {
     request = request || {};
     let options: CallOptions;
@@ -748,7 +748,7 @@ export class LightNovelServiceClient {
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
-    return this.innerApiCalls.listLightNovels(request, options, callback);
+    return this.innerApiCalls.listVisualNovels(request, options, callback);
   }
 
 /**
@@ -764,35 +764,35 @@ export class LightNovelServiceClient {
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Stream}
- *   An object stream which emits an object representing [LightNovel]{@link animeshon.multimedia.v1alpha1.LightNovel} on 'data' event.
+ *   An object stream which emits an object representing [VisualNovel]{@link animeshon.multimedia.v1alpha1.VisualNovel} on 'data' event.
  *   The client library will perform auto-pagination by default: it will call the API as many
  *   times as needed. Note that it can affect your quota.
- *   We recommend using `listLightNovelsAsync()`
+ *   We recommend using `listVisualNovelsAsync()`
  *   method described below for async iteration which you can stop as needed.
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
  */
-  listLightNovelsStream(
-      request?: protos.animeshon.multimedia.v1alpha1.IListLightNovelsRequest,
+  listVisualNovelsStream(
+      request?: protos.animeshon.multimedia.v1alpha1.IListVisualNovelsRequest,
       options?: CallOptions):
     Transform{
     request = request || {};
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    const defaultCallSettings = this._defaults['listLightNovels'];
+    const defaultCallSettings = this._defaults['listVisualNovels'];
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
-    return this.descriptors.page.listLightNovels.createStream(
-      this.innerApiCalls.listLightNovels as gax.GaxCall,
+    return this.descriptors.page.listVisualNovels.createStream(
+      this.innerApiCalls.listVisualNovels as gax.GaxCall,
       request,
       callSettings
     );
   }
 
 /**
- * Equivalent to `listLightNovels`, but returns an iterable object.
+ * Equivalent to `listVisualNovels`, but returns an iterable object.
  *
  * `for`-`await`-`of` syntax is used with the iterable to get response elements on-demand.
  * @param {Object} request
@@ -808,30 +808,30 @@ export class LightNovelServiceClient {
  * @returns {Object}
  *   An iterable Object that allows [async iteration](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols).
  *   When you iterate the returned iterable, each element will be an object representing
- *   [LightNovel]{@link animeshon.multimedia.v1alpha1.LightNovel}. The API will be called under the hood as needed, once per the page,
+ *   [VisualNovel]{@link animeshon.multimedia.v1alpha1.VisualNovel}. The API will be called under the hood as needed, once per the page,
  *   so you can stop the iteration when you don't need more results.
  *   Please see the
  *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#auto-pagination)
  *   for more details and examples.
- * @example <caption>include:samples/generated/v1alpha1/light_novel_service.list_light_novels.js</caption>
- * region_tag:multimedia_v1alpha1_generated_LightNovelService_ListLightNovels_async
+ * @example <caption>include:samples/generated/v1alpha1/visual_novel_service.list_visual_novels.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_VisualNovelService_ListVisualNovels_async
  */
-  listLightNovelsAsync(
-      request?: protos.animeshon.multimedia.v1alpha1.IListLightNovelsRequest,
+  listVisualNovelsAsync(
+      request?: protos.animeshon.multimedia.v1alpha1.IListVisualNovelsRequest,
       options?: CallOptions):
-    AsyncIterable<protos.animeshon.multimedia.v1alpha1.ILightNovel>{
+    AsyncIterable<protos.animeshon.multimedia.v1alpha1.IVisualNovel>{
     request = request || {};
     options = options || {};
     options.otherArgs = options.otherArgs || {};
     options.otherArgs.headers = options.otherArgs.headers || {};
-    const defaultCallSettings = this._defaults['listLightNovels'];
+    const defaultCallSettings = this._defaults['listVisualNovels'];
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
-    return this.descriptors.page.listLightNovels.asyncIterate(
-      this.innerApiCalls['listLightNovels'] as GaxCall,
+    return this.descriptors.page.listVisualNovels.asyncIterate(
+      this.innerApiCalls['listVisualNovels'] as GaxCall,
       request as unknown as RequestType,
       callSettings
-    ) as AsyncIterable<protos.animeshon.multimedia.v1alpha1.ILightNovel>;
+    ) as AsyncIterable<protos.animeshon.multimedia.v1alpha1.IVisualNovel>;
   }
 
   /**
@@ -843,7 +843,7 @@ export class LightNovelServiceClient {
   close(): Promise<void> {
     this.initialize();
     if (!this._terminated) {
-      return this.lightNovelServiceStub!.then(stub => {
+      return this.visualNovelServiceStub!.then(stub => {
         this._terminated = true;
         stub.close();
         this.operationsClient.close();

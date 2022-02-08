@@ -26,6 +26,7 @@ function main() {
   const episodeServiceClient = new multimedia.EpisodeServiceClient();
   const graphicNovelServiceClient = new multimedia.GraphicNovelServiceClient();
   const lightNovelServiceClient = new multimedia.LightNovelServiceClient();
+  const visualNovelServiceClient = new multimedia.VisualNovelServiceClient();
 }
 
 main();

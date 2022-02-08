@@ -22,7 +22,7 @@ function main(name) {
    */
   /**
    *  The name of the light novel to reconcile.
-   *  Use the wildcard`lightNovels/-` to reconcile all light novels.
+   *  Use the wildcard `lightNovels/-` to reconcile all light novels.
    */
   // const name = 'abc123'
 

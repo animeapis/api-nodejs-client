@@ -4,5 +4,6 @@
   "../../protos/animeshon/multimedia/v1alpha1/common.proto",
   "../../protos/animeshon/multimedia/v1alpha1/episode.proto",
   "../../protos/animeshon/multimedia/v1alpha1/graphic_novel.proto",
-  "../../protos/animeshon/multimedia/v1alpha1/light_novel.proto"
+  "../../protos/animeshon/multimedia/v1alpha1/light_novel.proto",
+  "../../protos/animeshon/multimedia/v1alpha1/visual_novel.proto"
 ]

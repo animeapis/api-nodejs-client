@@ -15,37 +15,40 @@
 
 'use strict';
 
-function main(name) {
-  // [START multimedia_v1alpha1_generated_GraphicNovelService_ReconcileGraphicNovels_async]
+function main(visualNovel) {
+  // [START multimedia_v1alpha1_generated_VisualNovelService_UpdateVisualNovel_async]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
   /**
-   *  The name of the graphic novel to reconcile.
-   *  Use the wildcard `graphicNovels/-` to reconcile all graphic novels.
+   *  The visual novel to update.
    */
-  // const name = 'abc123'
+  // const visualNovel = {}
+  /**
+   *  The field mask to determine which fields are to be updated. If empty, the
+   *  server will assume all fields are to be updated.
+   */
+  // const updateMask = {}
 
   // Imports the Multimedia library
-  const {GraphicNovelServiceClient} = require('@animeapis/multimedia').v1alpha1;
+  const {VisualNovelServiceClient} = require('@animeapis/multimedia').v1alpha1;
 
   // Instantiates a client
-  const multimediaClient = new GraphicNovelServiceClient();
+  const multimediaClient = new VisualNovelServiceClient();
 
-  async function callReconcileGraphicNovels() {
+  async function callUpdateVisualNovel() {
     // Construct request
     const request = {
-      name,
+      visualNovel,
     };
 
     // Run request
-    const [operation] = await multimediaClient.reconcileGraphicNovels(request);
-    const [response] = await operation.promise();
+    const response = await multimediaClient.updateVisualNovel(request);
     console.log(response);
   }
 
-  callReconcileGraphicNovels();
-  // [END multimedia_v1alpha1_generated_GraphicNovelService_ReconcileGraphicNovels_async]
+  callUpdateVisualNovel();
+  // [END multimedia_v1alpha1_generated_VisualNovelService_UpdateVisualNovel_async]
 }
 
 process.on('unhandledRejection', err => {

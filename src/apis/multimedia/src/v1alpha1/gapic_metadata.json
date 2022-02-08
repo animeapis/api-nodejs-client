@@ -394,6 +394,84 @@
           }
         }
       }
+    },
+    "VisualNovelService": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "VisualNovelServiceClient",
+          "rpcs": {
+            "GetVisualNovel": {
+              "methods": [
+                "getVisualNovel"
+              ]
+            },
+            "CreateVisualNovel": {
+              "methods": [
+                "createVisualNovel"
+              ]
+            },
+            "UpdateVisualNovel": {
+              "methods": [
+                "updateVisualNovel"
+              ]
+            },
+            "DeleteVisualNovel": {
+              "methods": [
+                "deleteVisualNovel"
+              ]
+            },
+            "ReconcileVisualNovels": {
+              "methods": [
+                "reconcileVisualNovels"
+              ]
+            },
+            "ListVisualNovels": {
+              "methods": [
+                "listVisualNovels",
+                "listVisualNovelsStream",
+                "listVisualNovelsAsync"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "VisualNovelServiceClient",
+          "rpcs": {
+            "GetVisualNovel": {
+              "methods": [
+                "getVisualNovel"
+              ]
+            },
+            "CreateVisualNovel": {
+              "methods": [
+                "createVisualNovel"
+              ]
+            },
+            "UpdateVisualNovel": {
+              "methods": [
+                "updateVisualNovel"
+              ]
+            },
+            "DeleteVisualNovel": {
+              "methods": [
+                "deleteVisualNovel"
+              ]
+            },
+            "ReconcileVisualNovels": {
+              "methods": [
+                "reconcileVisualNovels"
+              ]
+            },
+            "ListVisualNovels": {
+              "methods": [
+                "listVisualNovels",
+                "listVisualNovelsStream",
+                "listVisualNovelsAsync"
+              ]
+            }
+          }
+        }
+      }
     }
   }
 }
