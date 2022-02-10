@@ -24,6 +24,10 @@ function main(lightNovel) {
    *  The light novel to create.
    */
   // const lightNovel = {}
+  /**
+   *  An idempotent identifier to be used as static resource id.
+   */
+  // const idempotentResourceId = 1234
 
   // Imports the Multimedia library
   const {LightNovelServiceClient} = require('@animeapis/multimedia').v1alpha1;
