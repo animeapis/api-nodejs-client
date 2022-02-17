@@ -24,10 +24,6 @@ function main(visualNovel) {
    *  The visual novel to create.
    */
   // const visualNovel = {}
-  /**
-   *  An idempotent identifier to be used as static resource id.
-   */
-  // const idempotentResourceId = 1234
 
   // Imports the Multimedia library
   const {VisualNovelServiceClient} = require('@animeapis/multimedia').v1alpha1;

@@ -24,10 +24,6 @@ function main(anime) {
    *  The anime to create.
    */
   // const anime = {}
-  /**
-   *  An idempotent identifier to be used as static resource id.
-   */
-  // const idempotentResourceId = 1234
 
   // Imports the Multimedia library
   const {AnimeServiceClient} = require('@animeapis/multimedia').v1alpha1;

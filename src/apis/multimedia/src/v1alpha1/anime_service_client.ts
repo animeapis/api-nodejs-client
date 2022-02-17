@@ -381,8 +381,6 @@ export class AnimeServiceClient {
  *   The request object that will be sent.
  * @param {animeshon.multimedia.v1alpha1.Anime} request.anime
  *   The anime to create.
- * @param {number} request.idempotentResourceId
- *   An idempotent identifier to be used as static resource id.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
