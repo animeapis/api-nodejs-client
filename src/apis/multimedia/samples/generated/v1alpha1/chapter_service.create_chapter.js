@@ -28,6 +28,10 @@ function main(parent, chapter) {
    *  The chapter to create.
    */
   // const chapter = {}
+  /**
+   *  An idempotent identifier to be used as static resource id.
+   */
+  // const idempotentResourceId = 1234
 
   // Imports the Multimedia library
   const {ChapterServiceClient} = require('@animeapis/multimedia').v1alpha1;

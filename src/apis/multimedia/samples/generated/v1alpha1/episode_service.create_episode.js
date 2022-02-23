@@ -28,6 +28,10 @@ function main(parent, episode) {
    *  The episode to create.
    */
   // const episode = {}
+  /**
+   *  An idempotent identifier to be used as static resource id.
+   */
+  // const idempotentResourceId = 1234
 
   // Imports the Multimedia library
   const {EpisodeServiceClient} = require('@animeapis/multimedia').v1alpha1;

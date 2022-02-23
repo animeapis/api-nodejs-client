@@ -383,6 +383,8 @@ export class EpisodeServiceClient {
  *   The parent this episode belongs to.
  * @param {animeshon.multimedia.v1alpha1.Episode} request.episode
  *   The episode to create.
+ * @param {number} request.idempotentResourceId
+ *   An idempotent identifier to be used as static resource id.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.

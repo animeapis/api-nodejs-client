@@ -381,6 +381,8 @@ export class GraphicNovelServiceClient {
  *   The request object that will be sent.
  * @param {animeshon.multimedia.v1alpha1.GraphicNovel} request.graphicNovel
  *   The graphic novel to create.
+ * @param {number} request.idempotentResourceId
+ *   An idempotent identifier to be used as static resource id.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
