@@ -223,7 +223,7 @@ export class EpisodeServiceClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const episodeServiceStubMethods =
-        ['getEpisode', 'listEpisodes', 'createEpisode', 'updateEpisode', 'deleteEpisode', 'reconcileEpisodes'];
+        ['getEpisode', 'listEpisodes', 'createEpisode', 'batchCreateEpisodes', 'updateEpisode', 'deleteEpisode', 'reconcileEpisodes'];
     for (const methodName of episodeServiceStubMethods) {
       const callPromise = this.episodeServiceStub.then(
         stub => (...args: Array<{}>) => {
@@ -448,6 +448,78 @@ export class EpisodeServiceClient {
     });
     this.initialize();
     return this.innerApiCalls.createEpisode(request, options, callback);
+  }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {number[]} request.requests
+ *   Individual create episode requests for this batch.
+ * @param {string} request.parent
+ *   The parent this batch belongs to.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [BatchCreateEpisodesResponse]{@link animeshon.multimedia.v1alpha1.BatchCreateEpisodesResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/episode_service.batch_create_episodes.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_EpisodeService_BatchCreateEpisodes_async
+ */
+  batchCreateEpisodes(
+      request?: protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse,
+        protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest|undefined, {}|undefined
+      ]>;
+  batchCreateEpisodes(
+      request: protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse,
+          protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest|null|undefined,
+          {}|null|undefined>): void;
+  batchCreateEpisodes(
+      request: protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest,
+      callback: Callback<
+          protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse,
+          protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest|null|undefined,
+          {}|null|undefined>): void;
+  batchCreateEpisodes(
+      request?: protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse,
+          protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse,
+          protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse,
+        protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'parent': request.parent || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.batchCreateEpisodes(request, options, callback);
   }
 /**
  *

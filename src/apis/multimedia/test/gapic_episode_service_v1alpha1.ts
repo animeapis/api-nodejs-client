@@ -349,6 +349,90 @@ describe('v1alpha1.EpisodeServiceClient', () => {
         });
     });
 
+    describe('batchCreateEpisodes', () => {
+        it('invokes batchCreateEpisodes without error', async () => {
+            const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateEpisodesRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateEpisodesResponse());
+            client.innerApiCalls.batchCreateEpisodes = stubSimpleCall(expectedResponse);
+            const [response] = await client.batchCreateEpisodes(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.batchCreateEpisodes as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes batchCreateEpisodes without error using callback', async () => {
+            const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateEpisodesRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateEpisodesResponse());
+            client.innerApiCalls.batchCreateEpisodes = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.batchCreateEpisodes(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.batchCreateEpisodes as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes batchCreateEpisodes with error', async () => {
+            const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateEpisodesRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.batchCreateEpisodes = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.batchCreateEpisodes(request), expectedError);
+            assert((client.innerApiCalls.batchCreateEpisodes as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
     describe('updateEpisode', () => {
         it('invokes updateEpisode without error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({

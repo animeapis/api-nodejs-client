@@ -349,6 +349,90 @@ describe('v1alpha1.ChapterServiceClient', () => {
         });
     });
 
+    describe('batchCreateChapters', () => {
+        it('invokes batchCreateChapters without error', async () => {
+            const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateChaptersRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateChaptersResponse());
+            client.innerApiCalls.batchCreateChapters = stubSimpleCall(expectedResponse);
+            const [response] = await client.batchCreateChapters(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.batchCreateChapters as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes batchCreateChapters without error using callback', async () => {
+            const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateChaptersRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateChaptersResponse());
+            client.innerApiCalls.batchCreateChapters = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.batchCreateChapters(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersResponse|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.batchCreateChapters as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes batchCreateChapters with error', async () => {
+            const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateChaptersRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.batchCreateChapters = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.batchCreateChapters(request), expectedError);
+            assert((client.innerApiCalls.batchCreateChapters as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
     describe('updateChapter', () => {
         it('invokes updateChapter without error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({

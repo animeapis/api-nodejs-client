@@ -98,6 +98,11 @@
                 "createChapter"
               ]
             },
+            "BatchCreateChapters": {
+              "methods": [
+                "batchCreateChapters"
+              ]
+            },
             "UpdateChapter": {
               "methods": [
                 "updateChapter"
@@ -133,6 +138,11 @@
             "CreateChapter": {
               "methods": [
                 "createChapter"
+              ]
+            },
+            "BatchCreateChapters": {
+              "methods": [
+                "batchCreateChapters"
               ]
             },
             "UpdateChapter": {
@@ -176,6 +186,11 @@
                 "createEpisode"
               ]
             },
+            "BatchCreateEpisodes": {
+              "methods": [
+                "batchCreateEpisodes"
+              ]
+            },
             "UpdateEpisode": {
               "methods": [
                 "updateEpisode"
@@ -211,6 +226,11 @@
             "CreateEpisode": {
               "methods": [
                 "createEpisode"
+              ]
+            },
+            "BatchCreateEpisodes": {
+              "methods": [
+                "batchCreateEpisodes"
               ]
             },
             "UpdateEpisode": {

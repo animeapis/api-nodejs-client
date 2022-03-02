@@ -32,6 +32,10 @@
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
+        "BatchCreateChapters": {
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
+        },
         "UpdateChapter": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
