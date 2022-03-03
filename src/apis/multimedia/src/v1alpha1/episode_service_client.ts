@@ -168,12 +168,20 @@ export class EpisodeServiceClient {
       auth: this.auth,
       grpc: 'grpc' in this._gaxGrpc ? this._gaxGrpc.grpc : undefined
     }).operationsClient(opts);
+    const batchCreateEpisodesResponse = protoFilesRoot.lookup(
+      '.animeshon.multimedia.v1alpha1.BatchCreateEpisodesResponse') as gax.protobuf.Type;
+    const batchCreateEpisodesMetadata = protoFilesRoot.lookup(
+      '.animeshon.multimedia.v1alpha1.OperationMetadata') as gax.protobuf.Type;
     const reconcileEpisodesResponse = protoFilesRoot.lookup(
       '.animeshon.multimedia.v1alpha1.ReconcileEpisodesResponse') as gax.protobuf.Type;
     const reconcileEpisodesMetadata = protoFilesRoot.lookup(
       '.animeshon.multimedia.v1alpha1.OperationMetadata') as gax.protobuf.Type;
 
     this.descriptors.longrunning = {
+      batchCreateEpisodes: new this._gaxModule.LongrunningDescriptor(
+        this.operationsClient,
+        batchCreateEpisodesResponse.decode.bind(batchCreateEpisodesResponse),
+        batchCreateEpisodesMetadata.decode.bind(batchCreateEpisodesMetadata)),
       reconcileEpisodes: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         reconcileEpisodesResponse.decode.bind(reconcileEpisodesResponse),
@@ -453,78 +461,6 @@ export class EpisodeServiceClient {
  *
  * @param {Object} request
  *   The request object that will be sent.
- * @param {number[]} request.requests
- *   Individual create episode requests for this batch.
- * @param {string} request.parent
- *   The parent this batch belongs to.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [BatchCreateEpisodesResponse]{@link animeshon.multimedia.v1alpha1.BatchCreateEpisodesResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example <caption>include:samples/generated/v1alpha1/episode_service.batch_create_episodes.js</caption>
- * region_tag:multimedia_v1alpha1_generated_EpisodeService_BatchCreateEpisodes_async
- */
-  batchCreateEpisodes(
-      request?: protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse,
-        protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest|undefined, {}|undefined
-      ]>;
-  batchCreateEpisodes(
-      request: protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest,
-      options: CallOptions,
-      callback: Callback<
-          protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse,
-          protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest|null|undefined,
-          {}|null|undefined>): void;
-  batchCreateEpisodes(
-      request: protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest,
-      callback: Callback<
-          protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse,
-          protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest|null|undefined,
-          {}|null|undefined>): void;
-  batchCreateEpisodes(
-      request?: protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest,
-      optionsOrCallback?: CallOptions|Callback<
-          protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse,
-          protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse,
-          protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse,
-        protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest|undefined, {}|undefined
-      ]>|void {
-    request = request || {};
-    let options: CallOptions;
-    if (typeof optionsOrCallback === 'function' && callback === undefined) {
-      callback = optionsOrCallback;
-      options = {};
-    }
-    else {
-      options = optionsOrCallback as CallOptions;
-    }
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'parent': request.parent || '',
-    });
-    this.initialize();
-    return this.innerApiCalls.batchCreateEpisodes(request, options, callback);
-  }
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
  * @param {animeshon.multimedia.v1alpha1.Episode} request.episode
  *   The episode to update.
  * @param {google.protobuf.FieldMask} request.updateMask
@@ -665,6 +601,98 @@ export class EpisodeServiceClient {
     return this.innerApiCalls.deleteEpisode(request, options, callback);
   }
 
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {number[]} request.requests
+ *   Individual create episode requests for this batch.
+ * @param {string} request.parent
+ *   The parent this batch belongs to.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing
+ *   a long running operation. Its `promise()` method returns a promise
+ *   you can `await` for.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/episode_service.batch_create_episodes.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_EpisodeService_BatchCreateEpisodes_async
+ */
+  batchCreateEpisodes(
+      request?: protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest,
+      options?: CallOptions):
+      Promise<[
+        LROperation<protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+        protos.google.longrunning.IOperation|undefined, {}|undefined
+      ]>;
+  batchCreateEpisodes(
+      request: protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest,
+      options: CallOptions,
+      callback: Callback<
+          LROperation<protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
+  batchCreateEpisodes(
+      request: protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest,
+      callback: Callback<
+          LROperation<protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
+  batchCreateEpisodes(
+      request?: protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          LROperation<protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          LROperation<protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        LROperation<protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+        protos.google.longrunning.IOperation|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'parent': request.parent || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.batchCreateEpisodes(request, options, callback);
+  }
+/**
+ * Check the status of the long running operation returned by `batchCreateEpisodes()`.
+ * @param {String} name
+ *   The operation name that will be passed.
+ * @returns {Promise} - The promise which resolves to an object.
+ *   The decoded operation object has result and metadata field to get information from.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/episode_service.batch_create_episodes.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_EpisodeService_BatchCreateEpisodes_async
+ */
+  async checkBatchCreateEpisodesProgress(name: string): Promise<LROperation<protos.animeshon.multimedia.v1alpha1.BatchCreateEpisodesResponse, protos.animeshon.multimedia.v1alpha1.OperationMetadata>>{
+    const request = new operationsProtos.google.longrunning.GetOperationRequest({name});
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new gax.Operation(operation, this.descriptors.longrunning.batchCreateEpisodes, gax.createDefaultBackoffSettings());
+    return decodeOperation as LROperation<protos.animeshon.multimedia.v1alpha1.BatchCreateEpisodesResponse, protos.animeshon.multimedia.v1alpha1.OperationMetadata>;
+  }
 /**
  * Reconcile episodes with the search and knowledge base.
  *

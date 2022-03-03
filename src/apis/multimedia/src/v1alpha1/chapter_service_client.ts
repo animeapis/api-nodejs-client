@@ -168,12 +168,20 @@ export class ChapterServiceClient {
       auth: this.auth,
       grpc: 'grpc' in this._gaxGrpc ? this._gaxGrpc.grpc : undefined
     }).operationsClient(opts);
+    const batchCreateChaptersResponse = protoFilesRoot.lookup(
+      '.animeshon.multimedia.v1alpha1.BatchCreateChaptersResponse') as gax.protobuf.Type;
+    const batchCreateChaptersMetadata = protoFilesRoot.lookup(
+      '.animeshon.multimedia.v1alpha1.OperationMetadata') as gax.protobuf.Type;
     const reconcileChaptersResponse = protoFilesRoot.lookup(
       '.animeshon.multimedia.v1alpha1.ReconcileChaptersResponse') as gax.protobuf.Type;
     const reconcileChaptersMetadata = protoFilesRoot.lookup(
       '.animeshon.multimedia.v1alpha1.OperationMetadata') as gax.protobuf.Type;
 
     this.descriptors.longrunning = {
+      batchCreateChapters: new this._gaxModule.LongrunningDescriptor(
+        this.operationsClient,
+        batchCreateChaptersResponse.decode.bind(batchCreateChaptersResponse),
+        batchCreateChaptersMetadata.decode.bind(batchCreateChaptersMetadata)),
       reconcileChapters: new this._gaxModule.LongrunningDescriptor(
         this.operationsClient,
         reconcileChaptersResponse.decode.bind(reconcileChaptersResponse),
@@ -453,78 +461,6 @@ export class ChapterServiceClient {
  *
  * @param {Object} request
  *   The request object that will be sent.
- * @param {number[]} request.requests
- *   Individual create chapter requests for this batch.
- * @param {string} request.parent
- *   The parent this batch belongs to.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [BatchCreateChaptersResponse]{@link animeshon.multimedia.v1alpha1.BatchCreateChaptersResponse}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example <caption>include:samples/generated/v1alpha1/chapter_service.batch_create_chapters.js</caption>
- * region_tag:multimedia_v1alpha1_generated_ChapterService_BatchCreateChapters_async
- */
-  batchCreateChapters(
-      request?: protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersResponse,
-        protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersRequest|undefined, {}|undefined
-      ]>;
-  batchCreateChapters(
-      request: protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersRequest,
-      options: CallOptions,
-      callback: Callback<
-          protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersResponse,
-          protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersRequest|null|undefined,
-          {}|null|undefined>): void;
-  batchCreateChapters(
-      request: protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersRequest,
-      callback: Callback<
-          protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersResponse,
-          protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersRequest|null|undefined,
-          {}|null|undefined>): void;
-  batchCreateChapters(
-      request?: protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersRequest,
-      optionsOrCallback?: CallOptions|Callback<
-          protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersResponse,
-          protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersResponse,
-          protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersResponse,
-        protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersRequest|undefined, {}|undefined
-      ]>|void {
-    request = request || {};
-    let options: CallOptions;
-    if (typeof optionsOrCallback === 'function' && callback === undefined) {
-      callback = optionsOrCallback;
-      options = {};
-    }
-    else {
-      options = optionsOrCallback as CallOptions;
-    }
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'parent': request.parent || '',
-    });
-    this.initialize();
-    return this.innerApiCalls.batchCreateChapters(request, options, callback);
-  }
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
  * @param {animeshon.multimedia.v1alpha1.Chapter} request.chapter
  *   The chapter to update.
  * @param {google.protobuf.FieldMask} request.updateMask
@@ -665,6 +601,98 @@ export class ChapterServiceClient {
     return this.innerApiCalls.deleteChapter(request, options, callback);
   }
 
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {number[]} request.requests
+ *   Individual create chapter requests for this batch.
+ * @param {string} request.parent
+ *   The parent this batch belongs to.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing
+ *   a long running operation. Its `promise()` method returns a promise
+ *   you can `await` for.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/chapter_service.batch_create_chapters.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_ChapterService_BatchCreateChapters_async
+ */
+  batchCreateChapters(
+      request?: protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersRequest,
+      options?: CallOptions):
+      Promise<[
+        LROperation<protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+        protos.google.longrunning.IOperation|undefined, {}|undefined
+      ]>;
+  batchCreateChapters(
+      request: protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersRequest,
+      options: CallOptions,
+      callback: Callback<
+          LROperation<protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
+  batchCreateChapters(
+      request: protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersRequest,
+      callback: Callback<
+          LROperation<protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>): void;
+  batchCreateChapters(
+      request?: protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          LROperation<protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          LROperation<protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+          protos.google.longrunning.IOperation|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        LROperation<protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>,
+        protos.google.longrunning.IOperation|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'parent': request.parent || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.batchCreateChapters(request, options, callback);
+  }
+/**
+ * Check the status of the long running operation returned by `batchCreateChapters()`.
+ * @param {String} name
+ *   The operation name that will be passed.
+ * @returns {Promise} - The promise which resolves to an object.
+ *   The decoded operation object has result and metadata field to get information from.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#long-running-operations)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/chapter_service.batch_create_chapters.js</caption>
+ * region_tag:multimedia_v1alpha1_generated_ChapterService_BatchCreateChapters_async
+ */
+  async checkBatchCreateChaptersProgress(name: string): Promise<LROperation<protos.animeshon.multimedia.v1alpha1.BatchCreateChaptersResponse, protos.animeshon.multimedia.v1alpha1.OperationMetadata>>{
+    const request = new operationsProtos.google.longrunning.GetOperationRequest({name});
+    const [operation] = await this.operationsClient.getOperation(request);
+    const decodeOperation = new gax.Operation(operation, this.descriptors.longrunning.batchCreateChapters, gax.createDefaultBackoffSettings());
+    return decodeOperation as LROperation<protos.animeshon.multimedia.v1alpha1.BatchCreateChaptersResponse, protos.animeshon.multimedia.v1alpha1.OperationMetadata>;
+  }
 /**
  * Reconcile chapters with the search and knowledge base.
  *

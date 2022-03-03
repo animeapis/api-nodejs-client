@@ -98,11 +98,6 @@
                 "createChapter"
               ]
             },
-            "BatchCreateChapters": {
-              "methods": [
-                "batchCreateChapters"
-              ]
-            },
             "UpdateChapter": {
               "methods": [
                 "updateChapter"
@@ -111,6 +106,11 @@
             "DeleteChapter": {
               "methods": [
                 "deleteChapter"
+              ]
+            },
+            "BatchCreateChapters": {
+              "methods": [
+                "batchCreateChapters"
               ]
             },
             "ReconcileChapters": {
@@ -140,11 +140,6 @@
                 "createChapter"
               ]
             },
-            "BatchCreateChapters": {
-              "methods": [
-                "batchCreateChapters"
-              ]
-            },
             "UpdateChapter": {
               "methods": [
                 "updateChapter"
@@ -153,6 +148,11 @@
             "DeleteChapter": {
               "methods": [
                 "deleteChapter"
+              ]
+            },
+            "BatchCreateChapters": {
+              "methods": [
+                "batchCreateChapters"
               ]
             },
             "ReconcileChapters": {
@@ -186,11 +186,6 @@
                 "createEpisode"
               ]
             },
-            "BatchCreateEpisodes": {
-              "methods": [
-                "batchCreateEpisodes"
-              ]
-            },
             "UpdateEpisode": {
               "methods": [
                 "updateEpisode"
@@ -199,6 +194,11 @@
             "DeleteEpisode": {
               "methods": [
                 "deleteEpisode"
+              ]
+            },
+            "BatchCreateEpisodes": {
+              "methods": [
+                "batchCreateEpisodes"
               ]
             },
             "ReconcileEpisodes": {
@@ -228,11 +228,6 @@
                 "createEpisode"
               ]
             },
-            "BatchCreateEpisodes": {
-              "methods": [
-                "batchCreateEpisodes"
-              ]
-            },
             "UpdateEpisode": {
               "methods": [
                 "updateEpisode"
@@ -241,6 +236,11 @@
             "DeleteEpisode": {
               "methods": [
                 "deleteEpisode"
+              ]
+            },
+            "BatchCreateEpisodes": {
+              "methods": [
+                "batchCreateEpisodes"
               ]
             },
             "ReconcileEpisodes": {

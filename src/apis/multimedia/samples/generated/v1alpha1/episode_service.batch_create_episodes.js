@@ -43,7 +43,8 @@ function main(requests, parent) {
     };
 
     // Run request
-    const response = await multimediaClient.batchCreateEpisodes(request);
+    const [operation] = await multimediaClient.batchCreateEpisodes(request);
+    const [response] = await operation.promise();
     console.log(response);
   }
 
