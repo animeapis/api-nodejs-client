@@ -325,6 +325,66 @@ describe('v1alpha1.ReferrerClient', () => {
         });
     });
 
+    describe('batchCreateCrossRefs', () => {
+        it('invokes batchCreateCrossRefs without error', async () => {
+            const client = new referrerModule.v1alpha1.ReferrerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsRequest());
+            const expectedOptions = {otherArgs: {headers: {}}};;
+            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsResponse());
+            client.innerApiCalls.batchCreateCrossRefs = stubSimpleCall(expectedResponse);
+            const [response] = await client.batchCreateCrossRefs(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.batchCreateCrossRefs as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes batchCreateCrossRefs without error using callback', async () => {
+            const client = new referrerModule.v1alpha1.ReferrerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsRequest());
+            const expectedOptions = {otherArgs: {headers: {}}};;
+            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsResponse());
+            client.innerApiCalls.batchCreateCrossRefs = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.batchCreateCrossRefs(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.crossrefs.v1alpha1.IBatchCreateCrossRefsResponse|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.batchCreateCrossRefs as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes batchCreateCrossRefs with error', async () => {
+            const client = new referrerModule.v1alpha1.ReferrerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsRequest());
+            const expectedOptions = {otherArgs: {headers: {}}};;
+            const expectedError = new Error('expected');
+            client.innerApiCalls.batchCreateCrossRefs = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.batchCreateCrossRefs(request), expectedError);
+            assert((client.innerApiCalls.batchCreateCrossRefs as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
     describe('updateCrossRef', () => {
         it('invokes updateCrossRef without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({

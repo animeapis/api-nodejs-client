@@ -279,7 +279,7 @@ export class ReferrerClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const referrerStubMethods =
-        ['getCrossRef', 'listCrossRefs', 'createCrossRef', 'updateCrossRef', 'countCrossRefs', 'analyzeCrossRefs', 'importCrossRefs', 'exportCrossRefs', 'initializeCrossRefs', 'analyzeParodies', 'exportParodies', 'getUniverse', 'updateUniverse', 'expandUniverse', 'getWormhole', 'listWormholeCrossRefs'];
+        ['getCrossRef', 'listCrossRefs', 'createCrossRef', 'batchCreateCrossRefs', 'updateCrossRef', 'countCrossRefs', 'analyzeCrossRefs', 'importCrossRefs', 'exportCrossRefs', 'initializeCrossRefs', 'analyzeParodies', 'exportParodies', 'getUniverse', 'updateUniverse', 'expandUniverse', 'getWormhole', 'listWormholeCrossRefs'];
     for (const methodName of referrerStubMethods) {
       const callPromise = this.referrerStub.then(
         stub => (...args: Array<{}>) => {
@@ -496,6 +496,74 @@ export class ReferrerClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     this.initialize();
     return this.innerApiCalls.createCrossRef(request, options, callback);
+  }
+/**
+ * BatchCreateCrossRefs creates new crossrefs in batch.
+ * The limit is of 10 crossreferences and it's blocking.
+ * It ensures that the crossreferences are created in the database
+ * but not propagated to the other services
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {number[]} request.crossref
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [BatchCreateCrossRefsResponse]{@link animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/referrer.batch_create_cross_refs.js</caption>
+ * region_tag:crossrefs_v1alpha1_generated_Referrer_BatchCreateCrossRefs_async
+ */
+  batchCreateCrossRefs(
+      request?: protos.animeshon.crossrefs.v1alpha1.IBatchCreateCrossRefsRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.crossrefs.v1alpha1.IBatchCreateCrossRefsResponse,
+        protos.animeshon.crossrefs.v1alpha1.IBatchCreateCrossRefsRequest|undefined, {}|undefined
+      ]>;
+  batchCreateCrossRefs(
+      request: protos.animeshon.crossrefs.v1alpha1.IBatchCreateCrossRefsRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.crossrefs.v1alpha1.IBatchCreateCrossRefsResponse,
+          protos.animeshon.crossrefs.v1alpha1.IBatchCreateCrossRefsRequest|null|undefined,
+          {}|null|undefined>): void;
+  batchCreateCrossRefs(
+      request: protos.animeshon.crossrefs.v1alpha1.IBatchCreateCrossRefsRequest,
+      callback: Callback<
+          protos.animeshon.crossrefs.v1alpha1.IBatchCreateCrossRefsResponse,
+          protos.animeshon.crossrefs.v1alpha1.IBatchCreateCrossRefsRequest|null|undefined,
+          {}|null|undefined>): void;
+  batchCreateCrossRefs(
+      request?: protos.animeshon.crossrefs.v1alpha1.IBatchCreateCrossRefsRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.animeshon.crossrefs.v1alpha1.IBatchCreateCrossRefsResponse,
+          protos.animeshon.crossrefs.v1alpha1.IBatchCreateCrossRefsRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.animeshon.crossrefs.v1alpha1.IBatchCreateCrossRefsResponse,
+          protos.animeshon.crossrefs.v1alpha1.IBatchCreateCrossRefsRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.animeshon.crossrefs.v1alpha1.IBatchCreateCrossRefsResponse,
+        protos.animeshon.crossrefs.v1alpha1.IBatchCreateCrossRefsRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    this.initialize();
+    return this.innerApiCalls.batchCreateCrossRefs(request, options, callback);
   }
 /**
  *

@@ -20,6 +20,11 @@
                 "createCrossRef"
               ]
             },
+            "BatchCreateCrossRefs": {
+              "methods": [
+                "batchCreateCrossRefs"
+              ]
+            },
             "UpdateCrossRef": {
               "methods": [
                 "updateCrossRef"
@@ -105,6 +110,11 @@
             "CreateCrossRef": {
               "methods": [
                 "createCrossRef"
+              ]
+            },
+            "BatchCreateCrossRefs": {
+              "methods": [
+                "batchCreateCrossRefs"
               ]
             },
             "UpdateCrossRef": {
