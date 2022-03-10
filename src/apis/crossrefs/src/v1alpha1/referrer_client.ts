@@ -505,7 +505,7 @@ export class ReferrerClient {
  *
  * @param {Object} request
  *   The request object that will be sent.
- * @param {number[]} request.crossref
+ * @param {number[]} request.crossrefs
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.

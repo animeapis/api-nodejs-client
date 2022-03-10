@@ -15,14 +15,14 @@
 
 'use strict';
 
-function main(crossref) {
+function main(crossrefs) {
   // [START crossrefs_v1alpha1_generated_Referrer_BatchCreateCrossRefs_async]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
   /**
    */
-  // const crossref = 1234
+  // const crossrefs = 1234
 
   // Imports the Crossrefs library
   const {ReferrerClient} = require('@animeapis/crossrefs').v1alpha1;
@@ -33,7 +33,7 @@ function main(crossref) {
   async function callBatchCreateCrossRefs() {
     // Construct request
     const request = {
-      crossref,
+      crossrefs,
     };
 
     // Run request
