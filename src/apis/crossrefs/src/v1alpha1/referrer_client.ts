@@ -1076,14 +1076,10 @@ export class ReferrerClient {
  *
  * @param {Object} request
  *   The request object that will be sent.
- * @param {number} request.tollerance
- *   Tollerance of the match in pct
- * @param {number[]} request.opts
- *   Map of all options for the analysis
- * @param {string[]} request.namespaces
- *   Namespaces to analyze
- * @param {string[]} request.targetKinds
- *   Kinds to analyze
+ * @param {animeshon.crossrefs.v1alpha1.AnalyzeCrossRefRequest.AnalyzeCrossRefConfig} request.config
+ *   Global configuration
+ * @param {number[]} request.targetKinds
+ *   Kind configurations
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.

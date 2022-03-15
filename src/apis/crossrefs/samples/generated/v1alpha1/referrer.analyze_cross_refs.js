@@ -21,21 +21,13 @@ function main() {
    * TODO(developer): Uncomment these variables before running the sample.
    */
   /**
-   *  Tollerance of the match in pct
+   *  Global configuration
    */
-  // const tollerance = 1234
+  // const config = {}
   /**
-   *  Map of all options for the analysis
+   *  Kind configurations
    */
-  // const opts = 1234
-  /**
-   *  Namespaces to analyze
-   */
-  // const namespaces = 'abc123'
-  /**
-   *  Kinds to analyze
-   */
-  // const targetKinds = 'abc123'
+  // const targetKinds = 1234
 
   // Imports the Crossrefs library
   const {ReferrerClient} = require('@animeapis/crossrefs').v1alpha1;
