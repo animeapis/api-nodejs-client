@@ -11,6 +11,7 @@
     "src/apis/image": {},
     "src/apis/knowledge": {},
     "src/apis/library": {},
+    "src/apis/multimedia": {},
     "src/apis/product": {},
     "src/apis/release": {},
     "src/apis/resourcemanager": {},
