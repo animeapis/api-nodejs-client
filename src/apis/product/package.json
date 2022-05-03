@@ -1,6 +1,6 @@
 {
   "name": "@animeapis/product",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Product client for Node.js",
   "repository": "googleapis/nodejs-product",
   "license": "Apache-2.0",
