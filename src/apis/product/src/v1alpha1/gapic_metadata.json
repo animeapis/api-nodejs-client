@@ -1,0 +1,77 @@
+{
+  "schema": "1.0",
+  "comment": "This file maps proto services/RPCs to the corresponding library clients/methods",
+  "language": "typescript",
+  "protoPackage": "animeshon.product.v1alpha1",
+  "libraryPackage": "@animeapis/product",
+  "services": {
+    "ChapterService": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "ChapterServiceClient",
+          "rpcs": {
+            "GetChapter": {
+              "methods": [
+                "getChapter"
+              ]
+            },
+            "CreateChapter": {
+              "methods": [
+                "createChapter"
+              ]
+            },
+            "UpdateChapter": {
+              "methods": [
+                "updateChapter"
+              ]
+            },
+            "DeleteChapter": {
+              "methods": [
+                "deleteChapter"
+              ]
+            },
+            "ListChapters": {
+              "methods": [
+                "listChapters",
+                "listChaptersStream",
+                "listChaptersAsync"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "ChapterServiceClient",
+          "rpcs": {
+            "GetChapter": {
+              "methods": [
+                "getChapter"
+              ]
+            },
+            "CreateChapter": {
+              "methods": [
+                "createChapter"
+              ]
+            },
+            "UpdateChapter": {
+              "methods": [
+                "updateChapter"
+              ]
+            },
+            "DeleteChapter": {
+              "methods": [
+                "deleteChapter"
+              ]
+            },
+            "ListChapters": {
+              "methods": [
+                "listChapters",
+                "listChaptersStream",
+                "listChaptersAsync"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
