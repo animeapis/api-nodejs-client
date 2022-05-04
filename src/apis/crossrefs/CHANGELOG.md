@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0](https://www.github.com/animeapis/api-nodejs-client/compare/crossrefs-v1.3.0...crossrefs-v1.4.0) (2022-05-03)
+
+
+### Features
+
+* BatchCreateCrossRefs ([5588690](https://www.github.com/animeapis/api-nodejs-client/commit/55886906d6863958f36fcafbd9c4a4eb3f7a405c))
+
+
+### Bug Fixes
+
+* BatchCreateCrossRefsRequest typo ([e1f76f2](https://www.github.com/animeapis/api-nodejs-client/commit/e1f76f2af3a48b1f6ac52b87556485b8352ed8c1))
+
 ## [1.3.0](https://www.github.com/animeapis/api-nodejs-client/compare/crossrefs-v1.2.1...crossrefs-v1.3.0) (2022-01-16)
 
 
