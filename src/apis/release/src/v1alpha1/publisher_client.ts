@@ -649,6 +649,8 @@ export class PublisherClient {
  *   The request object that will be sent.
  * @param {string} request.name
  *   The name of the release to publish.
+ * @param {animeshon.release.v1alpha1.ReleaseStrategy} request.strategy
+ *   The release strategy to use.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.
@@ -793,6 +795,8 @@ export class PublisherClient {
  *   The request object that will be sent.
  * @param {string} request.name
  *   The name of the release to schedule.
+ * @param {animeshon.release.v1alpha1.ReleaseStrategy} request.strategy
+ *   The release strategy to use.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
  * @returns {Promise} - The promise which resolves to an array.

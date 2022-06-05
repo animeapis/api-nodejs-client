@@ -24,6 +24,10 @@ function main() {
    *  The name of the release to schedule.
    */
   // const name = 'abc123'
+  /**
+   *  The release strategy to use.
+   */
+  // const strategy = {}
 
   // Imports the Release library
   const {PublisherClient} = require('@animeapis/release').v1alpha1;
