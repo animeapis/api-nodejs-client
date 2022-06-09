@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.0](https://www.github.com/animeapis/api-nodejs-client/compare/release-v1.1.0...release-v1.2.0) (2022-06-07)
+
+
+### Features
+
+* **release:** add release strategy ([99cefc0](https://www.github.com/animeapis/api-nodejs-client/commit/99cefc05688e7d805d8922768276bc03531011c0))
+* **release:** add resource reference ([dc14a3a](https://www.github.com/animeapis/api-nodejs-client/commit/dc14a3a5ff48bd409da200775c2b26732b9d3885))
+* **release:** add title, description, and labels ([728cd91](https://www.github.com/animeapis/api-nodejs-client/commit/728cd916de831ea3369667a5a0fb463ed43ad24b))
+
 ## [1.1.0](https://www.github.com/animeapis/api-nodejs-client/compare/release-v1.0.2...release-v1.1.0) (2022-01-16)
 
 
