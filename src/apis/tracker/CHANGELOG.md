@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://www.github.com/animeapis/api-nodejs-client/compare/tracker-v1.3.0...tracker-v1.4.0) (2022-06-19)
+
+
+### Features
+
+* **all:** better support for GraphQL and OpenAPI ([8a0b8ea](https://www.github.com/animeapis/api-nodejs-client/commit/8a0b8eac4262d9fc4ff76884014ebbc36dd3f0f3))
+
 ## [1.3.0](https://www.github.com/animeapis/api-nodejs-client/compare/tracker-v1.2.1...tracker-v1.3.0) (2022-01-16)
 
 
