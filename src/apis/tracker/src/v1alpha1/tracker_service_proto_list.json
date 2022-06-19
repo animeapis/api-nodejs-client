@@ -1,3 +1,6 @@
 [
-  "../../protos/animeshon/tracker/v1alpha1/tracker.proto"
+  "../../protos/animeshon/tracker/v1alpha1/tracker.proto",
+  "../../protos/graphql/options.proto",
+  "../../protos/openapi/v3/annotations.proto",
+  "../../protos/openapi/v3/openapi.proto"
 ]
