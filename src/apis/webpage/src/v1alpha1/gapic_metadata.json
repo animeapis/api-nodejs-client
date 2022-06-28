@@ -1,0 +1,77 @@
+{
+  "schema": "1.0",
+  "comment": "This file maps proto services/RPCs to the corresponding library clients/methods",
+  "language": "typescript",
+  "protoPackage": "animeshon.webpage.v1alpha1",
+  "libraryPackage": "@animeapis/webpage",
+  "services": {
+    "Archive": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "ArchiveClient",
+          "rpcs": {
+            "GetPage": {
+              "methods": [
+                "getPage"
+              ]
+            },
+            "ImportPage": {
+              "methods": [
+                "importPage"
+              ]
+            },
+            "CreatePage": {
+              "methods": [
+                "createPage"
+              ]
+            },
+            "DeletePage": {
+              "methods": [
+                "deletePage"
+              ]
+            },
+            "ListPages": {
+              "methods": [
+                "listPages",
+                "listPagesStream",
+                "listPagesAsync"
+              ]
+            }
+          }
+        },
+        "grpc-fallback": {
+          "libraryClient": "ArchiveClient",
+          "rpcs": {
+            "GetPage": {
+              "methods": [
+                "getPage"
+              ]
+            },
+            "ImportPage": {
+              "methods": [
+                "importPage"
+              ]
+            },
+            "CreatePage": {
+              "methods": [
+                "createPage"
+              ]
+            },
+            "DeletePage": {
+              "methods": [
+                "deletePage"
+              ]
+            },
+            "ListPages": {
+              "methods": [
+                "listPages",
+                "listPagesStream",
+                "listPagesAsync"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
