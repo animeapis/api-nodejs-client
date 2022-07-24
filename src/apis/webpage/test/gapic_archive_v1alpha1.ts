@@ -257,8 +257,8 @@ describe('v1alpha1.ArchiveClient', () => {
         });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.ImportPageRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
             const expectedOptions = {
                 otherArgs: {
                     headers: {
@@ -281,8 +281,8 @@ describe('v1alpha1.ArchiveClient', () => {
         });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.ImportPageRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
             const expectedOptions = {
                 otherArgs: {
                     headers: {
@@ -316,8 +316,8 @@ describe('v1alpha1.ArchiveClient', () => {
         });
             client.initialize();
             const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.ImportPageRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
             const expectedOptions = {
                 otherArgs: {
                     headers: {

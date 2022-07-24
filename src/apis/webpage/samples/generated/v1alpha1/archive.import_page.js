@@ -15,15 +15,23 @@
 
 'use strict';
 
-function main(name) {
+function main(parent, uri) {
   // [START webpage_v1alpha1_generated_Archive_ImportPage_async]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
   /**
-   *  The name of the page to retrieve.
+   *  The site parent of the page.
    */
-  // const name = 'abc123'
+  // const parent = 'abc123'
+  /**
+   *  A publicly-accessible page HTTP/HTTPS URL. When fetching pages from
+   *  HTTP/HTTPS URLs, Animeshon cannot guarantee that the request will be
+   *  completed. Your request may fail if the specified host denies the
+   *  request (e.g. due to request throttling or DoS prevention), or if
+   *  Animeshon throttles requests to the site for abuse prevention.
+   */
+  // const uri = 'abc123'
   /**
    *  The web cache options to apply to the import request.
    */
@@ -38,7 +46,8 @@ function main(name) {
   async function callImportPage() {
     // Construct request
     const request = {
-      name,
+      parent,
+      uri,
     };
 
     // Run request

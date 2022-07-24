@@ -357,8 +357,14 @@ export class ArchiveClient {
  *
  * @param {Object} request
  *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the page to retrieve.
+ * @param {string} request.parent
+ *   The site parent of the page.
+ * @param {string} request.uri
+ *   A publicly-accessible page HTTP/HTTPS URL. When fetching pages from
+ *   HTTP/HTTPS URLs, Animeshon cannot guarantee that the request will be
+ *   completed. Your request may fail if the specified host denies the
+ *   request (e.g. due to request throttling or DoS prevention), or if
+ *   Animeshon throttles requests to the site for abuse prevention.
  * @param {animeshon.webpage.v1alpha1.ImportPageRequest.WebCacheOptions} [request.cacheOptions]
  *   The web cache options to apply to the import request.
  * @param {object} [options]
@@ -420,7 +426,7 @@ export class ArchiveClient {
     options.otherArgs.headers[
       'x-goog-request-params'
     ] = gax.routingHeader.fromParams({
-      'name': request.name || '',
+      'parent': request.parent || '',
     });
     this.initialize();
     return this.innerApiCalls.importPage(request, options, callback);
