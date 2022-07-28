@@ -15,6 +15,11 @@
                 "getPage"
               ]
             },
+            "QueryPage": {
+              "methods": [
+                "queryPage"
+              ]
+            },
             "CreatePage": {
               "methods": [
                 "createPage"
@@ -45,6 +50,11 @@
             "GetPage": {
               "methods": [
                 "getPage"
+              ]
+            },
+            "QueryPage": {
+              "methods": [
+                "queryPage"
               ]
             },
             "CreatePage": {

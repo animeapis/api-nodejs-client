@@ -249,6 +249,90 @@ describe('v1alpha1.ArchiveClient', () => {
         });
     });
 
+    describe('queryPage', () => {
+        it('invokes queryPage without error', async () => {
+            const client = new archiveModule.v1alpha1.ArchiveClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.QueryPageRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.QueryPageResponse());
+            client.innerApiCalls.queryPage = stubSimpleCall(expectedResponse);
+            const [response] = await client.queryPage(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.queryPage as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes queryPage without error using callback', async () => {
+            const client = new archiveModule.v1alpha1.ArchiveClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.QueryPageRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.QueryPageResponse());
+            client.innerApiCalls.queryPage = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.queryPage(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.webpage.v1alpha1.IQueryPageResponse|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.queryPage as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes queryPage with error', async () => {
+            const client = new archiveModule.v1alpha1.ArchiveClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.QueryPageRequest());
+            request.name = '';
+            const expectedHeaderRequestParams = "name=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.queryPage = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.queryPage(request), expectedError);
+            assert((client.innerApiCalls.queryPage as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
     describe('createPage', () => {
         it('invokes createPage without error', async () => {
             const client = new archiveModule.v1alpha1.ArchiveClient({

@@ -200,7 +200,7 @@ export class ArchiveClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const archiveStubMethods =
-        ['getPage', 'listPages', 'createPage', 'importPage', 'deletePage'];
+        ['getPage', 'listPages', 'queryPage', 'createPage', 'importPage', 'deletePage'];
     for (const methodName of archiveStubMethods) {
       const callPromise = this.archiveStub.then(
         stub => (...args: Array<{}>) => {
@@ -352,6 +352,78 @@ export class ArchiveClient {
     });
     this.initialize();
     return this.innerApiCalls.getPage(request, options, callback);
+  }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the page to query.
+ * @param {string} request.query
+ *   The query to perform on the document in declarative query language.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [QueryPageResponse]{@link animeshon.webpage.v1alpha1.QueryPageResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/archive.query_page.js</caption>
+ * region_tag:webpage_v1alpha1_generated_Archive_QueryPage_async
+ */
+  queryPage(
+      request?: protos.animeshon.webpage.v1alpha1.IQueryPageRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.webpage.v1alpha1.IQueryPageResponse,
+        protos.animeshon.webpage.v1alpha1.IQueryPageRequest|undefined, {}|undefined
+      ]>;
+  queryPage(
+      request: protos.animeshon.webpage.v1alpha1.IQueryPageRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.webpage.v1alpha1.IQueryPageResponse,
+          protos.animeshon.webpage.v1alpha1.IQueryPageRequest|null|undefined,
+          {}|null|undefined>): void;
+  queryPage(
+      request: protos.animeshon.webpage.v1alpha1.IQueryPageRequest,
+      callback: Callback<
+          protos.animeshon.webpage.v1alpha1.IQueryPageResponse,
+          protos.animeshon.webpage.v1alpha1.IQueryPageRequest|null|undefined,
+          {}|null|undefined>): void;
+  queryPage(
+      request?: protos.animeshon.webpage.v1alpha1.IQueryPageRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.animeshon.webpage.v1alpha1.IQueryPageResponse,
+          protos.animeshon.webpage.v1alpha1.IQueryPageRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.animeshon.webpage.v1alpha1.IQueryPageResponse,
+          protos.animeshon.webpage.v1alpha1.IQueryPageRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.animeshon.webpage.v1alpha1.IQueryPageResponse,
+        protos.animeshon.webpage.v1alpha1.IQueryPageRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'name': request.name || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.queryPage(request, options, callback);
   }
 /**
  *
