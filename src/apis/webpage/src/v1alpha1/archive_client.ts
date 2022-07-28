@@ -200,7 +200,7 @@ export class ArchiveClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const archiveStubMethods =
-        ['getPage', 'listPages', 'importPage', 'createPage', 'deletePage'];
+        ['getPage', 'listPages', 'createPage', 'importPage', 'deletePage'];
     for (const methodName of archiveStubMethods) {
       const callPromise = this.archiveStub.then(
         stub => (...args: Array<{}>) => {
@@ -358,6 +358,78 @@ export class ArchiveClient {
  * @param {Object} request
  *   The request object that will be sent.
  * @param {string} request.parent
+ *   The parent this page belongs to.
+ * @param {animeshon.webpage.v1alpha1.Page} request.page
+ *   The page to create.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Page]{@link animeshon.webpage.v1alpha1.Page}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/archive.create_page.js</caption>
+ * region_tag:webpage_v1alpha1_generated_Archive_CreatePage_async
+ */
+  createPage(
+      request?: protos.animeshon.webpage.v1alpha1.ICreatePageRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.webpage.v1alpha1.IPage,
+        protos.animeshon.webpage.v1alpha1.ICreatePageRequest|undefined, {}|undefined
+      ]>;
+  createPage(
+      request: protos.animeshon.webpage.v1alpha1.ICreatePageRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.webpage.v1alpha1.IPage,
+          protos.animeshon.webpage.v1alpha1.ICreatePageRequest|null|undefined,
+          {}|null|undefined>): void;
+  createPage(
+      request: protos.animeshon.webpage.v1alpha1.ICreatePageRequest,
+      callback: Callback<
+          protos.animeshon.webpage.v1alpha1.IPage,
+          protos.animeshon.webpage.v1alpha1.ICreatePageRequest|null|undefined,
+          {}|null|undefined>): void;
+  createPage(
+      request?: protos.animeshon.webpage.v1alpha1.ICreatePageRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.animeshon.webpage.v1alpha1.IPage,
+          protos.animeshon.webpage.v1alpha1.ICreatePageRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.animeshon.webpage.v1alpha1.IPage,
+          protos.animeshon.webpage.v1alpha1.ICreatePageRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.animeshon.webpage.v1alpha1.IPage,
+        protos.animeshon.webpage.v1alpha1.ICreatePageRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'parent': request.parent || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.createPage(request, options, callback);
+  }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.parent
  *   The site parent of the page.
  * @param {string} request.uri
  *   A publicly-accessible page HTTP/HTTPS URL. When fetching pages from
@@ -430,78 +502,6 @@ export class ArchiveClient {
     });
     this.initialize();
     return this.innerApiCalls.importPage(request, options, callback);
-  }
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.parent
- *   The parent this page belongs to.
- * @param {animeshon.webpage.v1alpha1.Page} request.page
- *   The page to create.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [Page]{@link animeshon.webpage.v1alpha1.Page}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example <caption>include:samples/generated/v1alpha1/archive.create_page.js</caption>
- * region_tag:webpage_v1alpha1_generated_Archive_CreatePage_async
- */
-  createPage(
-      request?: protos.animeshon.webpage.v1alpha1.ICreatePageRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.webpage.v1alpha1.IPage,
-        protos.animeshon.webpage.v1alpha1.ICreatePageRequest|undefined, {}|undefined
-      ]>;
-  createPage(
-      request: protos.animeshon.webpage.v1alpha1.ICreatePageRequest,
-      options: CallOptions,
-      callback: Callback<
-          protos.animeshon.webpage.v1alpha1.IPage,
-          protos.animeshon.webpage.v1alpha1.ICreatePageRequest|null|undefined,
-          {}|null|undefined>): void;
-  createPage(
-      request: protos.animeshon.webpage.v1alpha1.ICreatePageRequest,
-      callback: Callback<
-          protos.animeshon.webpage.v1alpha1.IPage,
-          protos.animeshon.webpage.v1alpha1.ICreatePageRequest|null|undefined,
-          {}|null|undefined>): void;
-  createPage(
-      request?: protos.animeshon.webpage.v1alpha1.ICreatePageRequest,
-      optionsOrCallback?: CallOptions|Callback<
-          protos.animeshon.webpage.v1alpha1.IPage,
-          protos.animeshon.webpage.v1alpha1.ICreatePageRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.animeshon.webpage.v1alpha1.IPage,
-          protos.animeshon.webpage.v1alpha1.ICreatePageRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.animeshon.webpage.v1alpha1.IPage,
-        protos.animeshon.webpage.v1alpha1.ICreatePageRequest|undefined, {}|undefined
-      ]>|void {
-    request = request || {};
-    let options: CallOptions;
-    if (typeof optionsOrCallback === 'function' && callback === undefined) {
-      callback = optionsOrCallback;
-      options = {};
-    }
-    else {
-      options = optionsOrCallback as CallOptions;
-    }
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'parent': request.parent || '',
-    });
-    this.initialize();
-    return this.innerApiCalls.createPage(request, options, callback);
   }
 /**
  *

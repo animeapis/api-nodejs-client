@@ -15,14 +15,14 @@
                 "getPage"
               ]
             },
-            "ImportPage": {
-              "methods": [
-                "importPage"
-              ]
-            },
             "CreatePage": {
               "methods": [
                 "createPage"
+              ]
+            },
+            "ImportPage": {
+              "methods": [
+                "importPage"
               ]
             },
             "DeletePage": {
@@ -47,14 +47,14 @@
                 "getPage"
               ]
             },
-            "ImportPage": {
-              "methods": [
-                "importPage"
-              ]
-            },
             "CreatePage": {
               "methods": [
                 "createPage"
+              ]
+            },
+            "ImportPage": {
+              "methods": [
+                "importPage"
               ]
             },
             "DeletePage": {

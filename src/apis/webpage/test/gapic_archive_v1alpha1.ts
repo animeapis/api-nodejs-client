@@ -249,90 +249,6 @@ describe('v1alpha1.ArchiveClient', () => {
         });
     });
 
-    describe('importPage', () => {
-        it('invokes importPage without error', async () => {
-            const client = new archiveModule.v1alpha1.ArchiveClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-            client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.ImportPageRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.ImportPageResponse());
-            client.innerApiCalls.importPage = stubSimpleCall(expectedResponse);
-            const [response] = await client.importPage(request);
-            assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.importPage as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
-        });
-
-        it('invokes importPage without error using callback', async () => {
-            const client = new archiveModule.v1alpha1.ArchiveClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-            client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.ImportPageRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.ImportPageResponse());
-            client.innerApiCalls.importPage = stubSimpleCallWithCallback(expectedResponse);
-            const promise = new Promise((resolve, reject) => {
-                 client.importPage(
-                    request,
-                    (err?: Error|null, result?: protos.animeshon.webpage.v1alpha1.IImportPageResponse|null) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(result);
-                        }
-                    });
-            });
-            const response = await promise;
-            assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.importPage as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
-        });
-
-        it('invokes importPage with error', async () => {
-            const client = new archiveModule.v1alpha1.ArchiveClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-            client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.ImportPageRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedError = new Error('expected');
-            client.innerApiCalls.importPage = stubSimpleCall(undefined, expectedError);
-            await assert.rejects(client.importPage(request), expectedError);
-            assert((client.innerApiCalls.importPage as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
-        });
-    });
-
     describe('createPage', () => {
         it('invokes createPage without error', async () => {
             const client = new archiveModule.v1alpha1.ArchiveClient({
@@ -413,6 +329,90 @@ describe('v1alpha1.ArchiveClient', () => {
             client.innerApiCalls.createPage = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createPage(request), expectedError);
             assert((client.innerApiCalls.createPage as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('importPage', () => {
+        it('invokes importPage without error', async () => {
+            const client = new archiveModule.v1alpha1.ArchiveClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.ImportPageRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.ImportPageResponse());
+            client.innerApiCalls.importPage = stubSimpleCall(expectedResponse);
+            const [response] = await client.importPage(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.importPage as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes importPage without error using callback', async () => {
+            const client = new archiveModule.v1alpha1.ArchiveClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.ImportPageRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedResponse = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.ImportPageResponse());
+            client.innerApiCalls.importPage = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.importPage(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.webpage.v1alpha1.IImportPageResponse|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.importPage as SinonStub)
+                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+        });
+
+        it('invokes importPage with error', async () => {
+            const client = new archiveModule.v1alpha1.ArchiveClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.ImportPageRequest());
+            request.parent = '';
+            const expectedHeaderRequestParams = "parent=";
+            const expectedOptions = {
+                otherArgs: {
+                    headers: {
+                        'x-goog-request-params': expectedHeaderRequestParams,
+                    },
+                },
+            };
+            const expectedError = new Error('expected');
+            client.innerApiCalls.importPage = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.importPage(request), expectedError);
+            assert((client.innerApiCalls.importPage as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
     });

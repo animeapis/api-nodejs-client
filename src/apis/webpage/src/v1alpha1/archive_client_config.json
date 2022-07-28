@@ -28,11 +28,11 @@
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "ImportPage": {
+        "CreatePage": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "CreatePage": {
+        "ImportPage": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
