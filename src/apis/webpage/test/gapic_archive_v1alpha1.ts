@@ -41,6 +41,15 @@ function stubSimpleCallWithCallback<ResponseType>(response?: ResponseType, error
     return error ? sinon.stub().callsArgWith(2, error) : sinon.stub().callsArgWith(2, null, response);
 }
 
+function stubBidiStreamingCall<ResponseType>(response?: ResponseType, error?: Error) {
+    const transformStub = error ? sinon.stub().callsArgWith(2, error) : sinon.stub().callsArgWith(2, null, response);
+    const mockStream = new PassThrough({
+        objectMode: true,
+        transform: transformStub,
+    });
+    return sinon.stub().returns(mockStream);
+}
+
 function stubPageStreamingCall<ResponseType>(responses?: ResponseType[], error?: Error) {
     const pagingStub = sinon.stub();
     if (responses) {
@@ -582,6 +591,62 @@ describe('v1alpha1.ArchiveClient', () => {
             await assert.rejects(client.deletePage(request), expectedError);
             assert((client.innerApiCalls.deletePage as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+    });
+
+    describe('query', () => {
+        it('invokes query without error', async () => {
+            const client = new archiveModule.v1alpha1.ArchiveClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.QueryRequest());
+            const expectedResponse = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.QueryResponse());
+            client.innerApiCalls.query = stubBidiStreamingCall(expectedResponse);
+            const stream = client.query();
+            const promise = new Promise((resolve, reject) => {
+                stream.on('data', (response: protos.animeshon.webpage.v1alpha1.QueryResponse) => {
+                    resolve(response);
+                });
+                stream.on('error', (err: Error) => {
+                    reject(err);
+                });
+                stream.write(request);
+                stream.end();
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            assert((client.innerApiCalls.query as SinonStub)
+                .getCall(0).calledWithExactly(undefined));
+            assert.deepStrictEqual(((stream as unknown as PassThrough)
+                ._transform as SinonStub).getCall(0).args[0], request);
+        });
+
+        it('invokes query with error', async () => {
+            const client = new archiveModule.v1alpha1.ArchiveClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.QueryRequest());const expectedError = new Error('expected');
+            client.innerApiCalls.query = stubBidiStreamingCall(undefined, expectedError);
+            const stream = client.query();
+            const promise = new Promise((resolve, reject) => {
+                stream.on('data', (response: protos.animeshon.webpage.v1alpha1.QueryResponse) => {
+                    resolve(response);
+                });
+                stream.on('error', (err: Error) => {
+                    reject(err);
+                });
+                stream.write(request);
+                stream.end();
+            });
+            await assert.rejects(promise, expectedError);
+            assert((client.innerApiCalls.query as SinonStub)
+                .getCall(0).calledWithExactly(undefined));
+            assert.deepStrictEqual(((stream as unknown as PassThrough)
+                ._transform as SinonStub).getCall(0).args[0], request);
         });
     });
 

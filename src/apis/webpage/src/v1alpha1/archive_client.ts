@@ -157,6 +157,12 @@ export class ArchiveClient {
           new this._gaxModule.PageDescriptor('pageToken', 'nextPageToken', 'pages')
     };
 
+    // Some of the methods on this service provide streaming responses.
+    // Provide descriptors for these.
+    this.descriptors.stream = {
+      query: new this._gaxModule.StreamDescriptor(gax.StreamType.BIDI_STREAMING)
+    };
+
     // Put together the default options sent with requests.
     this._defaults = this._gaxGrpc.constructSettings(
         'animeshon.webpage.v1alpha1.Archive', gapicConfig as gax.ClientConfig,
@@ -200,7 +206,7 @@ export class ArchiveClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const archiveStubMethods =
-        ['getPage', 'listPages', 'queryPage', 'createPage', 'importPage', 'deletePage'];
+        ['query', 'getPage', 'listPages', 'queryPage', 'createPage', 'importPage', 'deletePage'];
     for (const methodName of archiveStubMethods) {
       const callPromise = this.archiveStub.then(
         stub => (...args: Array<{}>) => {
@@ -216,6 +222,7 @@ export class ArchiveClient {
 
       const descriptor =
         this.descriptors.page[methodName] ||
+        this.descriptors.stream[methodName] ||
         undefined;
       const apiCall = this._gaxModule.createApiCall(
         callPromise,
@@ -644,6 +651,27 @@ export class ArchiveClient {
     });
     this.initialize();
     return this.innerApiCalls.deletePage(request, options, callback);
+  }
+
+/**
+ *
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Stream}
+ *   An object stream which is both readable and writable. It accepts objects
+ *   representing [QueryRequest]{@link animeshon.webpage.v1alpha1.QueryRequest} for write() method, and
+ *   will emit objects representing [QueryResponse]{@link animeshon.webpage.v1alpha1.QueryResponse} on 'data' event asynchronously.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#bi-directional-streaming)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/archive.query.js</caption>
+ * region_tag:webpage_v1alpha1_generated_Archive_Query_async
+ */
+  query(
+      options?: CallOptions):
+    gax.CancellableStream {
+    this.initialize();
+    return this.innerApiCalls.query(options);
   }
 
  /**

@@ -15,19 +15,19 @@
 
 'use strict';
 
-function main(name, query1) {
-  // [START webpage_v1alpha1_generated_Archive_QueryPage_async]
+function main(query1) {
+  // [START webpage_v1alpha1_generated_Archive_Query_async]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
    */
   /**
-   *  The name of the page to query.
-   */
-  // const name = 'abc123'
-  /**
-   *  The query to perform on the document in declarative query language.
+   *  The query to perform on the matching documents in FQL.
    */
   // const query = 'abc123'
+  /**
+   *  The batch list of page resource names to be used for evaluation.
+   */
+  // const pages = 'abc123'
 
   // Imports the Webpage library
   const {ArchiveClient} = require('@animeapis/webpage').v1alpha1;
@@ -35,20 +35,23 @@ function main(name, query1) {
   // Instantiates a client
   const webpageClient = new ArchiveClient();
 
-  async function callQueryPage() {
+  async function callQuery() {
     // Construct request
     const request = {
-      name,
       query1,
     };
 
     // Run request
-    const response = await webpageClient.queryPage(request);
-    console.log(response);
+    const stream = await webpageClient.query();
+    stream.on('data', (response) => { console.log(response) });
+    stream.on('error', (err) => { throw(err) });
+    stream.on('end', () => { /* API call completed */ });
+    stream.write(request);
+    stream.end(); 
   }
 
-  callQueryPage();
-  // [END webpage_v1alpha1_generated_Archive_QueryPage_async]
+  callQuery();
+  // [END webpage_v1alpha1_generated_Archive_Query_async]
 }
 
 process.on('unhandledRejection', err => {

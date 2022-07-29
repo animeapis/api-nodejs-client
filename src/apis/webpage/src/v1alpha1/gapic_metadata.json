@@ -35,6 +35,11 @@
                 "deletePage"
               ]
             },
+            "Query": {
+              "methods": [
+                "query"
+              ]
+            },
             "ListPages": {
               "methods": [
                 "listPages",

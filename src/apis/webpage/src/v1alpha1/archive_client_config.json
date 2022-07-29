@@ -20,6 +20,10 @@
         }
       },
       "methods": {
+        "Query": {
+          "retry_codes_name": "non_idempotent",
+          "retry_params_name": "default"
+        },
         "GetPage": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
