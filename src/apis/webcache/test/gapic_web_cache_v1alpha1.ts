@@ -125,12 +125,27 @@ describe('v1alpha1.WebCacheClient', () => {
         assert(client.webCacheStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new webcacheModule.v1alpha1.WebCacheClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.webCacheStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new webcacheModule.v1alpha1.WebCacheClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.webCacheStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -223,6 +238,18 @@ describe('v1alpha1.WebCacheClient', () => {
             assert((client.innerApiCalls.createCache as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes createCache with closed client', async () => {
+            const client = new webcacheModule.v1alpha1.WebCacheClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.CreateCacheRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createCache(request), expectedError);
+        });
     });
 
     describe('getCache', () => {
@@ -307,6 +334,19 @@ describe('v1alpha1.WebCacheClient', () => {
             assert((client.innerApiCalls.getCache as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getCache with closed client', async () => {
+            const client = new webcacheModule.v1alpha1.WebCacheClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.GetCacheRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getCache(request), expectedError);
+        });
     });
 
     describe('deleteCache', () => {
@@ -390,6 +430,19 @@ describe('v1alpha1.WebCacheClient', () => {
             await assert.rejects(client.deleteCache(request), expectedError);
             assert((client.innerApiCalls.deleteCache as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteCache with closed client', async () => {
+            const client = new webcacheModule.v1alpha1.WebCacheClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.DeleteCacheRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteCache(request), expectedError);
         });
     });
 

@@ -1,0 +1,367 @@
+{
+  "clientLibrary": {
+    "name": "nodejs-knowledge",
+    "version": "0.1.0",
+    "language": "TYPESCRIPT",
+    "apis": [
+      {
+        "id": "animeshon.knowledge.v1alpha1",
+        "version": "v1alpha1"
+      }
+    ]
+  },
+  "snippets": [
+    {
+      "regionTag": "knowledge_v1alpha1_generated_Knowledge_GetContribution_async",
+      "title": "Knowledge getContribution Sample",
+      "origin": "API_DEFINITION",
+      "description": "",
+      "canonical": true,
+      "file": "knowledge.get_contribution.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 51,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "GetContribution",
+        "fullName": "animeshon.knowledge.v1alpha1.Knowledge.GetContribution",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".animeshon.knowledge.v1alpha1.Contribution",
+        "client": {
+          "shortName": "KnowledgeClient",
+          "fullName": "animeshon.knowledge.v1alpha1.KnowledgeClient"
+        },
+        "method": {
+          "shortName": "GetContribution",
+          "fullName": "animeshon.knowledge.v1alpha1.Knowledge.GetContribution",
+          "service": {
+            "shortName": "Knowledge",
+            "fullName": "animeshon.knowledge.v1alpha1.Knowledge"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "knowledge_v1alpha1_generated_Knowledge_ListContributions_async",
+      "title": "Knowledge listContributions Sample",
+      "origin": "API_DEFINITION",
+      "description": "",
+      "canonical": true,
+      "file": "knowledge.list_contributions.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 65,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "ListContributions",
+        "fullName": "animeshon.knowledge.v1alpha1.Knowledge.ListContributions",
+        "async": true,
+        "parameters": [
+          {
+            "name": "parent",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "page_size",
+            "type": "TYPE_INT32"
+          },
+          {
+            "name": "page_token",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "filter",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".animeshon.knowledge.v1alpha1.ListContributionsResponse",
+        "client": {
+          "shortName": "KnowledgeClient",
+          "fullName": "animeshon.knowledge.v1alpha1.KnowledgeClient"
+        },
+        "method": {
+          "shortName": "ListContributions",
+          "fullName": "animeshon.knowledge.v1alpha1.Knowledge.ListContributions",
+          "service": {
+            "shortName": "Knowledge",
+            "fullName": "animeshon.knowledge.v1alpha1.Knowledge"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "knowledge_v1alpha1_generated_Knowledge_CreateContribution_async",
+      "title": "Knowledge createContribution Sample",
+      "origin": "API_DEFINITION",
+      "description": "",
+      "canonical": true,
+      "file": "knowledge.create_contribution.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 56,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "CreateContribution",
+        "fullName": "animeshon.knowledge.v1alpha1.Knowledge.CreateContribution",
+        "async": true,
+        "parameters": [
+          {
+            "name": "parent",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "contribution",
+            "type": ".animeshon.knowledge.v1alpha1.Contribution"
+          },
+          {
+            "name": "changes",
+            "type": ".animeshon.knowledge.v1alpha1.ContributionChanges"
+          }
+        ],
+        "resultType": ".animeshon.knowledge.v1alpha1.Contribution",
+        "client": {
+          "shortName": "KnowledgeClient",
+          "fullName": "animeshon.knowledge.v1alpha1.KnowledgeClient"
+        },
+        "method": {
+          "shortName": "CreateContribution",
+          "fullName": "animeshon.knowledge.v1alpha1.Knowledge.CreateContribution",
+          "service": {
+            "shortName": "Knowledge",
+            "fullName": "animeshon.knowledge.v1alpha1.Knowledge"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "knowledge_v1alpha1_generated_Knowledge_GetContributionChanges_async",
+      "title": "Knowledge getContributionChanges Sample",
+      "origin": "API_DEFINITION",
+      "description": "",
+      "canonical": true,
+      "file": "knowledge.get_contribution_changes.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 51,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "GetContributionChanges",
+        "fullName": "animeshon.knowledge.v1alpha1.Knowledge.GetContributionChanges",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".animeshon.knowledge.v1alpha1.ContributionChanges",
+        "client": {
+          "shortName": "KnowledgeClient",
+          "fullName": "animeshon.knowledge.v1alpha1.KnowledgeClient"
+        },
+        "method": {
+          "shortName": "GetContributionChanges",
+          "fullName": "animeshon.knowledge.v1alpha1.Knowledge.GetContributionChanges",
+          "service": {
+            "shortName": "Knowledge",
+            "fullName": "animeshon.knowledge.v1alpha1.Knowledge"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "knowledge_v1alpha1_generated_Knowledge_ReviewContribution_async",
+      "title": "Knowledge reviewContribution Sample",
+      "origin": "API_DEFINITION",
+      "description": " ReviewContribution allows moderators or the owner to modify and correct the contribution while in the PENDING or DRAFT state",
+      "canonical": true,
+      "file": "knowledge.review_contribution.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 63,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "ReviewContribution",
+        "fullName": "animeshon.knowledge.v1alpha1.Knowledge.ReviewContribution",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "comment",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "changes",
+            "type": ".animeshon.knowledge.v1alpha1.ContributionChanges"
+          },
+          {
+            "name": "discards",
+            "type": ".animeshon.knowledge.v1alpha1.ContributionChanges"
+          }
+        ],
+        "resultType": ".animeshon.knowledge.v1alpha1.Contribution",
+        "client": {
+          "shortName": "KnowledgeClient",
+          "fullName": "animeshon.knowledge.v1alpha1.KnowledgeClient"
+        },
+        "method": {
+          "shortName": "ReviewContribution",
+          "fullName": "animeshon.knowledge.v1alpha1.Knowledge.ReviewContribution",
+          "service": {
+            "shortName": "Knowledge",
+            "fullName": "animeshon.knowledge.v1alpha1.Knowledge"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "knowledge_v1alpha1_generated_Knowledge_ApproveContribution_async",
+      "title": "Knowledge approveContribution Sample",
+      "origin": "API_DEFINITION",
+      "description": " ApproveContribution approves the contribution and applies the changes",
+      "canonical": true,
+      "file": "knowledge.approve_contribution.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "ApproveContribution",
+        "fullName": "animeshon.knowledge.v1alpha1.Knowledge.ApproveContribution",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".animeshon.knowledge.v1alpha1.Contribution",
+        "client": {
+          "shortName": "KnowledgeClient",
+          "fullName": "animeshon.knowledge.v1alpha1.KnowledgeClient"
+        },
+        "method": {
+          "shortName": "ApproveContribution",
+          "fullName": "animeshon.knowledge.v1alpha1.Knowledge.ApproveContribution",
+          "service": {
+            "shortName": "Knowledge",
+            "fullName": "animeshon.knowledge.v1alpha1.Knowledge"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "knowledge_v1alpha1_generated_Knowledge_RejectContribution_async",
+      "title": "Knowledge rejectContribution Sample",
+      "origin": "API_DEFINITION",
+      "description": " RejectContribution rejects the contribution and DESTROYS all the changes",
+      "canonical": true,
+      "file": "knowledge.reject_contribution.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "RejectContribution",
+        "fullName": "animeshon.knowledge.v1alpha1.Knowledge.RejectContribution",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".animeshon.knowledge.v1alpha1.Contribution",
+        "client": {
+          "shortName": "KnowledgeClient",
+          "fullName": "animeshon.knowledge.v1alpha1.KnowledgeClient"
+        },
+        "method": {
+          "shortName": "RejectContribution",
+          "fullName": "animeshon.knowledge.v1alpha1.Knowledge.RejectContribution",
+          "service": {
+            "shortName": "Knowledge",
+            "fullName": "animeshon.knowledge.v1alpha1.Knowledge"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "knowledge_v1alpha1_generated_Knowledge_AllocateResourceName_async",
+      "title": "Knowledge allocateResourceName Sample",
+      "origin": "API_DEFINITION",
+      "description": " AllocateResourceName reserves a new resource name for entities which are not already part of Animeshon's Encyclopedia ",
+      "canonical": true,
+      "file": "knowledge.allocate_resource_name.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "AllocateResourceName",
+        "fullName": "animeshon.knowledge.v1alpha1.Knowledge.AllocateResourceName",
+        "async": true,
+        "parameters": [
+          {
+            "name": "kind",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".animeshon.knowledge.v1alpha1.AllocateResourceNameResponse",
+        "client": {
+          "shortName": "KnowledgeClient",
+          "fullName": "animeshon.knowledge.v1alpha1.KnowledgeClient"
+        },
+        "method": {
+          "shortName": "AllocateResourceName",
+          "fullName": "animeshon.knowledge.v1alpha1.Knowledge.AllocateResourceName",
+          "service": {
+            "shortName": "Knowledge",
+            "fullName": "animeshon.knowledge.v1alpha1.Knowledge"
+          }
+        }
+      }
+    }
+  ]
+}

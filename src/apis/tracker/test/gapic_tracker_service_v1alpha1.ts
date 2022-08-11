@@ -141,12 +141,27 @@ describe('v1alpha1.TrackerServiceClient', () => {
         assert(client.trackerServiceStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.trackerServiceStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.trackerServiceStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -263,6 +278,19 @@ describe('v1alpha1.TrackerServiceClient', () => {
             assert((client.innerApiCalls.getTracker as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getTracker with closed client', async () => {
+            const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.GetTrackerRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getTracker(request), expectedError);
+        });
     });
 
     describe('createTracker', () => {
@@ -346,6 +374,19 @@ describe('v1alpha1.TrackerServiceClient', () => {
             await assert.rejects(client.createTracker(request), expectedError);
             assert((client.innerApiCalls.createTracker as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes createTracker with closed client', async () => {
+            const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.CreateTrackerRequest());
+            request.parent = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createTracker(request), expectedError);
         });
     });
 
@@ -434,6 +475,20 @@ describe('v1alpha1.TrackerServiceClient', () => {
             assert((client.innerApiCalls.updateTracker as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateTracker with closed client', async () => {
+            const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.UpdateTrackerRequest());
+            request.tracker = {};
+            request.tracker.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateTracker(request), expectedError);
+        });
     });
 
     describe('deleteTracker', () => {
@@ -517,6 +572,19 @@ describe('v1alpha1.TrackerServiceClient', () => {
             await assert.rejects(client.deleteTracker(request), expectedError);
             assert((client.innerApiCalls.deleteTracker as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteTracker with closed client', async () => {
+            const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.DeleteTrackerRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteTracker(request), expectedError);
         });
     });
 
@@ -602,6 +670,19 @@ describe('v1alpha1.TrackerServiceClient', () => {
             assert((client.innerApiCalls.createActivity as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes createActivity with closed client', async () => {
+            const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.CreateActivityRequest());
+            request.parent = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createActivity(request), expectedError);
+        });
     });
 
     describe('deleteActivity', () => {
@@ -685,6 +766,19 @@ describe('v1alpha1.TrackerServiceClient', () => {
             await assert.rejects(client.deleteActivity(request), expectedError);
             assert((client.innerApiCalls.deleteActivity as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteActivity with closed client', async () => {
+            const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.DeleteActivityRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteActivity(request), expectedError);
         });
     });
 

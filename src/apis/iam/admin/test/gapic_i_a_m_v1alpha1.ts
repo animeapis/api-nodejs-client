@@ -125,12 +125,27 @@ describe('v1alpha1.IAMClient', () => {
         assert(client.iAMStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.iAMStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new iamModule.v1alpha1.IAMClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.iAMStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -247,6 +262,19 @@ describe('v1alpha1.IAMClient', () => {
             assert((client.innerApiCalls.getServiceAccount as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getServiceAccount with closed client', async () => {
+            const client = new iamModule.v1alpha1.IAMClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetServiceAccountRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getServiceAccount(request), expectedError);
+        });
     });
 
     describe('createServiceAccount', () => {
@@ -333,6 +361,20 @@ describe('v1alpha1.IAMClient', () => {
             await assert.rejects(client.createServiceAccount(request), expectedError);
             assert((client.innerApiCalls.createServiceAccount as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes createServiceAccount with closed client', async () => {
+            const client = new iamModule.v1alpha1.IAMClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreateServiceAccountRequest());
+            request.serviceAccount = {};
+            request.serviceAccount.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createServiceAccount(request), expectedError);
         });
     });
 
@@ -421,6 +463,20 @@ describe('v1alpha1.IAMClient', () => {
             assert((client.innerApiCalls.updateServiceAccount as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateServiceAccount with closed client', async () => {
+            const client = new iamModule.v1alpha1.IAMClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdateServiceAccountRequest());
+            request.serviceAccount = {};
+            request.serviceAccount.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateServiceAccount(request), expectedError);
+        });
     });
 
     describe('deleteServiceAccount', () => {
@@ -505,6 +561,19 @@ describe('v1alpha1.IAMClient', () => {
             assert((client.innerApiCalls.deleteServiceAccount as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes deleteServiceAccount with closed client', async () => {
+            const client = new iamModule.v1alpha1.IAMClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeleteServiceAccountRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteServiceAccount(request), expectedError);
+        });
     });
 
     describe('getRole', () => {
@@ -588,6 +657,19 @@ describe('v1alpha1.IAMClient', () => {
             await assert.rejects(client.getRole(request), expectedError);
             assert((client.innerApiCalls.getRole as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes getRole with closed client', async () => {
+            const client = new iamModule.v1alpha1.IAMClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetRoleRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getRole(request), expectedError);
         });
     });
 
@@ -676,6 +758,20 @@ describe('v1alpha1.IAMClient', () => {
             assert((client.innerApiCalls.createRole as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes createRole with closed client', async () => {
+            const client = new iamModule.v1alpha1.IAMClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreateRoleRequest());
+            request.role = {};
+            request.role.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createRole(request), expectedError);
+        });
     });
 
     describe('updateRole', () => {
@@ -763,6 +859,20 @@ describe('v1alpha1.IAMClient', () => {
             assert((client.innerApiCalls.updateRole as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateRole with closed client', async () => {
+            const client = new iamModule.v1alpha1.IAMClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdateRoleRequest());
+            request.role = {};
+            request.role.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateRole(request), expectedError);
+        });
     });
 
     describe('deleteRole', () => {
@@ -847,6 +957,19 @@ describe('v1alpha1.IAMClient', () => {
             assert((client.innerApiCalls.deleteRole as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes deleteRole with closed client', async () => {
+            const client = new iamModule.v1alpha1.IAMClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeleteRoleRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteRole(request), expectedError);
+        });
     });
 
     describe('getPermission', () => {
@@ -930,6 +1053,19 @@ describe('v1alpha1.IAMClient', () => {
             await assert.rejects(client.getPermission(request), expectedError);
             assert((client.innerApiCalls.getPermission as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes getPermission with closed client', async () => {
+            const client = new iamModule.v1alpha1.IAMClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetPermissionRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getPermission(request), expectedError);
         });
     });
 
@@ -1018,6 +1154,20 @@ describe('v1alpha1.IAMClient', () => {
             assert((client.innerApiCalls.createPermission as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes createPermission with closed client', async () => {
+            const client = new iamModule.v1alpha1.IAMClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreatePermissionRequest());
+            request.permission = {};
+            request.permission.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createPermission(request), expectedError);
+        });
     });
 
     describe('updatePermission', () => {
@@ -1105,6 +1255,20 @@ describe('v1alpha1.IAMClient', () => {
             assert((client.innerApiCalls.updatePermission as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updatePermission with closed client', async () => {
+            const client = new iamModule.v1alpha1.IAMClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdatePermissionRequest());
+            request.permission = {};
+            request.permission.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updatePermission(request), expectedError);
+        });
     });
 
     describe('deletePermission', () => {
@@ -1188,6 +1352,19 @@ describe('v1alpha1.IAMClient', () => {
             await assert.rejects(client.deletePermission(request), expectedError);
             assert((client.innerApiCalls.deletePermission as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deletePermission with closed client', async () => {
+            const client = new iamModule.v1alpha1.IAMClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeletePermissionRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deletePermission(request), expectedError);
         });
     });
 

@@ -1,0 +1,415 @@
+{
+  "clientLibrary": {
+    "name": "nodejs-library",
+    "version": "0.1.0",
+    "language": "TYPESCRIPT",
+    "apis": [
+      {
+        "id": "animeshon.library.v1alpha1",
+        "version": "v1alpha1"
+      }
+    ]
+  },
+  "snippets": [
+    {
+      "regionTag": "library_v1alpha1_generated_Library_GetPlaylist_async",
+      "title": "Library getPlaylist Sample",
+      "origin": "API_DEFINITION",
+      "description": "",
+      "canonical": true,
+      "file": "library.get_playlist.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "GetPlaylist",
+        "fullName": "animeshon.library.v1alpha1.Library.GetPlaylist",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".animeshon.library.v1alpha1.Playlist",
+        "client": {
+          "shortName": "LibraryClient",
+          "fullName": "animeshon.library.v1alpha1.LibraryClient"
+        },
+        "method": {
+          "shortName": "GetPlaylist",
+          "fullName": "animeshon.library.v1alpha1.Library.GetPlaylist",
+          "service": {
+            "shortName": "Library",
+            "fullName": "animeshon.library.v1alpha1.Library"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "library_v1alpha1_generated_Library_ListPlaylists_async",
+      "title": "Library listPlaylists Sample",
+      "origin": "API_DEFINITION",
+      "description": "",
+      "canonical": true,
+      "file": "library.list_playlists.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 64,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "ListPlaylists",
+        "fullName": "animeshon.library.v1alpha1.Library.ListPlaylists",
+        "async": true,
+        "parameters": [
+          {
+            "name": "parent",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "page_size",
+            "type": "TYPE_INT32"
+          },
+          {
+            "name": "page_token",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "filter",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".animeshon.library.v1alpha1.ListPlaylistsResponse",
+        "client": {
+          "shortName": "LibraryClient",
+          "fullName": "animeshon.library.v1alpha1.LibraryClient"
+        },
+        "method": {
+          "shortName": "ListPlaylists",
+          "fullName": "animeshon.library.v1alpha1.Library.ListPlaylists",
+          "service": {
+            "shortName": "Library",
+            "fullName": "animeshon.library.v1alpha1.Library"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "library_v1alpha1_generated_Library_CreatePlaylist_async",
+      "title": "Library createPlaylist Sample",
+      "origin": "API_DEFINITION",
+      "description": "",
+      "canonical": true,
+      "file": "library.create_playlist.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 55,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "CreatePlaylist",
+        "fullName": "animeshon.library.v1alpha1.Library.CreatePlaylist",
+        "async": true,
+        "parameters": [
+          {
+            "name": "parent",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "playlist",
+            "type": ".animeshon.library.v1alpha1.Playlist"
+          }
+        ],
+        "resultType": ".animeshon.library.v1alpha1.Playlist",
+        "client": {
+          "shortName": "LibraryClient",
+          "fullName": "animeshon.library.v1alpha1.LibraryClient"
+        },
+        "method": {
+          "shortName": "CreatePlaylist",
+          "fullName": "animeshon.library.v1alpha1.Library.CreatePlaylist",
+          "service": {
+            "shortName": "Library",
+            "fullName": "animeshon.library.v1alpha1.Library"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "library_v1alpha1_generated_Library_UpdatePlaylist_async",
+      "title": "Library updatePlaylist Sample",
+      "origin": "API_DEFINITION",
+      "description": "",
+      "canonical": true,
+      "file": "library.update_playlist.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 55,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "UpdatePlaylist",
+        "fullName": "animeshon.library.v1alpha1.Library.UpdatePlaylist",
+        "async": true,
+        "parameters": [
+          {
+            "name": "playlist",
+            "type": ".animeshon.library.v1alpha1.Playlist"
+          },
+          {
+            "name": "update_mask",
+            "type": ".google.protobuf.FieldMask"
+          }
+        ],
+        "resultType": ".animeshon.library.v1alpha1.Playlist",
+        "client": {
+          "shortName": "LibraryClient",
+          "fullName": "animeshon.library.v1alpha1.LibraryClient"
+        },
+        "method": {
+          "shortName": "UpdatePlaylist",
+          "fullName": "animeshon.library.v1alpha1.Library.UpdatePlaylist",
+          "service": {
+            "shortName": "Library",
+            "fullName": "animeshon.library.v1alpha1.Library"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "library_v1alpha1_generated_Library_DeletePlaylist_async",
+      "title": "Library deletePlaylist Sample",
+      "origin": "API_DEFINITION",
+      "description": "",
+      "canonical": true,
+      "file": "library.delete_playlist.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "DeletePlaylist",
+        "fullName": "animeshon.library.v1alpha1.Library.DeletePlaylist",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".google.protobuf.Empty",
+        "client": {
+          "shortName": "LibraryClient",
+          "fullName": "animeshon.library.v1alpha1.LibraryClient"
+        },
+        "method": {
+          "shortName": "DeletePlaylist",
+          "fullName": "animeshon.library.v1alpha1.Library.DeletePlaylist",
+          "service": {
+            "shortName": "Library",
+            "fullName": "animeshon.library.v1alpha1.Library"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "library_v1alpha1_generated_Library_ListPlaylistItems_async",
+      "title": "Library listPlaylistItems Sample",
+      "origin": "API_DEFINITION",
+      "description": "",
+      "canonical": true,
+      "file": "library.list_playlist_items.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 64,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "ListPlaylistItems",
+        "fullName": "animeshon.library.v1alpha1.Library.ListPlaylistItems",
+        "async": true,
+        "parameters": [
+          {
+            "name": "parent",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "page_size",
+            "type": "TYPE_INT32"
+          },
+          {
+            "name": "page_token",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "filter",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".animeshon.library.v1alpha1.ListPlaylistItemsResponse",
+        "client": {
+          "shortName": "LibraryClient",
+          "fullName": "animeshon.library.v1alpha1.LibraryClient"
+        },
+        "method": {
+          "shortName": "ListPlaylistItems",
+          "fullName": "animeshon.library.v1alpha1.Library.ListPlaylistItems",
+          "service": {
+            "shortName": "Library",
+            "fullName": "animeshon.library.v1alpha1.Library"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "library_v1alpha1_generated_Library_CreatePlaylistItem_async",
+      "title": "Library createPlaylistItem Sample",
+      "origin": "API_DEFINITION",
+      "description": "",
+      "canonical": true,
+      "file": "library.create_playlist_item.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 55,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "CreatePlaylistItem",
+        "fullName": "animeshon.library.v1alpha1.Library.CreatePlaylistItem",
+        "async": true,
+        "parameters": [
+          {
+            "name": "parent",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "item",
+            "type": ".animeshon.library.v1alpha1.PlaylistItem"
+          }
+        ],
+        "resultType": ".animeshon.library.v1alpha1.PlaylistItem",
+        "client": {
+          "shortName": "LibraryClient",
+          "fullName": "animeshon.library.v1alpha1.LibraryClient"
+        },
+        "method": {
+          "shortName": "CreatePlaylistItem",
+          "fullName": "animeshon.library.v1alpha1.Library.CreatePlaylistItem",
+          "service": {
+            "shortName": "Library",
+            "fullName": "animeshon.library.v1alpha1.Library"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "library_v1alpha1_generated_Library_BatchCreatePlaylistItems_async",
+      "title": "Library batchCreatePlaylistItems Sample",
+      "origin": "API_DEFINITION",
+      "description": "",
+      "canonical": true,
+      "file": "library.batch_create_playlist_items.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 55,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "BatchCreatePlaylistItems",
+        "fullName": "animeshon.library.v1alpha1.Library.BatchCreatePlaylistItems",
+        "async": true,
+        "parameters": [
+          {
+            "name": "parent",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "item",
+            "type": "TYPE_MESSAGE[]"
+          }
+        ],
+        "resultType": ".animeshon.library.v1alpha1.BatchCreatePlaylistItemsResponse",
+        "client": {
+          "shortName": "LibraryClient",
+          "fullName": "animeshon.library.v1alpha1.LibraryClient"
+        },
+        "method": {
+          "shortName": "BatchCreatePlaylistItems",
+          "fullName": "animeshon.library.v1alpha1.Library.BatchCreatePlaylistItems",
+          "service": {
+            "shortName": "Library",
+            "fullName": "animeshon.library.v1alpha1.Library"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "library_v1alpha1_generated_Library_DeletePlaylistItem_async",
+      "title": "Library deletePlaylistItem Sample",
+      "origin": "API_DEFINITION",
+      "description": "",
+      "canonical": true,
+      "file": "library.delete_playlist_item.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "DeletePlaylistItem",
+        "fullName": "animeshon.library.v1alpha1.Library.DeletePlaylistItem",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".google.protobuf.Empty",
+        "client": {
+          "shortName": "LibraryClient",
+          "fullName": "animeshon.library.v1alpha1.LibraryClient"
+        },
+        "method": {
+          "shortName": "DeletePlaylistItem",
+          "fullName": "animeshon.library.v1alpha1.Library.DeletePlaylistItem",
+          "service": {
+            "shortName": "Library",
+            "fullName": "animeshon.library.v1alpha1.Library"
+          }
+        }
+      }
+    }
+  ]
+}

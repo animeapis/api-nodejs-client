@@ -134,12 +134,27 @@ describe('v1alpha1.ArchiveClient', () => {
         assert(client.archiveStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new archiveModule.v1alpha1.ArchiveClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.archiveStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new archiveModule.v1alpha1.ArchiveClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.archiveStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -256,6 +271,19 @@ describe('v1alpha1.ArchiveClient', () => {
             assert((client.innerApiCalls.getPage as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getPage with closed client', async () => {
+            const client = new archiveModule.v1alpha1.ArchiveClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.GetPageRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getPage(request), expectedError);
+        });
     });
 
     describe('queryPage', () => {
@@ -339,6 +367,19 @@ describe('v1alpha1.ArchiveClient', () => {
             await assert.rejects(client.queryPage(request), expectedError);
             assert((client.innerApiCalls.queryPage as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes queryPage with closed client', async () => {
+            const client = new archiveModule.v1alpha1.ArchiveClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.QueryPageRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.queryPage(request), expectedError);
         });
     });
 
@@ -424,6 +465,19 @@ describe('v1alpha1.ArchiveClient', () => {
             assert((client.innerApiCalls.createPage as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes createPage with closed client', async () => {
+            const client = new archiveModule.v1alpha1.ArchiveClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.CreatePageRequest());
+            request.parent = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createPage(request), expectedError);
+        });
     });
 
     describe('importPage', () => {
@@ -507,6 +561,19 @@ describe('v1alpha1.ArchiveClient', () => {
             await assert.rejects(client.importPage(request), expectedError);
             assert((client.innerApiCalls.importPage as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes importPage with closed client', async () => {
+            const client = new archiveModule.v1alpha1.ArchiveClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.ImportPageRequest());
+            request.parent = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.importPage(request), expectedError);
         });
     });
 
@@ -592,6 +659,19 @@ describe('v1alpha1.ArchiveClient', () => {
             assert((client.innerApiCalls.deletePage as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes deletePage with closed client', async () => {
+            const client = new archiveModule.v1alpha1.ArchiveClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.DeletePageRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deletePage(request), expectedError);
+        });
     });
 
     describe('query', () => {
@@ -618,7 +698,7 @@ describe('v1alpha1.ArchiveClient', () => {
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
             assert((client.innerApiCalls.query as SinonStub)
-                .getCall(0).calledWithExactly(undefined));
+                .getCall(0).calledWith(null));
             assert.deepStrictEqual(((stream as unknown as PassThrough)
                 ._transform as SinonStub).getCall(0).args[0], request);
         });
@@ -629,7 +709,8 @@ describe('v1alpha1.ArchiveClient', () => {
               projectId: 'bogus',
         });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.QueryRequest());const expectedError = new Error('expected');
+            const request = generateSampleMessage(new protos.animeshon.webpage.v1alpha1.QueryRequest());
+            const expectedError = new Error('expected');
             client.innerApiCalls.query = stubBidiStreamingCall(undefined, expectedError);
             const stream = client.query();
             const promise = new Promise((resolve, reject) => {
@@ -644,7 +725,7 @@ describe('v1alpha1.ArchiveClient', () => {
             });
             await assert.rejects(promise, expectedError);
             assert((client.innerApiCalls.query as SinonStub)
-                .getCall(0).calledWithExactly(undefined));
+                .getCall(0).calledWith(null));
             assert.deepStrictEqual(((stream as unknown as PassThrough)
                 ._transform as SinonStub).getCall(0).args[0], request);
         });

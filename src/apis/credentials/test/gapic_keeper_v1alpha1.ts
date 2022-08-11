@@ -125,12 +125,27 @@ describe('v1alpha1.KeeperClient', () => {
         assert(client.keeperStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.keeperStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new keeperModule.v1alpha1.KeeperClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.keeperStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -247,6 +262,19 @@ describe('v1alpha1.KeeperClient', () => {
             assert((client.innerApiCalls.getCredentials as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getCredentials with closed client', async () => {
+            const client = new keeperModule.v1alpha1.KeeperClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.GetCredentialsRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getCredentials(request), expectedError);
+        });
     });
 
     describe('createCredentials', () => {
@@ -334,6 +362,20 @@ describe('v1alpha1.KeeperClient', () => {
             assert((client.innerApiCalls.createCredentials as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes createCredentials with closed client', async () => {
+            const client = new keeperModule.v1alpha1.KeeperClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.CreateCredentialsRequest());
+            request.credentials = {};
+            request.credentials.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createCredentials(request), expectedError);
+        });
     });
 
     describe('deleteCredentials', () => {
@@ -418,6 +460,19 @@ describe('v1alpha1.KeeperClient', () => {
             assert((client.innerApiCalls.deleteCredentials as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes deleteCredentials with closed client', async () => {
+            const client = new keeperModule.v1alpha1.KeeperClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.DeleteCredentialsRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteCredentials(request), expectedError);
+        });
     });
 
     describe('actAsCredentials', () => {
@@ -501,6 +556,19 @@ describe('v1alpha1.KeeperClient', () => {
             await assert.rejects(client.actAsCredentials(request), expectedError);
             assert((client.innerApiCalls.actAsCredentials as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes actAsCredentials with closed client', async () => {
+            const client = new keeperModule.v1alpha1.KeeperClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ActAsCredentialsRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.actAsCredentials(request), expectedError);
         });
     });
 

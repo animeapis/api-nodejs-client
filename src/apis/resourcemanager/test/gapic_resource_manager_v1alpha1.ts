@@ -125,12 +125,27 @@ describe('v1alpha1.ResourceManagerClient', () => {
         assert(client.resourceManagerStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.resourceManagerStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.resourceManagerStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -247,6 +262,19 @@ describe('v1alpha1.ResourceManagerClient', () => {
             assert((client.innerApiCalls.getOrganization as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getOrganization with closed client', async () => {
+            const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.GetOrganizationRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getOrganization(request), expectedError);
+        });
     });
 
     describe('createOrganization', () => {
@@ -306,6 +334,18 @@ describe('v1alpha1.ResourceManagerClient', () => {
             await assert.rejects(client.createOrganization(request), expectedError);
             assert((client.innerApiCalls.createOrganization as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes createOrganization with closed client', async () => {
+            const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.CreateOrganizationRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createOrganization(request), expectedError);
         });
     });
 
@@ -394,6 +434,20 @@ describe('v1alpha1.ResourceManagerClient', () => {
             assert((client.innerApiCalls.updateOrganization as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateOrganization with closed client', async () => {
+            const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.UpdateOrganizationRequest());
+            request.organization = {};
+            request.organization.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateOrganization(request), expectedError);
+        });
     });
 
     describe('deleteOrganization', () => {
@@ -477,6 +531,19 @@ describe('v1alpha1.ResourceManagerClient', () => {
             await assert.rejects(client.deleteOrganization(request), expectedError);
             assert((client.innerApiCalls.deleteOrganization as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteOrganization with closed client', async () => {
+            const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.DeleteOrganizationRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteOrganization(request), expectedError);
         });
     });
 
@@ -562,6 +629,19 @@ describe('v1alpha1.ResourceManagerClient', () => {
             assert((client.innerApiCalls.getTeam as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getTeam with closed client', async () => {
+            const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.GetTeamRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getTeam(request), expectedError);
+        });
     });
 
     describe('createTeam', () => {
@@ -621,6 +701,18 @@ describe('v1alpha1.ResourceManagerClient', () => {
             await assert.rejects(client.createTeam(request), expectedError);
             assert((client.innerApiCalls.createTeam as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes createTeam with closed client', async () => {
+            const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.CreateTeamRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createTeam(request), expectedError);
         });
     });
 
@@ -709,6 +801,20 @@ describe('v1alpha1.ResourceManagerClient', () => {
             assert((client.innerApiCalls.updateTeam as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateTeam with closed client', async () => {
+            const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.UpdateTeamRequest());
+            request.team = {};
+            request.team.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateTeam(request), expectedError);
+        });
     });
 
     describe('deleteTeam', () => {
@@ -792,6 +898,19 @@ describe('v1alpha1.ResourceManagerClient', () => {
             await assert.rejects(client.deleteTeam(request), expectedError);
             assert((client.innerApiCalls.deleteTeam as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteTeam with closed client', async () => {
+            const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.DeleteTeamRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteTeam(request), expectedError);
         });
     });
 

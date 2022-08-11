@@ -125,12 +125,27 @@ describe('v1alpha1.LibraryClient', () => {
         assert(client.libraryStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.libraryStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new libraryModule.v1alpha1.LibraryClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.libraryStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -247,6 +262,19 @@ describe('v1alpha1.LibraryClient', () => {
             assert((client.innerApiCalls.getPlaylist as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getPlaylist with closed client', async () => {
+            const client = new libraryModule.v1alpha1.LibraryClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.GetPlaylistRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getPlaylist(request), expectedError);
+        });
     });
 
     describe('createPlaylist', () => {
@@ -330,6 +358,19 @@ describe('v1alpha1.LibraryClient', () => {
             await assert.rejects(client.createPlaylist(request), expectedError);
             assert((client.innerApiCalls.createPlaylist as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes createPlaylist with closed client', async () => {
+            const client = new libraryModule.v1alpha1.LibraryClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.CreatePlaylistRequest());
+            request.parent = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createPlaylist(request), expectedError);
         });
     });
 
@@ -418,6 +459,20 @@ describe('v1alpha1.LibraryClient', () => {
             assert((client.innerApiCalls.updatePlaylist as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updatePlaylist with closed client', async () => {
+            const client = new libraryModule.v1alpha1.LibraryClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.UpdatePlaylistRequest());
+            request.playlist = {};
+            request.playlist.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updatePlaylist(request), expectedError);
+        });
     });
 
     describe('deletePlaylist', () => {
@@ -501,6 +556,19 @@ describe('v1alpha1.LibraryClient', () => {
             await assert.rejects(client.deletePlaylist(request), expectedError);
             assert((client.innerApiCalls.deletePlaylist as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deletePlaylist with closed client', async () => {
+            const client = new libraryModule.v1alpha1.LibraryClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.DeletePlaylistRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deletePlaylist(request), expectedError);
         });
     });
 
@@ -586,6 +654,19 @@ describe('v1alpha1.LibraryClient', () => {
             assert((client.innerApiCalls.createPlaylistItem as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes createPlaylistItem with closed client', async () => {
+            const client = new libraryModule.v1alpha1.LibraryClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.CreatePlaylistItemRequest());
+            request.parent = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createPlaylistItem(request), expectedError);
+        });
     });
 
     describe('batchCreatePlaylistItems', () => {
@@ -670,6 +751,19 @@ describe('v1alpha1.LibraryClient', () => {
             assert((client.innerApiCalls.batchCreatePlaylistItems as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes batchCreatePlaylistItems with closed client', async () => {
+            const client = new libraryModule.v1alpha1.LibraryClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.BatchCreatePlaylistItemsRequest());
+            request.parent = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.batchCreatePlaylistItems(request), expectedError);
+        });
     });
 
     describe('deletePlaylistItem', () => {
@@ -753,6 +847,19 @@ describe('v1alpha1.LibraryClient', () => {
             await assert.rejects(client.deletePlaylistItem(request), expectedError);
             assert((client.innerApiCalls.deletePlaylistItem as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deletePlaylistItem with closed client', async () => {
+            const client = new libraryModule.v1alpha1.LibraryClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.DeletePlaylistItemRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deletePlaylistItem(request), expectedError);
         });
     });
 

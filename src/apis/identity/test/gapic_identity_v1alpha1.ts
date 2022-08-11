@@ -125,12 +125,27 @@ describe('v1alpha1.IdentityClient', () => {
         assert(client.identityStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new identityModule.v1alpha1.IdentityClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.identityStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.identityStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -247,6 +262,19 @@ describe('v1alpha1.IdentityClient', () => {
             assert((client.innerApiCalls.getUserProfile as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getUserProfile with closed client', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserProfileRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getUserProfile(request), expectedError);
+        });
     });
 
     describe('getUser', () => {
@@ -331,6 +359,19 @@ describe('v1alpha1.IdentityClient', () => {
             assert((client.innerApiCalls.getUser as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getUser with closed client', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getUser(request), expectedError);
+        });
     });
 
     describe('createUser', () => {
@@ -390,6 +431,18 @@ describe('v1alpha1.IdentityClient', () => {
             await assert.rejects(client.createUser(request), expectedError);
             assert((client.innerApiCalls.createUser as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes createUser with closed client', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.CreateUserRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createUser(request), expectedError);
         });
     });
 
@@ -478,6 +531,20 @@ describe('v1alpha1.IdentityClient', () => {
             assert((client.innerApiCalls.updateUser as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateUser with closed client', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserRequest());
+            request.user = {};
+            request.user.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateUser(request), expectedError);
+        });
     });
 
     describe('deleteUser', () => {
@@ -562,6 +629,19 @@ describe('v1alpha1.IdentityClient', () => {
             assert((client.innerApiCalls.deleteUser as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes deleteUser with closed client', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.DeleteUserRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteUser(request), expectedError);
+        });
     });
 
     describe('getUserSettings', () => {
@@ -645,6 +725,19 @@ describe('v1alpha1.IdentityClient', () => {
             await assert.rejects(client.getUserSettings(request), expectedError);
             assert((client.innerApiCalls.getUserSettings as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes getUserSettings with closed client', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserSettingsRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getUserSettings(request), expectedError);
         });
     });
 
@@ -733,6 +826,20 @@ describe('v1alpha1.IdentityClient', () => {
             assert((client.innerApiCalls.updateUserSettings as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateUserSettings with closed client', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserSettingsRequest());
+            request.settings = {};
+            request.settings.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateUserSettings(request), expectedError);
+        });
     });
 
     describe('getUserNotifications', () => {
@@ -816,6 +923,19 @@ describe('v1alpha1.IdentityClient', () => {
             await assert.rejects(client.getUserNotifications(request), expectedError);
             assert((client.innerApiCalls.getUserNotifications as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes getUserNotifications with closed client', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserNotificationsRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getUserNotifications(request), expectedError);
         });
     });
 
@@ -904,6 +1024,20 @@ describe('v1alpha1.IdentityClient', () => {
             assert((client.innerApiCalls.updateUserNotifications as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateUserNotifications with closed client', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateUserNotificationsRequest());
+            request.notifications = {};
+            request.notifications.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateUserNotifications(request), expectedError);
+        });
     });
 
     describe('getUserDefaults', () => {
@@ -987,6 +1121,19 @@ describe('v1alpha1.IdentityClient', () => {
             await assert.rejects(client.getUserDefaults(request), expectedError);
             assert((client.innerApiCalls.getUserDefaults as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes getUserDefaults with closed client', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetUserDefaultsRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getUserDefaults(request), expectedError);
         });
     });
 
@@ -1072,6 +1219,19 @@ describe('v1alpha1.IdentityClient', () => {
             assert((client.innerApiCalls.getGroup as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getGroup with closed client', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.GetGroupRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getGroup(request), expectedError);
+        });
     });
 
     describe('createGroup', () => {
@@ -1131,6 +1291,18 @@ describe('v1alpha1.IdentityClient', () => {
             await assert.rejects(client.createGroup(request), expectedError);
             assert((client.innerApiCalls.createGroup as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes createGroup with closed client', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.CreateGroupRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createGroup(request), expectedError);
         });
     });
 
@@ -1219,6 +1391,20 @@ describe('v1alpha1.IdentityClient', () => {
             assert((client.innerApiCalls.updateGroup as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateGroup with closed client', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.UpdateGroupRequest());
+            request.group = {};
+            request.group.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateGroup(request), expectedError);
+        });
     });
 
     describe('deleteGroup', () => {
@@ -1302,6 +1488,19 @@ describe('v1alpha1.IdentityClient', () => {
             await assert.rejects(client.deleteGroup(request), expectedError);
             assert((client.innerApiCalls.deleteGroup as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteGroup with closed client', async () => {
+            const client = new identityModule.v1alpha1.IdentityClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.identity.v1alpha1.DeleteGroupRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteGroup(request), expectedError);
         });
     });
 

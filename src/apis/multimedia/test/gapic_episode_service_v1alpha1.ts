@@ -141,12 +141,27 @@ describe('v1alpha1.EpisodeServiceClient', () => {
         assert(client.episodeServiceStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.episodeServiceStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.episodeServiceStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -263,6 +278,19 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             assert((client.innerApiCalls.getEpisode as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getEpisode with closed client', async () => {
+            const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetEpisodeRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getEpisode(request), expectedError);
+        });
     });
 
     describe('createEpisode', () => {
@@ -346,6 +374,19 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             await assert.rejects(client.createEpisode(request), expectedError);
             assert((client.innerApiCalls.createEpisode as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes createEpisode with closed client', async () => {
+            const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateEpisodeRequest());
+            request.parent = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createEpisode(request), expectedError);
         });
     });
 
@@ -434,6 +475,20 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             assert((client.innerApiCalls.updateEpisode as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateEpisode with closed client', async () => {
+            const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateEpisodeRequest());
+            request.episode = {};
+            request.episode.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateEpisode(request), expectedError);
+        });
     });
 
     describe('deleteEpisode', () => {
@@ -517,6 +572,19 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             await assert.rejects(client.deleteEpisode(request), expectedError);
             assert((client.innerApiCalls.deleteEpisode as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteEpisode with closed client', async () => {
+            const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteEpisodeRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteEpisode(request), expectedError);
         });
     });
 

@@ -141,12 +141,27 @@ describe('v1alpha1.ChapterServiceClient', () => {
         assert(client.chapterServiceStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.chapterServiceStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.chapterServiceStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -263,6 +278,19 @@ describe('v1alpha1.ChapterServiceClient', () => {
             assert((client.innerApiCalls.getChapter as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getChapter with closed client', async () => {
+            const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetChapterRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getChapter(request), expectedError);
+        });
     });
 
     describe('createChapter', () => {
@@ -346,6 +374,19 @@ describe('v1alpha1.ChapterServiceClient', () => {
             await assert.rejects(client.createChapter(request), expectedError);
             assert((client.innerApiCalls.createChapter as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes createChapter with closed client', async () => {
+            const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateChapterRequest());
+            request.parent = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createChapter(request), expectedError);
         });
     });
 
@@ -434,6 +475,20 @@ describe('v1alpha1.ChapterServiceClient', () => {
             assert((client.innerApiCalls.updateChapter as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateChapter with closed client', async () => {
+            const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateChapterRequest());
+            request.chapter = {};
+            request.chapter.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateChapter(request), expectedError);
+        });
     });
 
     describe('deleteChapter', () => {
@@ -517,6 +572,19 @@ describe('v1alpha1.ChapterServiceClient', () => {
             await assert.rejects(client.deleteChapter(request), expectedError);
             assert((client.innerApiCalls.deleteChapter as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteChapter with closed client', async () => {
+            const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteChapterRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteChapter(request), expectedError);
         });
     });
 

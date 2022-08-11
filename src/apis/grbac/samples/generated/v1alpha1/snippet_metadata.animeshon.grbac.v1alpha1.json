@@ -1,0 +1,891 @@
+{
+  "clientLibrary": {
+    "name": "nodejs-grbac",
+    "version": "0.1.0",
+    "language": "TYPESCRIPT",
+    "apis": [
+      {
+        "id": "animeshon.grbac.v1alpha1",
+        "version": "v1alpha1"
+      }
+    ]
+  },
+  "snippets": [
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_TestIamPolicy_async",
+      "title": "AccessControl testIamPolicy Sample",
+      "origin": "API_DEFINITION",
+      "description": " Checks whether a member has a specific permission for a specific resource. If not allowed an Unauthorized (403) error will be returned.",
+      "canonical": true,
+      "file": "access_control.test_iam_policy.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 51,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "TestIamPolicy",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.TestIamPolicy",
+        "async": true,
+        "parameters": [
+          {
+            "name": "access_tuple",
+            "type": ".animeshon.grbac.v1alpha1.AccessTuple"
+          }
+        ],
+        "resultType": ".google.protobuf.Empty",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "TestIamPolicy",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.TestIamPolicy",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_GetIamPolicy_async",
+      "title": "AccessControl getIamPolicy Sample",
+      "origin": "API_DEFINITION",
+      "description": " Gets the IAM policy that is attached to a generic resource. Note: the full resource name that identifies the resource must be provided.",
+      "canonical": true,
+      "file": "access_control.get_iam_policy.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 56,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "GetIamPolicy",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.GetIamPolicy",
+        "async": true,
+        "parameters": [
+          {
+            "name": "resource",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "options",
+            "type": ".google.iam.v1.GetPolicyOptions"
+          }
+        ],
+        "resultType": ".google.iam.v1.Policy",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "GetIamPolicy",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.GetIamPolicy",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_SetIamPolicy_async",
+      "title": "AccessControl setIamPolicy Sample",
+      "origin": "API_DEFINITION",
+      "description": " Sets the IAM policy that is attached to a generic resource. Note: the full resource name that identifies the resource must be provided.",
+      "canonical": true,
+      "file": "access_control.set_iam_policy.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 66,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "SetIamPolicy",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.SetIamPolicy",
+        "async": true,
+        "parameters": [
+          {
+            "name": "resource",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "policy",
+            "type": ".google.iam.v1.Policy"
+          },
+          {
+            "name": "update_mask",
+            "type": ".google.protobuf.FieldMask"
+          }
+        ],
+        "resultType": ".google.iam.v1.Policy",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "SetIamPolicy",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.SetIamPolicy",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_GetResource_async",
+      "title": "AccessControl getResource Sample",
+      "origin": "API_DEFINITION",
+      "description": " GetResource returns a resource.",
+      "canonical": true,
+      "file": "access_control.get_resource.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "GetResource",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.GetResource",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".animeshon.grbac.v1alpha1.Resource",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "GetResource",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.GetResource",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_CreateResource_async",
+      "title": "AccessControl createResource Sample",
+      "origin": "API_DEFINITION",
+      "description": " CreateResource creates a new resource.",
+      "canonical": true,
+      "file": "access_control.create_resource.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "CreateResource",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.CreateResource",
+        "async": true,
+        "parameters": [
+          {
+            "name": "resource",
+            "type": ".animeshon.grbac.v1alpha1.Resource"
+          }
+        ],
+        "resultType": ".animeshon.grbac.v1alpha1.Resource",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "CreateResource",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.CreateResource",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_TransferResource_async",
+      "title": "AccessControl transferResource Sample",
+      "origin": "API_DEFINITION",
+      "description": " TransferResource transfers a resource to a new parent.",
+      "canonical": true,
+      "file": "access_control.transfer_resource.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 73,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "TransferResource",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.TransferResource",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "target_parent",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "substitutions",
+            "type": "TYPE_MESSAGE[]"
+          }
+        ],
+        "resultType": ".animeshon.grbac.v1alpha1.Resource",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "TransferResource",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.TransferResource",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_DeleteResource_async",
+      "title": "AccessControl deleteResource Sample",
+      "origin": "API_DEFINITION",
+      "description": " DeleteResource deletes a resource.",
+      "canonical": true,
+      "file": "access_control.delete_resource.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "DeleteResource",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.DeleteResource",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".google.protobuf.Empty",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "DeleteResource",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.DeleteResource",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_CreateSubject_async",
+      "title": "AccessControl createSubject Sample",
+      "origin": "API_DEFINITION",
+      "description": " CreateSubject creates a new subject.",
+      "canonical": true,
+      "file": "access_control.create_subject.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "CreateSubject",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.CreateSubject",
+        "async": true,
+        "parameters": [
+          {
+            "name": "subject",
+            "type": ".animeshon.grbac.v1alpha1.Subject"
+          }
+        ],
+        "resultType": ".animeshon.grbac.v1alpha1.Subject",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "CreateSubject",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.CreateSubject",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_DeleteSubject_async",
+      "title": "AccessControl deleteSubject Sample",
+      "origin": "API_DEFINITION",
+      "description": " DeleteSubject deletes a subject.",
+      "canonical": true,
+      "file": "access_control.delete_subject.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "DeleteSubject",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.DeleteSubject",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".google.protobuf.Empty",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "DeleteSubject",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.DeleteSubject",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_GetGroup_async",
+      "title": "AccessControl getGroup Sample",
+      "origin": "API_DEFINITION",
+      "description": " GetGroup returns a group.",
+      "canonical": true,
+      "file": "access_control.get_group.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "GetGroup",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.GetGroup",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".animeshon.grbac.v1alpha1.Group",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "GetGroup",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.GetGroup",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_CreateGroup_async",
+      "title": "AccessControl createGroup Sample",
+      "origin": "API_DEFINITION",
+      "description": " CreateGroup creates a new group.",
+      "canonical": true,
+      "file": "access_control.create_group.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "CreateGroup",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.CreateGroup",
+        "async": true,
+        "parameters": [
+          {
+            "name": "group",
+            "type": ".animeshon.grbac.v1alpha1.Group"
+          }
+        ],
+        "resultType": ".animeshon.grbac.v1alpha1.Group",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "CreateGroup",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.CreateGroup",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_UpdateGroup_async",
+      "title": "AccessControl updateGroup Sample",
+      "origin": "API_DEFINITION",
+      "description": " UpdateGroup updates a group with a field mask.",
+      "canonical": true,
+      "file": "access_control.update_group.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 55,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "UpdateGroup",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.UpdateGroup",
+        "async": true,
+        "parameters": [
+          {
+            "name": "group",
+            "type": ".animeshon.grbac.v1alpha1.Group"
+          },
+          {
+            "name": "update_mask",
+            "type": ".google.protobuf.FieldMask"
+          }
+        ],
+        "resultType": ".animeshon.grbac.v1alpha1.Group",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "UpdateGroup",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.UpdateGroup",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_AddGroupMember_async",
+      "title": "AccessControl addGroupMember Sample",
+      "origin": "API_DEFINITION",
+      "description": " AddGroupMember adds a member to a group.",
+      "canonical": true,
+      "file": "access_control.add_group_member.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 55,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "AddGroupMember",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.AddGroupMember",
+        "async": true,
+        "parameters": [
+          {
+            "name": "group",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "member",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".animeshon.grbac.v1alpha1.Group",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "AddGroupMember",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.AddGroupMember",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_RemoveGroupMember_async",
+      "title": "AccessControl removeGroupMember Sample",
+      "origin": "API_DEFINITION",
+      "description": " RemoveGroupMember removes a member from a group.",
+      "canonical": true,
+      "file": "access_control.remove_group_member.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 55,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "RemoveGroupMember",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.RemoveGroupMember",
+        "async": true,
+        "parameters": [
+          {
+            "name": "group",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "member",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".animeshon.grbac.v1alpha1.Group",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "RemoveGroupMember",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.RemoveGroupMember",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_DeleteGroup_async",
+      "title": "AccessControl deleteGroup Sample",
+      "origin": "API_DEFINITION",
+      "description": " DeleteGroup deletes a group.",
+      "canonical": true,
+      "file": "access_control.delete_group.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "DeleteGroup",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.DeleteGroup",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".google.protobuf.Empty",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "DeleteGroup",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.DeleteGroup",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_CreatePermission_async",
+      "title": "AccessControl createPermission Sample",
+      "origin": "API_DEFINITION",
+      "description": " CreatePermission creates a new permission.",
+      "canonical": true,
+      "file": "access_control.create_permission.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "CreatePermission",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.CreatePermission",
+        "async": true,
+        "parameters": [
+          {
+            "name": "permission",
+            "type": ".animeshon.grbac.v1alpha1.Permission"
+          }
+        ],
+        "resultType": ".animeshon.grbac.v1alpha1.Permission",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "CreatePermission",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.CreatePermission",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_DeletePermission_async",
+      "title": "AccessControl deletePermission Sample",
+      "origin": "API_DEFINITION",
+      "description": " DeletePermission deletes a permission.",
+      "canonical": true,
+      "file": "access_control.delete_permission.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "DeletePermission",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.DeletePermission",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".google.protobuf.Empty",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "DeletePermission",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.DeletePermission",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_GetRole_async",
+      "title": "AccessControl getRole Sample",
+      "origin": "API_DEFINITION",
+      "description": " GetRole returns a role.",
+      "canonical": true,
+      "file": "access_control.get_role.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "GetRole",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.GetRole",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".animeshon.grbac.v1alpha1.Role",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "GetRole",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.GetRole",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_CreateRole_async",
+      "title": "AccessControl createRole Sample",
+      "origin": "API_DEFINITION",
+      "description": " CreateRole creates a new role.",
+      "canonical": true,
+      "file": "access_control.create_role.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "CreateRole",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.CreateRole",
+        "async": true,
+        "parameters": [
+          {
+            "name": "role",
+            "type": ".animeshon.grbac.v1alpha1.Role"
+          }
+        ],
+        "resultType": ".animeshon.grbac.v1alpha1.Role",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "CreateRole",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.CreateRole",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_UpdateRole_async",
+      "title": "AccessControl updateRole Sample",
+      "origin": "API_DEFINITION",
+      "description": " UpdateRole updates a role with a field mask.",
+      "canonical": true,
+      "file": "access_control.update_role.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 55,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "UpdateRole",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.UpdateRole",
+        "async": true,
+        "parameters": [
+          {
+            "name": "role",
+            "type": ".animeshon.grbac.v1alpha1.Role"
+          },
+          {
+            "name": "update_mask",
+            "type": ".google.protobuf.FieldMask"
+          }
+        ],
+        "resultType": ".animeshon.grbac.v1alpha1.Role",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "UpdateRole",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.UpdateRole",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "127_v1alpha1_generated_AccessControl_DeleteRole_async",
+      "title": "AccessControl deleteRole Sample",
+      "origin": "API_DEFINITION",
+      "description": " DeleteRole deletes a role.",
+      "canonical": true,
+      "file": "access_control.delete_role.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "DeleteRole",
+        "fullName": "animeshon.grbac.v1alpha1.AccessControl.DeleteRole",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".google.protobuf.Empty",
+        "client": {
+          "shortName": "AccessControlClient",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControlClient"
+        },
+        "method": {
+          "shortName": "DeleteRole",
+          "fullName": "animeshon.grbac.v1alpha1.AccessControl.DeleteRole",
+          "service": {
+            "shortName": "AccessControl",
+            "fullName": "animeshon.grbac.v1alpha1.AccessControl"
+          }
+        }
+      }
+    }
+  ]
+}

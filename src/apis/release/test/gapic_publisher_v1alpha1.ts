@@ -125,12 +125,27 @@ describe('v1alpha1.PublisherClient', () => {
         assert(client.publisherStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.publisherStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new publisherModule.v1alpha1.PublisherClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.publisherStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -247,6 +262,19 @@ describe('v1alpha1.PublisherClient', () => {
             assert((client.innerApiCalls.getRelease as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getRelease with closed client', async () => {
+            const client = new publisherModule.v1alpha1.PublisherClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.GetReleaseRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getRelease(request), expectedError);
+        });
     });
 
     describe('createRelease', () => {
@@ -330,6 +358,19 @@ describe('v1alpha1.PublisherClient', () => {
             await assert.rejects(client.createRelease(request), expectedError);
             assert((client.innerApiCalls.createRelease as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes createRelease with closed client', async () => {
+            const client = new publisherModule.v1alpha1.PublisherClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.CreateReleaseRequest());
+            request.parent = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createRelease(request), expectedError);
         });
     });
 
@@ -418,6 +459,20 @@ describe('v1alpha1.PublisherClient', () => {
             assert((client.innerApiCalls.updateRelease as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateRelease with closed client', async () => {
+            const client = new publisherModule.v1alpha1.PublisherClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UpdateReleaseRequest());
+            request.release = {};
+            request.release.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateRelease(request), expectedError);
+        });
     });
 
     describe('deleteRelease', () => {
@@ -501,6 +556,19 @@ describe('v1alpha1.PublisherClient', () => {
             await assert.rejects(client.deleteRelease(request), expectedError);
             assert((client.innerApiCalls.deleteRelease as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteRelease with closed client', async () => {
+            const client = new publisherModule.v1alpha1.PublisherClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.DeleteReleaseRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteRelease(request), expectedError);
         });
     });
 
@@ -586,6 +654,19 @@ describe('v1alpha1.PublisherClient', () => {
             assert((client.innerApiCalls.undeleteRelease as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes undeleteRelease with closed client', async () => {
+            const client = new publisherModule.v1alpha1.PublisherClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UndeleteReleaseRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.undeleteRelease(request), expectedError);
+        });
     });
 
     describe('publishRelease', () => {
@@ -669,6 +750,19 @@ describe('v1alpha1.PublisherClient', () => {
             await assert.rejects(client.publishRelease(request), expectedError);
             assert((client.innerApiCalls.publishRelease as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes publishRelease with closed client', async () => {
+            const client = new publisherModule.v1alpha1.PublisherClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.PublishReleaseRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.publishRelease(request), expectedError);
         });
     });
 
@@ -754,6 +848,19 @@ describe('v1alpha1.PublisherClient', () => {
             assert((client.innerApiCalls.unpublishRelease as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes unpublishRelease with closed client', async () => {
+            const client = new publisherModule.v1alpha1.PublisherClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UnpublishReleaseRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.unpublishRelease(request), expectedError);
+        });
     });
 
     describe('scheduleRelease', () => {
@@ -837,6 +944,19 @@ describe('v1alpha1.PublisherClient', () => {
             await assert.rejects(client.scheduleRelease(request), expectedError);
             assert((client.innerApiCalls.scheduleRelease as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes scheduleRelease with closed client', async () => {
+            const client = new publisherModule.v1alpha1.PublisherClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.ScheduleReleaseRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.scheduleRelease(request), expectedError);
         });
     });
 
@@ -922,6 +1042,19 @@ describe('v1alpha1.PublisherClient', () => {
             assert((client.innerApiCalls.cancelRelease as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes cancelRelease with closed client', async () => {
+            const client = new publisherModule.v1alpha1.PublisherClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.CancelReleaseRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.cancelRelease(request), expectedError);
+        });
     });
 
     describe('suspendRelease', () => {
@@ -1005,6 +1138,19 @@ describe('v1alpha1.PublisherClient', () => {
             await assert.rejects(client.suspendRelease(request), expectedError);
             assert((client.innerApiCalls.suspendRelease as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes suspendRelease with closed client', async () => {
+            const client = new publisherModule.v1alpha1.PublisherClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.SuspendReleaseRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.suspendRelease(request), expectedError);
         });
     });
 

@@ -141,12 +141,27 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
         assert(client.graphicNovelServiceStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.graphicNovelServiceStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.graphicNovelServiceStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -263,6 +278,19 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             assert((client.innerApiCalls.getGraphicNovel as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getGraphicNovel with closed client', async () => {
+            const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetGraphicNovelRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getGraphicNovel(request), expectedError);
+        });
     });
 
     describe('createGraphicNovel', () => {
@@ -322,6 +350,18 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             await assert.rejects(client.createGraphicNovel(request), expectedError);
             assert((client.innerApiCalls.createGraphicNovel as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes createGraphicNovel with closed client', async () => {
+            const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateGraphicNovelRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createGraphicNovel(request), expectedError);
         });
     });
 
@@ -410,6 +450,20 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             assert((client.innerApiCalls.updateGraphicNovel as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateGraphicNovel with closed client', async () => {
+            const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateGraphicNovelRequest());
+            request.graphicNovel = {};
+            request.graphicNovel.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateGraphicNovel(request), expectedError);
+        });
     });
 
     describe('deleteGraphicNovel', () => {
@@ -493,6 +547,19 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             await assert.rejects(client.deleteGraphicNovel(request), expectedError);
             assert((client.innerApiCalls.deleteGraphicNovel as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteGraphicNovel with closed client', async () => {
+            const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteGraphicNovelRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteGraphicNovel(request), expectedError);
         });
     });
 

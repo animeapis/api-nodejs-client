@@ -125,12 +125,27 @@ describe('v1alpha1.HubClient', () => {
         assert(client.hubStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new hubModule.v1alpha1.HubClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.hubStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new hubModule.v1alpha1.HubClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.hubStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -247,6 +262,19 @@ describe('v1alpha1.HubClient', () => {
             assert((client.innerApiCalls.createRepository as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes createRepository with closed client', async () => {
+            const client = new hubModule.v1alpha1.HubClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.CreateRepositoryRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createRepository(request), expectedError);
+        });
     });
 
     describe('deleteRepository', () => {
@@ -330,6 +358,19 @@ describe('v1alpha1.HubClient', () => {
             await assert.rejects(client.deleteRepository(request), expectedError);
             assert((client.innerApiCalls.deleteRepository as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteRepository with closed client', async () => {
+            const client = new hubModule.v1alpha1.HubClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.DeleteRepositoryRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteRepository(request), expectedError);
         });
     });
 

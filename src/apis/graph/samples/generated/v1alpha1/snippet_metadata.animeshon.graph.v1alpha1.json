@@ -1,0 +1,95 @@
+{
+  "clientLibrary": {
+    "name": "nodejs-graph",
+    "version": "0.1.0",
+    "language": "TYPESCRIPT",
+    "apis": [
+      {
+        "id": "animeshon.graph.v1alpha1",
+        "version": "v1alpha1"
+      }
+    ]
+  },
+  "snippets": [
+    {
+      "regionTag": "graph_v1alpha1_generated_Graph_MigrateGraph_async",
+      "title": "Graph migrateGraph Sample",
+      "origin": "API_DEFINITION",
+      "description": "",
+      "canonical": true,
+      "file": "graph.migrate_graph.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "MigrateGraph",
+        "fullName": "animeshon.graph.v1alpha1.Graph.MigrateGraph",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".google.protobuf.Empty",
+        "client": {
+          "shortName": "GraphClient",
+          "fullName": "animeshon.graph.v1alpha1.GraphClient"
+        },
+        "method": {
+          "shortName": "MigrateGraph",
+          "fullName": "animeshon.graph.v1alpha1.Graph.MigrateGraph",
+          "service": {
+            "shortName": "Graph",
+            "fullName": "animeshon.graph.v1alpha1.Graph"
+          }
+        }
+      }
+    },
+    {
+      "regionTag": "graph_v1alpha1_generated_Graph_DeleteGraph_async",
+      "title": "Graph deleteGraph Sample",
+      "origin": "API_DEFINITION",
+      "description": "",
+      "canonical": true,
+      "file": "graph.delete_graph.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 50,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "DeleteGraph",
+        "fullName": "animeshon.graph.v1alpha1.Graph.DeleteGraph",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".google.protobuf.Empty",
+        "client": {
+          "shortName": "GraphClient",
+          "fullName": "animeshon.graph.v1alpha1.GraphClient"
+        },
+        "method": {
+          "shortName": "DeleteGraph",
+          "fullName": "animeshon.graph.v1alpha1.Graph.DeleteGraph",
+          "service": {
+            "shortName": "Graph",
+            "fullName": "animeshon.graph.v1alpha1.Graph"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -125,12 +125,27 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
         assert(client.imageAnnotatorStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.imageAnnotatorStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.imageAnnotatorStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -247,6 +262,19 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             assert((client.innerApiCalls.analyzeImage as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes analyzeImage with closed client', async () => {
+            const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.AnalyzeImageRequest());
+            request.parent = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.analyzeImage(request), expectedError);
+        });
     });
 
     describe('getImageAnalysis', () => {
@@ -330,6 +358,19 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             await assert.rejects(client.getImageAnalysis(request), expectedError);
             assert((client.innerApiCalls.getImageAnalysis as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes getImageAnalysis with closed client', async () => {
+            const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.GetImageAnalysisRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getImageAnalysis(request), expectedError);
         });
     });
 
@@ -415,6 +456,19 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             assert((client.innerApiCalls.deleteImageAnalysis as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes deleteImageAnalysis with closed client', async () => {
+            const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.DeleteImageAnalysisRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteImageAnalysis(request), expectedError);
+        });
     });
 
     describe('createImageAnnotation', () => {
@@ -499,6 +553,19 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             assert((client.innerApiCalls.createImageAnnotation as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes createImageAnnotation with closed client', async () => {
+            const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.CreateImageAnnotationRequest());
+            request.parent = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createImageAnnotation(request), expectedError);
+        });
     });
 
     describe('getImageAnnotation', () => {
@@ -582,6 +649,19 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             await assert.rejects(client.getImageAnnotation(request), expectedError);
             assert((client.innerApiCalls.getImageAnnotation as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes getImageAnnotation with closed client', async () => {
+            const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.GetImageAnnotationRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getImageAnnotation(request), expectedError);
         });
     });
 
@@ -670,6 +750,20 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             assert((client.innerApiCalls.updateImageAnnotation as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateImageAnnotation with closed client', async () => {
+            const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.UpdateImageAnnotationRequest());
+            request.annotation = {};
+            request.annotation.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateImageAnnotation(request), expectedError);
+        });
     });
 
     describe('deleteImageAnnotation', () => {
@@ -753,6 +847,19 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             await assert.rejects(client.deleteImageAnnotation(request), expectedError);
             assert((client.innerApiCalls.deleteImageAnnotation as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteImageAnnotation with closed client', async () => {
+            const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.DeleteImageAnnotationRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteImageAnnotation(request), expectedError);
         });
     });
 

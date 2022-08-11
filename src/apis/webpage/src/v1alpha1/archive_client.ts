@@ -18,10 +18,11 @@
 
 /* global window */
 import * as gax from 'google-gax';
-import {Callback, CallOptions, Descriptors, ClientOptions, PaginationCallback, GaxCall} from 'google-gax';
+import {Callback, CallOptions, Descriptors, ClientOptions, PaginationCallback, GaxCall, GoogleError} from 'google-gax';
 
 import { Transform } from 'stream';
 import { RequestType } from 'google-gax/build/src/apitypes';
+import { PassThrough } from 'stream';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
 /**
@@ -61,7 +62,7 @@ export class ArchiveClient {
    *
    * @param {object} [options] - The configuration object.
    * The options accepted by the constructor are described in detail
-   * in [this document](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#creating-the-client-instance).
+   * in [this document](https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#creating-the-client-instance).
    * The common options are:
    * @param {object} [options.credentials] - Credentials object.
    * @param {string} [options.credentials.client_email]
@@ -84,11 +85,10 @@ export class ArchiveClient {
    *     API remote host.
    * @param {gax.ClientConfig} [options.clientConfig] - Client configuration override.
    *     Follows the structure of {@link gapicConfig}.
-   * @param {boolean} [options.fallback] - Use HTTP fallback mode.
-   *     In fallback mode, a special browser-compatible transport implementation is used
-   *     instead of gRPC transport. In browser context (if the `window` object is defined)
-   *     the fallback mode is enabled automatically; set `options.fallback` to `false`
-   *     if you need to override this behavior.
+   * @param {boolean | "rest"} [options.fallback] - Use HTTP fallback mode.
+   *     Pass "rest" to use HTTP/1.1 REST API instead of gRPC.
+   *     For more information, please check the
+   *     {@link https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#http11-rest-api-mode documentation}.
    */
   constructor(opts?: ClientOptions) {
     // Ensure that options include all the required fields.
@@ -160,7 +160,7 @@ export class ArchiveClient {
     // Some of the methods on this service provide streaming responses.
     // Provide descriptors for these.
     this.descriptors.stream = {
-      query: new this._gaxModule.StreamDescriptor(gax.StreamType.BIDI_STREAMING)
+      query: new this._gaxModule.StreamDescriptor(gax.StreamType.BIDI_STREAMING, opts.fallback === 'rest')
     };
 
     // Put together the default options sent with requests.
@@ -211,6 +211,13 @@ export class ArchiveClient {
       const callPromise = this.archiveStub.then(
         stub => (...args: Array<{}>) => {
           if (this._terminated) {
+            if (methodName in this.descriptors.stream) {
+              const stream = new PassThrough();
+              setImmediate(() => {
+                stream.emit('error', new GoogleError('The client has already been closed.'));
+              });
+              return stream;
+            }
             return Promise.reject('The client has already been closed.');
           }
           const func = stub[methodName];
@@ -671,7 +678,7 @@ export class ArchiveClient {
       options?: CallOptions):
     gax.CancellableStream {
     this.initialize();
-    return this.innerApiCalls.query(options);
+    return this.innerApiCalls.query(null, options);
   }
 
  /**
@@ -860,9 +867,8 @@ export class ArchiveClient {
    * @returns {Promise} A promise that resolves when the client is closed.
    */
   close(): Promise<void> {
-    this.initialize();
-    if (!this._terminated) {
-      return this.archiveStub!.then(stub => {
+    if (this.archiveStub && !this._terminated) {
+      return this.archiveStub.then(stub => {
         this._terminated = true;
         stub.close();
       });

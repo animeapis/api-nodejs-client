@@ -141,12 +141,27 @@ describe('v1alpha1.AnimeServiceClient', () => {
         assert(client.animeServiceStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new animeserviceModule.v1alpha1.AnimeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.animeServiceStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new animeserviceModule.v1alpha1.AnimeServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.animeServiceStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -263,6 +278,19 @@ describe('v1alpha1.AnimeServiceClient', () => {
             assert((client.innerApiCalls.getAnime as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getAnime with closed client', async () => {
+            const client = new animeserviceModule.v1alpha1.AnimeServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetAnimeRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getAnime(request), expectedError);
+        });
     });
 
     describe('createAnime', () => {
@@ -322,6 +350,18 @@ describe('v1alpha1.AnimeServiceClient', () => {
             await assert.rejects(client.createAnime(request), expectedError);
             assert((client.innerApiCalls.createAnime as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes createAnime with closed client', async () => {
+            const client = new animeserviceModule.v1alpha1.AnimeServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateAnimeRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createAnime(request), expectedError);
         });
     });
 
@@ -410,6 +450,20 @@ describe('v1alpha1.AnimeServiceClient', () => {
             assert((client.innerApiCalls.updateAnime as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateAnime with closed client', async () => {
+            const client = new animeserviceModule.v1alpha1.AnimeServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateAnimeRequest());
+            request.anime = {};
+            request.anime.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateAnime(request), expectedError);
+        });
     });
 
     describe('deleteAnime', () => {
@@ -493,6 +547,19 @@ describe('v1alpha1.AnimeServiceClient', () => {
             await assert.rejects(client.deleteAnime(request), expectedError);
             assert((client.innerApiCalls.deleteAnime as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteAnime with closed client', async () => {
+            const client = new animeserviceModule.v1alpha1.AnimeServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteAnimeRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteAnime(request), expectedError);
         });
     });
 

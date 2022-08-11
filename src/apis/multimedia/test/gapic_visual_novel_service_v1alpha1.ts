@@ -141,12 +141,27 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
         assert(client.visualNovelServiceStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.visualNovelServiceStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.visualNovelServiceStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -263,6 +278,19 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             assert((client.innerApiCalls.getVisualNovel as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getVisualNovel with closed client', async () => {
+            const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetVisualNovelRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getVisualNovel(request), expectedError);
+        });
     });
 
     describe('createVisualNovel', () => {
@@ -322,6 +350,18 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             await assert.rejects(client.createVisualNovel(request), expectedError);
             assert((client.innerApiCalls.createVisualNovel as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes createVisualNovel with closed client', async () => {
+            const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateVisualNovelRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createVisualNovel(request), expectedError);
         });
     });
 
@@ -410,6 +450,20 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             assert((client.innerApiCalls.updateVisualNovel as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateVisualNovel with closed client', async () => {
+            const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateVisualNovelRequest());
+            request.visualNovel = {};
+            request.visualNovel.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateVisualNovel(request), expectedError);
+        });
     });
 
     describe('deleteVisualNovel', () => {
@@ -493,6 +547,19 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             await assert.rejects(client.deleteVisualNovel(request), expectedError);
             assert((client.innerApiCalls.deleteVisualNovel as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteVisualNovel with closed client', async () => {
+            const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteVisualNovelRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteVisualNovel(request), expectedError);
         });
     });
 

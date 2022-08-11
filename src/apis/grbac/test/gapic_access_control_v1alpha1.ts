@@ -78,12 +78,27 @@ describe('v1alpha1.AccessControlClient', () => {
         assert(client.accessControlStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.accessControlStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.accessControlStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -176,6 +191,18 @@ describe('v1alpha1.AccessControlClient', () => {
             assert((client.innerApiCalls.testIamPolicy as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes testIamPolicy with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.TestIamPolicyRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.testIamPolicy(request), expectedError);
+        });
     });
 
     describe('getIamPolicy', () => {
@@ -236,6 +263,18 @@ describe('v1alpha1.AccessControlClient', () => {
             assert((client.innerApiCalls.getIamPolicy as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getIamPolicy with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.iam.v1.GetIamPolicyRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getIamPolicy(request), expectedError);
+        });
     });
 
     describe('setIamPolicy', () => {
@@ -295,6 +334,18 @@ describe('v1alpha1.AccessControlClient', () => {
             await assert.rejects(client.setIamPolicy(request), expectedError);
             assert((client.innerApiCalls.setIamPolicy as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes setIamPolicy with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.google.iam.v1.SetIamPolicyRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.setIamPolicy(request), expectedError);
         });
     });
 
@@ -379,6 +430,19 @@ describe('v1alpha1.AccessControlClient', () => {
             await assert.rejects(client.getResource(request), expectedError);
             assert((client.innerApiCalls.getResource as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes getResource with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetResourceRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getResource(request), expectedError);
         });
     });
 
@@ -467,6 +531,20 @@ describe('v1alpha1.AccessControlClient', () => {
             assert((client.innerApiCalls.createResource as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes createResource with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateResourceRequest());
+            request.resource = {};
+            request.resource.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createResource(request), expectedError);
+        });
     });
 
     describe('transferResource', () => {
@@ -551,6 +629,19 @@ describe('v1alpha1.AccessControlClient', () => {
             assert((client.innerApiCalls.transferResource as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes transferResource with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.TransferResourceRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.transferResource(request), expectedError);
+        });
     });
 
     describe('deleteResource', () => {
@@ -634,6 +725,19 @@ describe('v1alpha1.AccessControlClient', () => {
             await assert.rejects(client.deleteResource(request), expectedError);
             assert((client.innerApiCalls.deleteResource as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteResource with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteResourceRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteResource(request), expectedError);
         });
     });
 
@@ -722,6 +826,20 @@ describe('v1alpha1.AccessControlClient', () => {
             assert((client.innerApiCalls.createSubject as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes createSubject with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateSubjectRequest());
+            request.subject = {};
+            request.subject.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createSubject(request), expectedError);
+        });
     });
 
     describe('deleteSubject', () => {
@@ -806,6 +924,19 @@ describe('v1alpha1.AccessControlClient', () => {
             assert((client.innerApiCalls.deleteSubject as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes deleteSubject with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteSubjectRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteSubject(request), expectedError);
+        });
     });
 
     describe('getGroup', () => {
@@ -889,6 +1020,19 @@ describe('v1alpha1.AccessControlClient', () => {
             await assert.rejects(client.getGroup(request), expectedError);
             assert((client.innerApiCalls.getGroup as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes getGroup with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetGroupRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getGroup(request), expectedError);
         });
     });
 
@@ -977,6 +1121,20 @@ describe('v1alpha1.AccessControlClient', () => {
             assert((client.innerApiCalls.createGroup as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes createGroup with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateGroupRequest());
+            request.group = {};
+            request.group.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createGroup(request), expectedError);
+        });
     });
 
     describe('updateGroup', () => {
@@ -1064,6 +1222,20 @@ describe('v1alpha1.AccessControlClient', () => {
             assert((client.innerApiCalls.updateGroup as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateGroup with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.UpdateGroupRequest());
+            request.group = {};
+            request.group.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateGroup(request), expectedError);
+        });
     });
 
     describe('addGroupMember', () => {
@@ -1147,6 +1319,19 @@ describe('v1alpha1.AccessControlClient', () => {
             await assert.rejects(client.addGroupMember(request), expectedError);
             assert((client.innerApiCalls.addGroupMember as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes addGroupMember with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.AddGroupMemberRequest());
+            request.group = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.addGroupMember(request), expectedError);
         });
     });
 
@@ -1232,6 +1417,19 @@ describe('v1alpha1.AccessControlClient', () => {
             assert((client.innerApiCalls.removeGroupMember as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes removeGroupMember with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.RemoveGroupMemberRequest());
+            request.group = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.removeGroupMember(request), expectedError);
+        });
     });
 
     describe('deleteGroup', () => {
@@ -1315,6 +1513,19 @@ describe('v1alpha1.AccessControlClient', () => {
             await assert.rejects(client.deleteGroup(request), expectedError);
             assert((client.innerApiCalls.deleteGroup as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteGroup with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteGroupRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteGroup(request), expectedError);
         });
     });
 
@@ -1403,6 +1614,20 @@ describe('v1alpha1.AccessControlClient', () => {
             assert((client.innerApiCalls.createPermission as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes createPermission with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreatePermissionRequest());
+            request.permission = {};
+            request.permission.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createPermission(request), expectedError);
+        });
     });
 
     describe('deletePermission', () => {
@@ -1487,6 +1712,19 @@ describe('v1alpha1.AccessControlClient', () => {
             assert((client.innerApiCalls.deletePermission as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes deletePermission with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeletePermissionRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deletePermission(request), expectedError);
+        });
     });
 
     describe('getRole', () => {
@@ -1570,6 +1808,19 @@ describe('v1alpha1.AccessControlClient', () => {
             await assert.rejects(client.getRole(request), expectedError);
             assert((client.innerApiCalls.getRole as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes getRole with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetRoleRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getRole(request), expectedError);
         });
     });
 
@@ -1658,6 +1909,20 @@ describe('v1alpha1.AccessControlClient', () => {
             assert((client.innerApiCalls.createRole as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes createRole with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateRoleRequest());
+            request.role = {};
+            request.role.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createRole(request), expectedError);
+        });
     });
 
     describe('updateRole', () => {
@@ -1745,6 +2010,20 @@ describe('v1alpha1.AccessControlClient', () => {
             assert((client.innerApiCalls.updateRole as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateRole with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.UpdateRoleRequest());
+            request.role = {};
+            request.role.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateRole(request), expectedError);
+        });
     });
 
     describe('deleteRole', () => {
@@ -1828,6 +2107,19 @@ describe('v1alpha1.AccessControlClient', () => {
             await assert.rejects(client.deleteRole(request), expectedError);
             assert((client.innerApiCalls.deleteRole as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteRole with closed client', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteRoleRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteRole(request), expectedError);
         });
     });
 });

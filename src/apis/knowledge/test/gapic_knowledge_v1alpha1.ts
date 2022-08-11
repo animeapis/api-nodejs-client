@@ -125,12 +125,27 @@ describe('v1alpha1.KnowledgeClient', () => {
         assert(client.knowledgeStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new knowledgeModule.v1alpha1.KnowledgeClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.knowledgeStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.knowledgeStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -247,6 +262,19 @@ describe('v1alpha1.KnowledgeClient', () => {
             assert((client.innerApiCalls.getContribution as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getContribution with closed client', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.GetContributionRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getContribution(request), expectedError);
+        });
     });
 
     describe('createContribution', () => {
@@ -330,6 +358,19 @@ describe('v1alpha1.KnowledgeClient', () => {
             await assert.rejects(client.createContribution(request), expectedError);
             assert((client.innerApiCalls.createContribution as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes createContribution with closed client', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.CreateContributionRequest());
+            request.parent = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createContribution(request), expectedError);
         });
     });
 
@@ -415,6 +456,19 @@ describe('v1alpha1.KnowledgeClient', () => {
             assert((client.innerApiCalls.getContributionChanges as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getContributionChanges with closed client', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.GetContributionChangesRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getContributionChanges(request), expectedError);
+        });
     });
 
     describe('reviewContribution', () => {
@@ -498,6 +552,19 @@ describe('v1alpha1.KnowledgeClient', () => {
             await assert.rejects(client.reviewContribution(request), expectedError);
             assert((client.innerApiCalls.reviewContribution as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes reviewContribution with closed client', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ReviewContributionRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.reviewContribution(request), expectedError);
         });
     });
 
@@ -583,6 +650,19 @@ describe('v1alpha1.KnowledgeClient', () => {
             assert((client.innerApiCalls.approveContribution as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes approveContribution with closed client', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.ApproveContributionRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.approveContribution(request), expectedError);
+        });
     });
 
     describe('rejectContribution', () => {
@@ -667,6 +747,19 @@ describe('v1alpha1.KnowledgeClient', () => {
             assert((client.innerApiCalls.rejectContribution as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes rejectContribution with closed client', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.RejectContributionRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.rejectContribution(request), expectedError);
+        });
     });
 
     describe('allocateResourceName', () => {
@@ -726,6 +819,18 @@ describe('v1alpha1.KnowledgeClient', () => {
             await assert.rejects(client.allocateResourceName(request), expectedError);
             assert((client.innerApiCalls.allocateResourceName as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes allocateResourceName with closed client', async () => {
+            const client = new knowledgeModule.v1alpha1.KnowledgeClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.knowledge.v1alpha1.AllocateResourceNameRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.allocateResourceName(request), expectedError);
         });
     });
 

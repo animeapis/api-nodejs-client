@@ -141,12 +141,27 @@ describe('v1alpha1.ReferrerClient', () => {
         assert(client.referrerStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.referrerStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new referrerModule.v1alpha1.ReferrerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.referrerStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -263,6 +278,19 @@ describe('v1alpha1.ReferrerClient', () => {
             assert((client.innerApiCalls.getCrossRef as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getCrossRef with closed client', async () => {
+            const client = new referrerModule.v1alpha1.ReferrerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetCrossRefRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getCrossRef(request), expectedError);
+        });
     });
 
     describe('createCrossRef', () => {
@@ -323,6 +351,18 @@ describe('v1alpha1.ReferrerClient', () => {
             assert((client.innerApiCalls.createCrossRef as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes createCrossRef with closed client', async () => {
+            const client = new referrerModule.v1alpha1.ReferrerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CreateCrossRefRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createCrossRef(request), expectedError);
+        });
     });
 
     describe('batchCreateCrossRefs', () => {
@@ -382,6 +422,18 @@ describe('v1alpha1.ReferrerClient', () => {
             await assert.rejects(client.batchCreateCrossRefs(request), expectedError);
             assert((client.innerApiCalls.batchCreateCrossRefs as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes batchCreateCrossRefs with closed client', async () => {
+            const client = new referrerModule.v1alpha1.ReferrerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.batchCreateCrossRefs(request), expectedError);
         });
     });
 
@@ -470,6 +522,20 @@ describe('v1alpha1.ReferrerClient', () => {
             assert((client.innerApiCalls.updateCrossRef as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateCrossRef with closed client', async () => {
+            const client = new referrerModule.v1alpha1.ReferrerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateCrossRefRequest());
+            request.crossref = {};
+            request.crossref.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateCrossRef(request), expectedError);
+        });
     });
 
     describe('countCrossRefs', () => {
@@ -529,6 +595,18 @@ describe('v1alpha1.ReferrerClient', () => {
             await assert.rejects(client.countCrossRefs(request), expectedError);
             assert((client.innerApiCalls.countCrossRefs as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes countCrossRefs with closed client', async () => {
+            const client = new referrerModule.v1alpha1.ReferrerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.countCrossRefs(request), expectedError);
         });
     });
 
@@ -613,6 +691,19 @@ describe('v1alpha1.ReferrerClient', () => {
             await assert.rejects(client.getUniverse(request), expectedError);
             assert((client.innerApiCalls.getUniverse as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes getUniverse with closed client', async () => {
+            const client = new referrerModule.v1alpha1.ReferrerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetUniverseRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getUniverse(request), expectedError);
         });
     });
 
@@ -701,6 +792,20 @@ describe('v1alpha1.ReferrerClient', () => {
             assert((client.innerApiCalls.updateUniverse as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateUniverse with closed client', async () => {
+            const client = new referrerModule.v1alpha1.ReferrerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateUniverseRequest());
+            request.universe = {};
+            request.universe.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateUniverse(request), expectedError);
+        });
     });
 
     describe('expandUniverse', () => {
@@ -784,6 +889,19 @@ describe('v1alpha1.ReferrerClient', () => {
             await assert.rejects(client.expandUniverse(request), expectedError);
             assert((client.innerApiCalls.expandUniverse as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes expandUniverse with closed client', async () => {
+            const client = new referrerModule.v1alpha1.ReferrerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExpandUniverseRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.expandUniverse(request), expectedError);
         });
     });
 
@@ -869,6 +987,19 @@ describe('v1alpha1.ReferrerClient', () => {
             assert((client.innerApiCalls.getWormhole as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getWormhole with closed client', async () => {
+            const client = new referrerModule.v1alpha1.ReferrerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetWormholeRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getWormhole(request), expectedError);
+        });
     });
 
     describe('listWormholeCrossRefs', () => {
@@ -952,6 +1083,19 @@ describe('v1alpha1.ReferrerClient', () => {
             await assert.rejects(client.listWormholeCrossRefs(request), expectedError);
             assert((client.innerApiCalls.listWormholeCrossRefs as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes listWormholeCrossRefs with closed client', async () => {
+            const client = new referrerModule.v1alpha1.ReferrerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.listWormholeCrossRefs(request), expectedError);
         });
     });
 

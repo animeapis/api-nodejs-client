@@ -78,12 +78,27 @@ describe('v1alpha1.GraphClient', () => {
         assert(client.graphStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new graphModule.v1alpha1.GraphClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.graphStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new graphModule.v1alpha1.GraphClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.graphStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -176,6 +191,18 @@ describe('v1alpha1.GraphClient', () => {
             assert((client.innerApiCalls.migrateGraph as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes migrateGraph with closed client', async () => {
+            const client = new graphModule.v1alpha1.GraphClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.graph.v1alpha1.MigrateGraphRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.migrateGraph(request), expectedError);
+        });
     });
 
     describe('deleteGraph', () => {
@@ -235,6 +262,18 @@ describe('v1alpha1.GraphClient', () => {
             await assert.rejects(client.deleteGraph(request), expectedError);
             assert((client.innerApiCalls.deleteGraph as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteGraph with closed client', async () => {
+            const client = new graphModule.v1alpha1.GraphClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.graph.v1alpha1.DeleteGraphRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteGraph(request), expectedError);
         });
     });
 });

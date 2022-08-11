@@ -141,12 +141,27 @@ describe('v1alpha1.LightNovelServiceClient', () => {
         assert(client.lightNovelServiceStub);
     });
 
-    it('has close method', () => {
+    it('has close method for the initialized client', done => {
         const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
         });
-        client.close();
+        client.initialize();
+        assert(client.lightNovelServiceStub);
+        client.close().then(() => {
+            done();
+        });
+    });
+
+    it('has close method for the non-initialized client', done => {
+        const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+        assert.strictEqual(client.lightNovelServiceStub, undefined);
+        client.close().then(() => {
+            done();
+        });
     });
 
     it('has getProjectId method', async () => {
@@ -263,6 +278,19 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             assert((client.innerApiCalls.getLightNovel as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes getLightNovel with closed client', async () => {
+            const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetLightNovelRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.getLightNovel(request), expectedError);
+        });
     });
 
     describe('createLightNovel', () => {
@@ -322,6 +350,18 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             await assert.rejects(client.createLightNovel(request), expectedError);
             assert((client.innerApiCalls.createLightNovel as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes createLightNovel with closed client', async () => {
+            const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateLightNovelRequest());
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.createLightNovel(request), expectedError);
         });
     });
 
@@ -410,6 +450,20 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             assert((client.innerApiCalls.updateLightNovel as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
         });
+
+        it('invokes updateLightNovel with closed client', async () => {
+            const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateLightNovelRequest());
+            request.lightNovel = {};
+            request.lightNovel.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.updateLightNovel(request), expectedError);
+        });
     });
 
     describe('deleteLightNovel', () => {
@@ -493,6 +547,19 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             await assert.rejects(client.deleteLightNovel(request), expectedError);
             assert((client.innerApiCalls.deleteLightNovel as SinonStub)
                 .getCall(0).calledWith(request, expectedOptions, undefined));
+        });
+
+        it('invokes deleteLightNovel with closed client', async () => {
+            const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+        });
+            client.initialize();
+            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteLightNovelRequest());
+            request.name = '';
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.deleteLightNovel(request), expectedError);
         });
     });
 
