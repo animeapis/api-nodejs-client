@@ -1,4 +1,7 @@
 [
   "../../protos/animeshon/image/v1alpha1/image.proto",
-  "../../protos/animeshon/image/v1alpha1/internal.proto"
+  "../../protos/animeshon/image/v1alpha1/internal.proto",
+  "../../protos/graphql/options.proto",
+  "../../protos/openapi/v3/annotations.proto",
+  "../../protos/openapi/v3/openapi.proto"
 ]
