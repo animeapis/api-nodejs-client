@@ -1,3 +1,6 @@
 [
-  "../../protos/animeshon/library/v1alpha1/library.proto"
+  "../../protos/animeshon/library/v1alpha1/library.proto",
+  "../../protos/graphql/options.proto",
+  "../../protos/openapi/v3/annotations.proto",
+  "../../protos/openapi/v3/openapi.proto"
 ]

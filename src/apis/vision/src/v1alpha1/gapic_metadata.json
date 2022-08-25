@@ -25,14 +25,14 @@
                 "deleteImageAnalysis"
               ]
             },
-            "CreateImageAnnotation": {
-              "methods": [
-                "createImageAnnotation"
-              ]
-            },
             "GetImageAnnotation": {
               "methods": [
                 "getImageAnnotation"
+              ]
+            },
+            "CreateImageAnnotation": {
+              "methods": [
+                "createImageAnnotation"
               ]
             },
             "UpdateImageAnnotation": {
@@ -79,14 +79,14 @@
                 "deleteImageAnalysis"
               ]
             },
-            "CreateImageAnnotation": {
-              "methods": [
-                "createImageAnnotation"
-              ]
-            },
             "GetImageAnnotation": {
               "methods": [
                 "getImageAnnotation"
+              ]
+            },
+            "CreateImageAnnotation": {
+              "methods": [
+                "createImageAnnotation"
               ]
             },
             "UpdateImageAnnotation": {

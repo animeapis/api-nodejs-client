@@ -24,11 +24,11 @@
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "ListImageAnalyses": {
+        "GetImageAnalysis": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "GetImageAnalysis": {
+        "ListImageAnalyses": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
@@ -36,7 +36,7 @@
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "CreateImageAnnotation": {
+        "GetImageAnnotation": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
@@ -44,7 +44,7 @@
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },
-        "GetImageAnnotation": {
+        "CreateImageAnnotation": {
           "retry_codes_name": "non_idempotent",
           "retry_params_name": "default"
         },

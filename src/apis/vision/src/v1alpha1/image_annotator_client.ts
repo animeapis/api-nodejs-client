@@ -18,7 +18,7 @@
 
 /* global window */
 import * as gax from 'google-gax';
-import {Callback, CallOptions, Descriptors, ClientOptions, PaginationCallback, GaxCall} from 'google-gax';
+import {Callback, CallOptions, Descriptors, ClientOptions, PaginationCallback, GaxCall, IamClient, IamProtos} from 'google-gax';
 
 import { Transform } from 'stream';
 import { RequestType } from 'google-gax/build/src/apitypes';
@@ -54,6 +54,7 @@ export class ImageAnnotatorClient {
   };
   warn: (code: string, message: string, warnType?: string) => void;
   innerApiCalls: {[name: string]: Function};
+  iamClient: IamClient;
   imageAnnotatorStub?: Promise<{[name: string]: Function}>;
 
   /**
@@ -126,6 +127,8 @@ export class ImageAnnotatorClient {
     if (servicePath === staticMembers.servicePath) {
       this.auth.defaultScopes = staticMembers.scopes;
     }
+    this.iamClient = new IamClient(this._gaxGrpc, opts);
+  
 
     // Determine the client header string.
     const clientHeader = [
@@ -201,7 +204,7 @@ export class ImageAnnotatorClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const imageAnnotatorStubMethods =
-        ['analyzeImage', 'listImageAnalyses', 'getImageAnalysis', 'deleteImageAnalysis', 'createImageAnnotation', 'listImageAnnotations', 'getImageAnnotation', 'updateImageAnnotation', 'deleteImageAnnotation'];
+        ['analyzeImage', 'getImageAnalysis', 'listImageAnalyses', 'deleteImageAnalysis', 'getImageAnnotation', 'listImageAnnotations', 'createImageAnnotation', 'updateImageAnnotation', 'deleteImageAnnotation'];
     for (const methodName of imageAnnotatorStubMethods) {
       const callPromise = this.imageAnnotatorStub.then(
         stub => (...args: Array<{}>) => {
@@ -501,6 +504,76 @@ export class ImageAnnotatorClient {
  *
  * @param {Object} request
  *   The request object that will be sent.
+ * @param {string} request.name
+ *   The name of the image annotation to retrieve.
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [ImageAnnotation]{@link animeshon.vision.v1alpha1.ImageAnnotation}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/image_annotator.get_image_annotation.js</caption>
+ * region_tag:vision_v1alpha1_generated_ImageAnnotator_GetImageAnnotation_async
+ */
+  getImageAnnotation(
+      request?: protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.vision.v1alpha1.IImageAnnotation,
+        protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest|undefined, {}|undefined
+      ]>;
+  getImageAnnotation(
+      request: protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.vision.v1alpha1.IImageAnnotation,
+          protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest|null|undefined,
+          {}|null|undefined>): void;
+  getImageAnnotation(
+      request: protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest,
+      callback: Callback<
+          protos.animeshon.vision.v1alpha1.IImageAnnotation,
+          protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest|null|undefined,
+          {}|null|undefined>): void;
+  getImageAnnotation(
+      request?: protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.animeshon.vision.v1alpha1.IImageAnnotation,
+          protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.animeshon.vision.v1alpha1.IImageAnnotation,
+          protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.animeshon.vision.v1alpha1.IImageAnnotation,
+        protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = gax.routingHeader.fromParams({
+      'name': request.name || '',
+    });
+    this.initialize();
+    return this.innerApiCalls.getImageAnnotation(request, options, callback);
+  }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
  * @param {string} request.parent
  *   The parent this image annotation belongs to.
  * @param {animeshon.vision.v1alpha1.ImageAnnotation} request.annotation
@@ -568,76 +641,6 @@ export class ImageAnnotatorClient {
     });
     this.initialize();
     return this.innerApiCalls.createImageAnnotation(request, options, callback);
-  }
-/**
- *
- * @param {Object} request
- *   The request object that will be sent.
- * @param {string} request.name
- *   The name of the image annotation to retrieve.
- * @param {object} [options]
- *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
- * @returns {Promise} - The promise which resolves to an array.
- *   The first element of the array is an object representing [ImageAnnotation]{@link animeshon.vision.v1alpha1.ImageAnnotation}.
- *   Please see the
- *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
- *   for more details and examples.
- * @example <caption>include:samples/generated/v1alpha1/image_annotator.get_image_annotation.js</caption>
- * region_tag:vision_v1alpha1_generated_ImageAnnotator_GetImageAnnotation_async
- */
-  getImageAnnotation(
-      request?: protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest,
-      options?: CallOptions):
-      Promise<[
-        protos.animeshon.vision.v1alpha1.IImageAnnotation,
-        protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest|undefined, {}|undefined
-      ]>;
-  getImageAnnotation(
-      request: protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest,
-      options: CallOptions,
-      callback: Callback<
-          protos.animeshon.vision.v1alpha1.IImageAnnotation,
-          protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest|null|undefined,
-          {}|null|undefined>): void;
-  getImageAnnotation(
-      request: protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest,
-      callback: Callback<
-          protos.animeshon.vision.v1alpha1.IImageAnnotation,
-          protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest|null|undefined,
-          {}|null|undefined>): void;
-  getImageAnnotation(
-      request?: protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest,
-      optionsOrCallback?: CallOptions|Callback<
-          protos.animeshon.vision.v1alpha1.IImageAnnotation,
-          protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest|null|undefined,
-          {}|null|undefined>,
-      callback?: Callback<
-          protos.animeshon.vision.v1alpha1.IImageAnnotation,
-          protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest|null|undefined,
-          {}|null|undefined>):
-      Promise<[
-        protos.animeshon.vision.v1alpha1.IImageAnnotation,
-        protos.animeshon.vision.v1alpha1.IGetImageAnnotationRequest|undefined, {}|undefined
-      ]>|void {
-    request = request || {};
-    let options: CallOptions;
-    if (typeof optionsOrCallback === 'function' && callback === undefined) {
-      callback = optionsOrCallback;
-      options = {};
-    }
-    else {
-      options = optionsOrCallback as CallOptions;
-    }
-    options = options || {};
-    options.otherArgs = options.otherArgs || {};
-    options.otherArgs.headers = options.otherArgs.headers || {};
-    options.otherArgs.headers[
-      'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'name': request.name || '',
-    });
-    this.initialize();
-    return this.innerApiCalls.getImageAnnotation(request, options, callback);
   }
 /**
  *
@@ -1142,6 +1145,146 @@ export class ImageAnnotatorClient {
       callSettings
     ) as AsyncIterable<protos.animeshon.vision.v1alpha1.IImageAnnotation>;
   }
+/**
+ * Gets the access control policy for a resource. Returns an empty policy
+ * if the resource exists and does not have a policy set.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.resource
+ *   REQUIRED: The resource for which the policy is being requested.
+ *   See the operation documentation for the appropriate value for this field.
+ * @param {Object} [request.options]
+ *   OPTIONAL: A `GetPolicyOptions` object for specifying options to
+ *   `GetIamPolicy`. This field is only used by Cloud IAM.
+ *
+ *   This object should have the same structure as [GetPolicyOptions]{@link google.iam.v1.GetPolicyOptions}
+ * @param {Object} [options]
+ *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+ *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+ * @param {function(?Error, ?Object)} [callback]
+ *   The function which will be called with the result of the API call.
+ *
+ *   The second parameter to the callback is an object representing [Policy]{@link google.iam.v1.Policy}.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [Policy]{@link google.iam.v1.Policy}.
+ *   The promise has a method named "cancel" which cancels the ongoing API call.
+ */
+  getIamPolicy(
+    request: IamProtos.google.iam.v1.GetIamPolicyRequest,
+    options?:
+      | gax.CallOptions
+      | Callback<
+          IamProtos.google.iam.v1.Policy,
+          IamProtos.google.iam.v1.GetIamPolicyRequest | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      IamProtos.google.iam.v1.Policy,
+      IamProtos.google.iam.v1.GetIamPolicyRequest | null | undefined,
+      {} | null | undefined
+    >
+  ):Promise<IamProtos.google.iam.v1.Policy> {
+    return this.iamClient.getIamPolicy(request, options, callback);
+  }
+
+/**
+ * Returns permissions that a caller has on the specified resource. If the
+ * resource does not exist, this will return an empty set of
+ * permissions, not a NOT_FOUND error.
+ *
+ * Note: This operation is designed to be used for building
+ * permission-aware UIs and command-line tools, not for authorization
+ * checking. This operation may "fail open" without warning.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.resource
+ *   REQUIRED: The resource for which the policy detail is being requested.
+ *   See the operation documentation for the appropriate value for this field.
+ * @param {string[]} request.permissions
+ *   The set of permissions to check for the `resource`. Permissions with
+ *   wildcards (such as '*' or 'storage.*') are not allowed. For more
+ *   information see
+ *   [IAM Overview](https://cloud.google.com/iam/docs/overview#permissions).
+ * @param {Object} [options]
+ *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+ *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+ * @param {function(?Error, ?Object)} [callback]
+ *   The function which will be called with the result of the API call.
+ *
+ *   The second parameter to the callback is an object representing [TestIamPermissionsResponse]{@link google.iam.v1.TestIamPermissionsResponse}.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [TestIamPermissionsResponse]{@link google.iam.v1.TestIamPermissionsResponse}.
+ *   The promise has a method named "cancel" which cancels the ongoing API call.
+ */
+  setIamPolicy(
+    request: IamProtos.google.iam.v1.SetIamPolicyRequest,
+    options?:
+      | gax.CallOptions
+      | Callback<
+          IamProtos.google.iam.v1.Policy,
+          IamProtos.google.iam.v1.SetIamPolicyRequest | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      IamProtos.google.iam.v1.Policy,
+      IamProtos.google.iam.v1.SetIamPolicyRequest | null | undefined,
+      {} | null | undefined
+    >
+  ):Promise<IamProtos.google.iam.v1.Policy> {
+    return this.iamClient.setIamPolicy(request, options, callback);
+  }
+
+/**
+ * Returns permissions that a caller has on the specified resource. If the
+ * resource does not exist, this will return an empty set of
+ * permissions, not a NOT_FOUND error.
+ *
+ * Note: This operation is designed to be used for building
+ * permission-aware UIs and command-line tools, not for authorization
+ * checking. This operation may "fail open" without warning.
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.resource
+ *   REQUIRED: The resource for which the policy detail is being requested.
+ *   See the operation documentation for the appropriate value for this field.
+ * @param {string[]} request.permissions
+ *   The set of permissions to check for the `resource`. Permissions with
+ *   wildcards (such as '*' or 'storage.*') are not allowed. For more
+ *   information see
+ *   [IAM Overview](https://cloud.google.com/iam/docs/overview#permissions).
+ * @param {Object} [options]
+ *   Optional parameters. You can override the default settings for this call, e.g, timeout,
+ *   retries, paginations, etc. See [gax.CallOptions]{@link https://googleapis.github.io/gax-nodejs/interfaces/CallOptions.html} for the details.
+ * @param {function(?Error, ?Object)} [callback]
+ *   The function which will be called with the result of the API call.
+ *
+ *   The second parameter to the callback is an object representing [TestIamPermissionsResponse]{@link google.iam.v1.TestIamPermissionsResponse}.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [TestIamPermissionsResponse]{@link google.iam.v1.TestIamPermissionsResponse}.
+ *   The promise has a method named "cancel" which cancels the ongoing API call.
+ *
+ */
+  testIamPermissions(
+    request: IamProtos.google.iam.v1.TestIamPermissionsRequest,
+    options?:
+      | gax.CallOptions
+      | Callback<
+          IamProtos.google.iam.v1.TestIamPermissionsResponse,
+          IamProtos.google.iam.v1.TestIamPermissionsRequest | null | undefined,
+          {} | null | undefined
+        >,
+    callback?: Callback<
+      IamProtos.google.iam.v1.TestIamPermissionsResponse,
+      IamProtos.google.iam.v1.TestIamPermissionsRequest | null | undefined,
+      {} | null | undefined
+    >
+  ):Promise<IamProtos.google.iam.v1.TestIamPermissionsResponse> {
+    return this.iamClient.testIamPermissions(request, options, callback);
+  }
+
 
   /**
    * Terminate the gRPC channel and close the client.
@@ -1154,6 +1297,7 @@ export class ImageAnnotatorClient {
       return this.imageAnnotatorStub.then(stub => {
         this._terminated = true;
         stub.close();
+        this.iamClient.close();
       });
     }
     return Promise.resolve();

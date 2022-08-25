@@ -3,5 +3,8 @@
   "../../protos/animeshon/vision/v1alpha1/geometry.proto",
   "../../protos/animeshon/vision/v1alpha1/internal.proto",
   "../../protos/animeshon/vision/v1alpha1/properties.proto",
-  "../../protos/animeshon/vision/v1alpha1/vision.proto"
+  "../../protos/animeshon/vision/v1alpha1/vision.proto",
+  "../../protos/graphql/options.proto",
+  "../../protos/openapi/v3/annotations.proto",
+  "../../protos/openapi/v3/openapi.proto"
 ]

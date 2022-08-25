@@ -56,6 +56,50 @@
       }
     },
     {
+      "regionTag": "vision_v1alpha1_generated_ImageAnnotator_GetImageAnalysis_async",
+      "title": "ImageAnnotator getImageAnalysis Sample",
+      "origin": "API_DEFINITION",
+      "description": " Note: to fetch the latest available report use \"latest\" as report id.",
+      "canonical": true,
+      "file": "image_annotator.get_image_analysis.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 53,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "GetImageAnalysis",
+        "fullName": "animeshon.vision.v1alpha1.ImageAnnotator.GetImageAnalysis",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          },
+          {
+            "name": "field_mask",
+            "type": ".google.protobuf.FieldMask"
+          }
+        ],
+        "resultType": ".animeshon.vision.v1alpha1.ImageAnalysis",
+        "client": {
+          "shortName": "ImageAnnotatorClient",
+          "fullName": "animeshon.vision.v1alpha1.ImageAnnotatorClient"
+        },
+        "method": {
+          "shortName": "GetImageAnalysis",
+          "fullName": "animeshon.vision.v1alpha1.ImageAnnotator.GetImageAnalysis",
+          "service": {
+            "shortName": "ImageAnnotator",
+            "fullName": "animeshon.vision.v1alpha1.ImageAnnotator"
+          }
+        }
+      }
+    },
+    {
       "regionTag": "vision_v1alpha1_generated_ImageAnnotator_ListImageAnalyses_async",
       "title": "ImageAnnotator listImageAnalyses Sample",
       "origin": "API_DEFINITION",
@@ -104,50 +148,6 @@
       }
     },
     {
-      "regionTag": "vision_v1alpha1_generated_ImageAnnotator_GetImageAnalysis_async",
-      "title": "ImageAnnotator getImageAnalysis Sample",
-      "origin": "API_DEFINITION",
-      "description": " Note: to fetch the latest available report use \"latest\" as report id.",
-      "canonical": true,
-      "file": "image_annotator.get_image_analysis.js",
-      "language": "JAVASCRIPT",
-      "segments": [
-        {
-          "start": 25,
-          "end": 53,
-          "type": "FULL"
-        }
-      ],
-      "clientMethod": {
-        "shortName": "GetImageAnalysis",
-        "fullName": "animeshon.vision.v1alpha1.ImageAnnotator.GetImageAnalysis",
-        "async": true,
-        "parameters": [
-          {
-            "name": "name",
-            "type": "TYPE_STRING"
-          },
-          {
-            "name": "field_mask",
-            "type": ".google.protobuf.FieldMask"
-          }
-        ],
-        "resultType": ".animeshon.vision.v1alpha1.ImageAnalysis",
-        "client": {
-          "shortName": "ImageAnnotatorClient",
-          "fullName": "animeshon.vision.v1alpha1.ImageAnnotatorClient"
-        },
-        "method": {
-          "shortName": "GetImageAnalysis",
-          "fullName": "animeshon.vision.v1alpha1.ImageAnnotator.GetImageAnalysis",
-          "service": {
-            "shortName": "ImageAnnotator",
-            "fullName": "animeshon.vision.v1alpha1.ImageAnnotator"
-          }
-        }
-      }
-    },
-    {
       "regionTag": "vision_v1alpha1_generated_ImageAnnotator_DeleteImageAnalysis_async",
       "title": "ImageAnnotator deleteImageAnalysis Sample",
       "origin": "API_DEFINITION",
@@ -188,32 +188,28 @@
       }
     },
     {
-      "regionTag": "vision_v1alpha1_generated_ImageAnnotator_CreateImageAnnotation_async",
-      "title": "ImageAnnotator createImageAnnotation Sample",
+      "regionTag": "vision_v1alpha1_generated_ImageAnnotator_GetImageAnnotation_async",
+      "title": "ImageAnnotator getImageAnnotation Sample",
       "origin": "API_DEFINITION",
       "description": "",
       "canonical": true,
-      "file": "image_annotator.create_image_annotation.js",
+      "file": "image_annotator.get_image_annotation.js",
       "language": "JAVASCRIPT",
       "segments": [
         {
           "start": 25,
-          "end": 53,
+          "end": 49,
           "type": "FULL"
         }
       ],
       "clientMethod": {
-        "shortName": "CreateImageAnnotation",
-        "fullName": "animeshon.vision.v1alpha1.ImageAnnotator.CreateImageAnnotation",
+        "shortName": "GetImageAnnotation",
+        "fullName": "animeshon.vision.v1alpha1.ImageAnnotator.GetImageAnnotation",
         "async": true,
         "parameters": [
           {
-            "name": "parent",
+            "name": "name",
             "type": "TYPE_STRING"
-          },
-          {
-            "name": "annotation",
-            "type": ".animeshon.vision.v1alpha1.ImageAnnotation"
           }
         ],
         "resultType": ".animeshon.vision.v1alpha1.ImageAnnotation",
@@ -222,8 +218,8 @@
           "fullName": "animeshon.vision.v1alpha1.ImageAnnotatorClient"
         },
         "method": {
-          "shortName": "CreateImageAnnotation",
-          "fullName": "animeshon.vision.v1alpha1.ImageAnnotator.CreateImageAnnotation",
+          "shortName": "GetImageAnnotation",
+          "fullName": "animeshon.vision.v1alpha1.ImageAnnotator.GetImageAnnotation",
           "service": {
             "shortName": "ImageAnnotator",
             "fullName": "animeshon.vision.v1alpha1.ImageAnnotator"
@@ -284,28 +280,32 @@
       }
     },
     {
-      "regionTag": "vision_v1alpha1_generated_ImageAnnotator_GetImageAnnotation_async",
-      "title": "ImageAnnotator getImageAnnotation Sample",
+      "regionTag": "vision_v1alpha1_generated_ImageAnnotator_CreateImageAnnotation_async",
+      "title": "ImageAnnotator createImageAnnotation Sample",
       "origin": "API_DEFINITION",
       "description": "",
       "canonical": true,
-      "file": "image_annotator.get_image_annotation.js",
+      "file": "image_annotator.create_image_annotation.js",
       "language": "JAVASCRIPT",
       "segments": [
         {
           "start": 25,
-          "end": 49,
+          "end": 53,
           "type": "FULL"
         }
       ],
       "clientMethod": {
-        "shortName": "GetImageAnnotation",
-        "fullName": "animeshon.vision.v1alpha1.ImageAnnotator.GetImageAnnotation",
+        "shortName": "CreateImageAnnotation",
+        "fullName": "animeshon.vision.v1alpha1.ImageAnnotator.CreateImageAnnotation",
         "async": true,
         "parameters": [
           {
-            "name": "name",
+            "name": "parent",
             "type": "TYPE_STRING"
+          },
+          {
+            "name": "annotation",
+            "type": ".animeshon.vision.v1alpha1.ImageAnnotation"
           }
         ],
         "resultType": ".animeshon.vision.v1alpha1.ImageAnnotation",
@@ -314,8 +314,8 @@
           "fullName": "animeshon.vision.v1alpha1.ImageAnnotatorClient"
         },
         "method": {
-          "shortName": "GetImageAnnotation",
-          "fullName": "animeshon.vision.v1alpha1.ImageAnnotator.GetImageAnnotation",
+          "shortName": "CreateImageAnnotation",
+          "fullName": "animeshon.vision.v1alpha1.ImageAnnotator.CreateImageAnnotation",
           "service": {
             "shortName": "ImageAnnotator",
             "fullName": "animeshon.vision.v1alpha1.ImageAnnotator"
