@@ -352,7 +352,7 @@
             "type": "TYPE_STRING"
           },
           {
-            "name": "item",
+            "name": "items",
             "type": "TYPE_MESSAGE[]"
           }
         ],

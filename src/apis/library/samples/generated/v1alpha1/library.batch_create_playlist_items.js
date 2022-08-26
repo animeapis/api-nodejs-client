@@ -20,7 +20,7 @@
 
 'use strict';
 
-function main(parent, item) {
+function main(parent, items) {
   // [START library_v1alpha1_generated_Library_BatchCreatePlaylistItems_async]
   /**
    * TODO(developer): Uncomment these variables before running the sample.
@@ -32,7 +32,7 @@ function main(parent, item) {
   /**
    *  The playlist items to create.
    */
-  // const item = 1234
+  // const items = 1234
 
   // Imports the Library library
   const {LibraryClient} = require('@animeapis/library').v1alpha1;
@@ -44,7 +44,7 @@ function main(parent, item) {
     // Construct request
     const request = {
       parent,
-      item,
+      items,
     };
 
     // Run request

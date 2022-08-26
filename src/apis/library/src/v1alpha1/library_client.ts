@@ -648,7 +648,7 @@ export class LibraryClient {
  *   The request object that will be sent.
  * @param {string} request.parent
  *   The parent this playlist item belongs to.
- * @param {number[]} request.item
+ * @param {number[]} request.items
  *   The playlist items to create.
  * @param {object} [options]
  *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
