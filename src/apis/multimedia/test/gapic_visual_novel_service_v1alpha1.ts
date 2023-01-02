@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,25 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as visualnovelserviceModule from '../src';
 
 import {PassThrough} from 'stream';
 
 import {protobuf, LROperation, operationsProtos} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -103,97 +116,99 @@ function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?
 }
 
 describe('v1alpha1.VisualNovelServiceClient', () => {
-    it('has servicePath', () => {
-        const servicePath = visualnovelserviceModule.v1alpha1.VisualNovelServiceClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = visualnovelserviceModule.v1alpha1.VisualNovelServiceClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = visualnovelserviceModule.v1alpha1.VisualNovelServiceClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = visualnovelserviceModule.v1alpha1.VisualNovelServiceClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = visualnovelserviceModule.v1alpha1.VisualNovelServiceClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = visualnovelserviceModule.v1alpha1.VisualNovelServiceClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.visualNovelServiceStub, undefined);
+            await client.initialize();
+            assert(client.visualNovelServiceStub);
         });
-        assert.strictEqual(client.visualNovelServiceStub, undefined);
-        await client.initialize();
-        assert(client.visualNovelServiceStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
+        it('has close method for the initialized client', done => {
+            const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.visualNovelServiceStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.visualNovelServiceStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.visualNovelServiceStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.visualNovelServiceStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('getVisualNovel', () => {
@@ -201,43 +216,45 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetVisualNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.VisualNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetVisualNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetVisualNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.VisualNovel()
+            );
             client.innerApiCalls.getVisualNovel = stubSimpleCall(expectedResponse);
             const [response] = await client.getVisualNovel(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getVisualNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getVisualNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getVisualNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getVisualNovel without error using callback', async () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetVisualNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.VisualNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetVisualNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetVisualNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.VisualNovel()
+            );
             client.innerApiCalls.getVisualNovel = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getVisualNovel(
@@ -252,41 +269,50 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getVisualNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getVisualNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getVisualNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getVisualNovel with error', async () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetVisualNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetVisualNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetVisualNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getVisualNovel = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getVisualNovel(request), expectedError);
-            assert((client.innerApiCalls.getVisualNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getVisualNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getVisualNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getVisualNovel with closed client', async () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetVisualNovelRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetVisualNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetVisualNovelRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getVisualNovel(request), expectedError);
@@ -298,27 +324,31 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateVisualNovelRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.VisualNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateVisualNovelRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.VisualNovel()
+            );
             client.innerApiCalls.createVisualNovel = stubSimpleCall(expectedResponse);
             const [response] = await client.createVisualNovel(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createVisualNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes createVisualNovel without error using callback', async () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateVisualNovelRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.VisualNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateVisualNovelRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.VisualNovel()
+            );
             client.innerApiCalls.createVisualNovel = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createVisualNovel(
@@ -333,32 +363,31 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createVisualNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes createVisualNovel with error', async () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateVisualNovelRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateVisualNovelRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.createVisualNovel = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createVisualNovel(request), expectedError);
-            assert((client.innerApiCalls.createVisualNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes createVisualNovel with closed client', async () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateVisualNovelRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateVisualNovelRequest()
+            );
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createVisualNovel(request), expectedError);
@@ -370,45 +399,47 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateVisualNovelRequest());
-            request.visualNovel = {};
-            request.visualNovel.name = '';
-            const expectedHeaderRequestParams = "visual_novel.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.VisualNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateVisualNovelRequest()
+            );
+            request.visualNovel ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateVisualNovelRequest', ['visualNovel', 'name']);
+            request.visualNovel.name = defaultValue1;
+            const expectedHeaderRequestParams = `visual_novel.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.VisualNovel()
+            );
             client.innerApiCalls.updateVisualNovel = stubSimpleCall(expectedResponse);
             const [response] = await client.updateVisualNovel(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateVisualNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateVisualNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateVisualNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateVisualNovel without error using callback', async () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateVisualNovelRequest());
-            request.visualNovel = {};
-            request.visualNovel.name = '';
-            const expectedHeaderRequestParams = "visual_novel.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.VisualNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateVisualNovelRequest()
+            );
+            request.visualNovel ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateVisualNovelRequest', ['visualNovel', 'name']);
+            request.visualNovel.name = defaultValue1;
+            const expectedHeaderRequestParams = `visual_novel.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.VisualNovel()
+            );
             client.innerApiCalls.updateVisualNovel = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updateVisualNovel(
@@ -423,43 +454,52 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateVisualNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updateVisualNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateVisualNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateVisualNovel with error', async () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateVisualNovelRequest());
-            request.visualNovel = {};
-            request.visualNovel.name = '';
-            const expectedHeaderRequestParams = "visual_novel.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateVisualNovelRequest()
+            );
+            request.visualNovel ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateVisualNovelRequest', ['visualNovel', 'name']);
+            request.visualNovel.name = defaultValue1;
+            const expectedHeaderRequestParams = `visual_novel.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updateVisualNovel = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updateVisualNovel(request), expectedError);
-            assert((client.innerApiCalls.updateVisualNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateVisualNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateVisualNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateVisualNovel with closed client', async () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateVisualNovelRequest());
-            request.visualNovel = {};
-            request.visualNovel.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateVisualNovelRequest()
+            );
+            request.visualNovel ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateVisualNovelRequest', ['visualNovel', 'name']);
+            request.visualNovel.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updateVisualNovel(request), expectedError);
@@ -471,43 +511,45 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteVisualNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteVisualNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteVisualNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteVisualNovel = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteVisualNovel(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteVisualNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteVisualNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteVisualNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteVisualNovel without error using callback', async () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteVisualNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteVisualNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteVisualNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteVisualNovel = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteVisualNovel(
@@ -522,41 +564,50 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteVisualNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteVisualNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteVisualNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteVisualNovel with error', async () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteVisualNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteVisualNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteVisualNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteVisualNovel = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteVisualNovel(request), expectedError);
-            assert((client.innerApiCalls.deleteVisualNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteVisualNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteVisualNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteVisualNovel with closed client', async () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteVisualNovelRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteVisualNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteVisualNovelRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteVisualNovel(request), expectedError);
@@ -568,44 +619,46 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileVisualNovelsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileVisualNovelsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileVisualNovelsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.reconcileVisualNovels = stubLongRunningCall(expectedResponse);
             const [operation] = await client.reconcileVisualNovels(request);
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.reconcileVisualNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.reconcileVisualNovels as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileVisualNovels as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes reconcileVisualNovels without error using callback', async () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileVisualNovelsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileVisualNovelsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileVisualNovelsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.reconcileVisualNovels = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.reconcileVisualNovels(
@@ -623,64 +676,72 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             const operation = await promise as LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileVisualNovelsResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>;
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.reconcileVisualNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.reconcileVisualNovels as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileVisualNovels as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes reconcileVisualNovels with call error', async () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileVisualNovelsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileVisualNovelsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileVisualNovelsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.reconcileVisualNovels = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.reconcileVisualNovels(request), expectedError);
-            assert((client.innerApiCalls.reconcileVisualNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.reconcileVisualNovels as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileVisualNovels as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes reconcileVisualNovels with LRO error', async () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileVisualNovelsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileVisualNovelsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileVisualNovelsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.reconcileVisualNovels = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.reconcileVisualNovels(request);
             await assert.rejects(operation.promise(), expectedError);
-            assert((client.innerApiCalls.reconcileVisualNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.reconcileVisualNovels as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileVisualNovels as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes checkReconcileVisualNovelsProgress without error', async () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
+            const expectedResponse = generateSampleMessage(
+              new operationsProtos.google.longrunning.Operation()
+            );
             expectedResponse.name = 'test';
             expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
             expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
@@ -696,7 +757,7 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -714,9 +775,9 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListVisualNovelsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListVisualNovelsRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.VisualNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.VisualNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.VisualNovel()),
@@ -724,8 +785,6 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             client.innerApiCalls.listVisualNovels = stubSimpleCall(expectedResponse);
             const [response] = await client.listVisualNovels(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listVisualNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listVisualNovels without error using callback', async () => {
@@ -734,9 +793,9 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListVisualNovelsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListVisualNovelsRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.VisualNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.VisualNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.VisualNovel()),
@@ -755,8 +814,6 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listVisualNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes listVisualNovels with error', async () => {
@@ -765,13 +822,12 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListVisualNovelsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListVisualNovelsRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.listVisualNovels = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listVisualNovels(request), expectedError);
-            assert((client.innerApiCalls.listVisualNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listVisualNovelsStream without error', async () => {
@@ -780,7 +836,9 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListVisualNovelsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListVisualNovelsRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.VisualNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.VisualNovel()),
@@ -812,7 +870,9 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListVisualNovelsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListVisualNovelsRequest()
+            );
             const expectedError = new Error('expected');
             client.descriptors.page.listVisualNovels.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listVisualNovelsStream(request);
@@ -837,9 +897,11 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
             const client = new visualnovelserviceModule.v1alpha1.VisualNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListVisualNovelsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListVisualNovelsRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.VisualNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.VisualNovel()),
@@ -863,7 +925,10 @@ describe('v1alpha1.VisualNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListVisualNovelsRequest());const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListVisualNovelsRequest()
+            );
+            const expectedError = new Error('expected');
             client.descriptors.page.listVisualNovels.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listVisualNovelsAsync(request);
             await assert.rejects(async () => {

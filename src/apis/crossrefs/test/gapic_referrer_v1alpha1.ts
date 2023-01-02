@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,25 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as referrerModule from '../src';
 
 import {PassThrough} from 'stream';
 
 import {protobuf, LROperation, operationsProtos} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -103,97 +116,99 @@ function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?
 }
 
 describe('v1alpha1.ReferrerClient', () => {
-    it('has servicePath', () => {
-        const servicePath = referrerModule.v1alpha1.ReferrerClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = referrerModule.v1alpha1.ReferrerClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = referrerModule.v1alpha1.ReferrerClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new referrerModule.v1alpha1.ReferrerClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new referrerModule.v1alpha1.ReferrerClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = referrerModule.v1alpha1.ReferrerClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new referrerModule.v1alpha1.ReferrerClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = referrerModule.v1alpha1.ReferrerClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = referrerModule.v1alpha1.ReferrerClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new referrerModule.v1alpha1.ReferrerClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new referrerModule.v1alpha1.ReferrerClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.referrerStub, undefined);
+            await client.initialize();
+            assert(client.referrerStub);
         });
-        assert.strictEqual(client.referrerStub, undefined);
-        await client.initialize();
-        assert(client.referrerStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new referrerModule.v1alpha1.ReferrerClient({
+        it('has close method for the initialized client', done => {
+            const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.referrerStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new referrerModule.v1alpha1.ReferrerClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.referrerStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new referrerModule.v1alpha1.ReferrerClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new referrerModule.v1alpha1.ReferrerClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.referrerStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new referrerModule.v1alpha1.ReferrerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.referrerStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new referrerModule.v1alpha1.ReferrerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new referrerModule.v1alpha1.ReferrerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('getCrossRef', () => {
@@ -201,43 +216,45 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetCrossRefRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.GetCrossRefRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.GetCrossRefRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.CrossRef()
+            );
             client.innerApiCalls.getCrossRef = stubSimpleCall(expectedResponse);
             const [response] = await client.getCrossRef(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getCrossRef as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getCrossRef as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getCrossRef as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getCrossRef without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetCrossRefRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.GetCrossRefRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.GetCrossRefRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.CrossRef()
+            );
             client.innerApiCalls.getCrossRef = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getCrossRef(
@@ -252,41 +269,50 @@ describe('v1alpha1.ReferrerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getCrossRef as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getCrossRef as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getCrossRef as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getCrossRef with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetCrossRefRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.GetCrossRefRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.GetCrossRefRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getCrossRef = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getCrossRef(request), expectedError);
-            assert((client.innerApiCalls.getCrossRef as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getCrossRef as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getCrossRef as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getCrossRef with closed client', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetCrossRefRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.GetCrossRefRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.GetCrossRefRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getCrossRef(request), expectedError);
@@ -298,27 +324,31 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CreateCrossRefRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.CreateCrossRefRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.CrossRef()
+            );
             client.innerApiCalls.createCrossRef = stubSimpleCall(expectedResponse);
             const [response] = await client.createCrossRef(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createCrossRef as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes createCrossRef without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CreateCrossRefRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.CreateCrossRefRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.CrossRef()
+            );
             client.innerApiCalls.createCrossRef = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createCrossRef(
@@ -333,32 +363,31 @@ describe('v1alpha1.ReferrerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createCrossRef as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes createCrossRef with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CreateCrossRefRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.CreateCrossRefRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.createCrossRef = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createCrossRef(request), expectedError);
-            assert((client.innerApiCalls.createCrossRef as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes createCrossRef with closed client', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CreateCrossRefRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.CreateCrossRefRequest()
+            );
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createCrossRef(request), expectedError);
@@ -370,27 +399,31 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsResponse()
+            );
             client.innerApiCalls.batchCreateCrossRefs = stubSimpleCall(expectedResponse);
             const [response] = await client.batchCreateCrossRefs(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.batchCreateCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes batchCreateCrossRefs without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsResponse()
+            );
             client.innerApiCalls.batchCreateCrossRefs = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.batchCreateCrossRefs(
@@ -405,32 +438,31 @@ describe('v1alpha1.ReferrerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.batchCreateCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes batchCreateCrossRefs with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.batchCreateCrossRefs = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.batchCreateCrossRefs(request), expectedError);
-            assert((client.innerApiCalls.batchCreateCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes batchCreateCrossRefs with closed client', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.BatchCreateCrossRefsRequest()
+            );
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.batchCreateCrossRefs(request), expectedError);
@@ -442,45 +474,47 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateCrossRefRequest());
-            request.crossref = {};
-            request.crossref.name = '';
-            const expectedHeaderRequestParams = "crossref.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateCrossRefResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.UpdateCrossRefRequest()
+            );
+            request.crossref ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.UpdateCrossRefRequest', ['crossref', 'name']);
+            request.crossref.name = defaultValue1;
+            const expectedHeaderRequestParams = `crossref.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.UpdateCrossRefResponse()
+            );
             client.innerApiCalls.updateCrossRef = stubSimpleCall(expectedResponse);
             const [response] = await client.updateCrossRef(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateCrossRef as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateCrossRef as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateCrossRef as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateCrossRef without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateCrossRefRequest());
-            request.crossref = {};
-            request.crossref.name = '';
-            const expectedHeaderRequestParams = "crossref.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateCrossRefResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.UpdateCrossRefRequest()
+            );
+            request.crossref ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.UpdateCrossRefRequest', ['crossref', 'name']);
+            request.crossref.name = defaultValue1;
+            const expectedHeaderRequestParams = `crossref.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.UpdateCrossRefResponse()
+            );
             client.innerApiCalls.updateCrossRef = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updateCrossRef(
@@ -495,43 +529,52 @@ describe('v1alpha1.ReferrerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateCrossRef as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updateCrossRef as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateCrossRef as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateCrossRef with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateCrossRefRequest());
-            request.crossref = {};
-            request.crossref.name = '';
-            const expectedHeaderRequestParams = "crossref.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.UpdateCrossRefRequest()
+            );
+            request.crossref ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.UpdateCrossRefRequest', ['crossref', 'name']);
+            request.crossref.name = defaultValue1;
+            const expectedHeaderRequestParams = `crossref.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updateCrossRef = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updateCrossRef(request), expectedError);
-            assert((client.innerApiCalls.updateCrossRef as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateCrossRef as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateCrossRef as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateCrossRef with closed client', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateCrossRefRequest());
-            request.crossref = {};
-            request.crossref.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.UpdateCrossRefRequest()
+            );
+            request.crossref ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.UpdateCrossRefRequest', ['crossref', 'name']);
+            request.crossref.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updateCrossRef(request), expectedError);
@@ -543,27 +586,31 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsResponse()
+            );
             client.innerApiCalls.countCrossRefs = stubSimpleCall(expectedResponse);
             const [response] = await client.countCrossRefs(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.countCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes countCrossRefs without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsResponse()
+            );
             client.innerApiCalls.countCrossRefs = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.countCrossRefs(
@@ -578,32 +625,31 @@ describe('v1alpha1.ReferrerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.countCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes countCrossRefs with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.countCrossRefs = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.countCrossRefs(request), expectedError);
-            assert((client.innerApiCalls.countCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes countCrossRefs with closed client', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.CountCrossRefsRequest()
+            );
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.countCrossRefs(request), expectedError);
@@ -615,43 +661,45 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetUniverseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.Universe());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.GetUniverseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.GetUniverseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.Universe()
+            );
             client.innerApiCalls.getUniverse = stubSimpleCall(expectedResponse);
             const [response] = await client.getUniverse(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getUniverse as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getUniverse as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getUniverse as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getUniverse without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetUniverseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.Universe());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.GetUniverseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.GetUniverseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.Universe()
+            );
             client.innerApiCalls.getUniverse = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getUniverse(
@@ -666,41 +714,50 @@ describe('v1alpha1.ReferrerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getUniverse as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getUniverse as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getUniverse as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getUniverse with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetUniverseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.GetUniverseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.GetUniverseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getUniverse = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getUniverse(request), expectedError);
-            assert((client.innerApiCalls.getUniverse as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getUniverse as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getUniverse as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getUniverse with closed client', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetUniverseRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.GetUniverseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.GetUniverseRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getUniverse(request), expectedError);
@@ -712,45 +769,47 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateUniverseRequest());
-            request.universe = {};
-            request.universe.name = '';
-            const expectedHeaderRequestParams = "universe.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.Universe());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.UpdateUniverseRequest()
+            );
+            request.universe ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.UpdateUniverseRequest', ['universe', 'name']);
+            request.universe.name = defaultValue1;
+            const expectedHeaderRequestParams = `universe.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.Universe()
+            );
             client.innerApiCalls.updateUniverse = stubSimpleCall(expectedResponse);
             const [response] = await client.updateUniverse(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateUniverse as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateUniverse as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateUniverse as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateUniverse without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateUniverseRequest());
-            request.universe = {};
-            request.universe.name = '';
-            const expectedHeaderRequestParams = "universe.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.Universe());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.UpdateUniverseRequest()
+            );
+            request.universe ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.UpdateUniverseRequest', ['universe', 'name']);
+            request.universe.name = defaultValue1;
+            const expectedHeaderRequestParams = `universe.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.Universe()
+            );
             client.innerApiCalls.updateUniverse = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updateUniverse(
@@ -765,43 +824,52 @@ describe('v1alpha1.ReferrerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateUniverse as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updateUniverse as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateUniverse as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateUniverse with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateUniverseRequest());
-            request.universe = {};
-            request.universe.name = '';
-            const expectedHeaderRequestParams = "universe.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.UpdateUniverseRequest()
+            );
+            request.universe ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.UpdateUniverseRequest', ['universe', 'name']);
+            request.universe.name = defaultValue1;
+            const expectedHeaderRequestParams = `universe.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updateUniverse = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updateUniverse(request), expectedError);
-            assert((client.innerApiCalls.updateUniverse as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateUniverse as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateUniverse as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateUniverse with closed client', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.UpdateUniverseRequest());
-            request.universe = {};
-            request.universe.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.UpdateUniverseRequest()
+            );
+            request.universe ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.UpdateUniverseRequest', ['universe', 'name']);
+            request.universe.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updateUniverse(request), expectedError);
@@ -813,43 +881,45 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExpandUniverseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExpandUniverseResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ExpandUniverseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.ExpandUniverseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ExpandUniverseResponse()
+            );
             client.innerApiCalls.expandUniverse = stubSimpleCall(expectedResponse);
             const [response] = await client.expandUniverse(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.expandUniverse as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.expandUniverse as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.expandUniverse as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes expandUniverse without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExpandUniverseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExpandUniverseResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ExpandUniverseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.ExpandUniverseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ExpandUniverseResponse()
+            );
             client.innerApiCalls.expandUniverse = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.expandUniverse(
@@ -864,41 +934,50 @@ describe('v1alpha1.ReferrerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.expandUniverse as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.expandUniverse as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.expandUniverse as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes expandUniverse with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExpandUniverseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ExpandUniverseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.ExpandUniverseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.expandUniverse = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.expandUniverse(request), expectedError);
-            assert((client.innerApiCalls.expandUniverse as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.expandUniverse as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.expandUniverse as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes expandUniverse with closed client', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExpandUniverseRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ExpandUniverseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.ExpandUniverseRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.expandUniverse(request), expectedError);
@@ -910,43 +989,45 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetWormholeRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.Wormhole());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.GetWormholeRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.GetWormholeRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.Wormhole()
+            );
             client.innerApiCalls.getWormhole = stubSimpleCall(expectedResponse);
             const [response] = await client.getWormhole(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getWormhole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getWormhole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getWormhole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getWormhole without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetWormholeRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.Wormhole());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.GetWormholeRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.GetWormholeRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.Wormhole()
+            );
             client.innerApiCalls.getWormhole = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getWormhole(
@@ -961,41 +1042,50 @@ describe('v1alpha1.ReferrerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getWormhole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getWormhole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getWormhole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getWormhole with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetWormholeRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.GetWormholeRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.GetWormholeRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getWormhole = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getWormhole(request), expectedError);
-            assert((client.innerApiCalls.getWormhole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getWormhole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getWormhole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getWormhole with closed client', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.GetWormholeRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.GetWormholeRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.GetWormholeRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getWormhole(request), expectedError);
@@ -1007,43 +1097,45 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsResponse()
+            );
             client.innerApiCalls.listWormholeCrossRefs = stubSimpleCall(expectedResponse);
             const [response] = await client.listWormholeCrossRefs(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listWormholeCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listWormholeCrossRefs as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listWormholeCrossRefs as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listWormholeCrossRefs without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsResponse()
+            );
             client.innerApiCalls.listWormholeCrossRefs = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.listWormholeCrossRefs(
@@ -1058,41 +1150,50 @@ describe('v1alpha1.ReferrerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listWormholeCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.listWormholeCrossRefs as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listWormholeCrossRefs as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listWormholeCrossRefs with error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.listWormholeCrossRefs = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listWormholeCrossRefs(request), expectedError);
-            assert((client.innerApiCalls.listWormholeCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listWormholeCrossRefs as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listWormholeCrossRefs as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listWormholeCrossRefs with closed client', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.crossrefs.v1alpha1.ListWormholeCrossRefsRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.listWormholeCrossRefs(request), expectedError);
@@ -1104,28 +1205,32 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.AnalyzeCrossRefRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.AnalyzeCrossRefRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.analyzeCrossRefs = stubLongRunningCall(expectedResponse);
             const [operation] = await client.analyzeCrossRefs(request);
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.analyzeCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes analyzeCrossRefs without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.AnalyzeCrossRefRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.AnalyzeCrossRefRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.analyzeCrossRefs = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.analyzeCrossRefs(
@@ -1143,48 +1248,46 @@ describe('v1alpha1.ReferrerClient', () => {
             const operation = await promise as LROperation<protos.animeshon.crossrefs.v1alpha1.IAnalyzeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>;
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.analyzeCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes analyzeCrossRefs with call error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.AnalyzeCrossRefRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.AnalyzeCrossRefRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.analyzeCrossRefs = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.analyzeCrossRefs(request), expectedError);
-            assert((client.innerApiCalls.analyzeCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes analyzeCrossRefs with LRO error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.AnalyzeCrossRefRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.AnalyzeCrossRefRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.analyzeCrossRefs = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.analyzeCrossRefs(request);
             await assert.rejects(operation.promise(), expectedError);
-            assert((client.innerApiCalls.analyzeCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes checkAnalyzeCrossRefsProgress without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
+            const expectedResponse = generateSampleMessage(
+              new operationsProtos.google.longrunning.Operation()
+            );
             expectedResponse.name = 'test';
             expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
             expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
@@ -1200,7 +1303,7 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -1216,28 +1319,32 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ImportCrossRefRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ImportCrossRefRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.importCrossRefs = stubLongRunningCall(expectedResponse);
             const [operation] = await client.importCrossRefs(request);
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.importCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes importCrossRefs without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ImportCrossRefRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ImportCrossRefRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.importCrossRefs = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.importCrossRefs(
@@ -1255,48 +1362,46 @@ describe('v1alpha1.ReferrerClient', () => {
             const operation = await promise as LROperation<protos.animeshon.crossrefs.v1alpha1.IImportCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>;
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.importCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes importCrossRefs with call error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ImportCrossRefRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ImportCrossRefRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.importCrossRefs = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.importCrossRefs(request), expectedError);
-            assert((client.innerApiCalls.importCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes importCrossRefs with LRO error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ImportCrossRefRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ImportCrossRefRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.importCrossRefs = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.importCrossRefs(request);
             await assert.rejects(operation.promise(), expectedError);
-            assert((client.innerApiCalls.importCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes checkImportCrossRefsProgress without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
+            const expectedResponse = generateSampleMessage(
+              new operationsProtos.google.longrunning.Operation()
+            );
             expectedResponse.name = 'test';
             expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
             expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
@@ -1312,7 +1417,7 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -1328,28 +1433,32 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExportCrossRefRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ExportCrossRefRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.exportCrossRefs = stubLongRunningCall(expectedResponse);
             const [operation] = await client.exportCrossRefs(request);
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.exportCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes exportCrossRefs without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExportCrossRefRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ExportCrossRefRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.exportCrossRefs = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.exportCrossRefs(
@@ -1367,48 +1476,46 @@ describe('v1alpha1.ReferrerClient', () => {
             const operation = await promise as LROperation<protos.animeshon.crossrefs.v1alpha1.IExportCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>;
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.exportCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes exportCrossRefs with call error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExportCrossRefRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ExportCrossRefRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.exportCrossRefs = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.exportCrossRefs(request), expectedError);
-            assert((client.innerApiCalls.exportCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes exportCrossRefs with LRO error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ExportCrossRefRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ExportCrossRefRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.exportCrossRefs = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.exportCrossRefs(request);
             await assert.rejects(operation.promise(), expectedError);
-            assert((client.innerApiCalls.exportCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes checkExportCrossRefsProgress without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
+            const expectedResponse = generateSampleMessage(
+              new operationsProtos.google.longrunning.Operation()
+            );
             expectedResponse.name = 'test';
             expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
             expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
@@ -1424,7 +1531,7 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -1440,28 +1547,32 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.initializeCrossRefs = stubLongRunningCall(expectedResponse);
             const [operation] = await client.initializeCrossRefs(request);
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.initializeCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes initializeCrossRefs without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.initializeCrossRefs = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.initializeCrossRefs(
@@ -1479,48 +1590,46 @@ describe('v1alpha1.ReferrerClient', () => {
             const operation = await promise as LROperation<protos.animeshon.crossrefs.v1alpha1.IInitializeCrossRefsResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>;
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.initializeCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes initializeCrossRefs with call error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.initializeCrossRefs = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.initializeCrossRefs(request), expectedError);
-            assert((client.innerApiCalls.initializeCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes initializeCrossRefs with LRO error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.initializeCrossRefs = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.initializeCrossRefs(request);
             await assert.rejects(operation.promise(), expectedError);
-            assert((client.innerApiCalls.initializeCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes checkInitializeCrossRefsProgress without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
+            const expectedResponse = generateSampleMessage(
+              new operationsProtos.google.longrunning.Operation()
+            );
             expectedResponse.name = 'test';
             expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
             expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
@@ -1536,7 +1645,7 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -1552,28 +1661,32 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.analyzeParodies = stubLongRunningCall(expectedResponse);
             const [operation] = await client.analyzeParodies(request);
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.analyzeParodies as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes analyzeParodies without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.analyzeParodies = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.analyzeParodies(
@@ -1591,48 +1704,46 @@ describe('v1alpha1.ReferrerClient', () => {
             const operation = await promise as LROperation<protos.animeshon.crossrefs.v1alpha1.IAnalyzeParodiesResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>;
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.analyzeParodies as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes analyzeParodies with call error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.analyzeParodies = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.analyzeParodies(request), expectedError);
-            assert((client.innerApiCalls.analyzeParodies as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes analyzeParodies with LRO error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.analyzeParodies = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.analyzeParodies(request);
             await assert.rejects(operation.promise(), expectedError);
-            assert((client.innerApiCalls.analyzeParodies as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes checkAnalyzeParodiesProgress without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
+            const expectedResponse = generateSampleMessage(
+              new operationsProtos.google.longrunning.Operation()
+            );
             expectedResponse.name = 'test';
             expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
             expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
@@ -1648,7 +1759,7 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -1664,28 +1775,32 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.exportParodies = stubLongRunningCall(expectedResponse);
             const [operation] = await client.exportParodies(request);
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.exportParodies as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes exportParodies without error using callback', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.exportParodies = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.exportParodies(
@@ -1703,48 +1818,46 @@ describe('v1alpha1.ReferrerClient', () => {
             const operation = await promise as LROperation<protos.animeshon.crossrefs.v1alpha1.IExportParodiesResponse, protos.animeshon.crossrefs.v1alpha1.IOperationMetadata>;
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.exportParodies as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes exportParodies with call error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.exportParodies = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.exportParodies(request), expectedError);
-            assert((client.innerApiCalls.exportParodies as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes exportParodies with LRO error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.protobuf.Empty());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.exportParodies = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.exportParodies(request);
             await assert.rejects(operation.promise(), expectedError);
-            assert((client.innerApiCalls.exportParodies as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes checkExportParodiesProgress without error', async () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
+            const expectedResponse = generateSampleMessage(
+              new operationsProtos.google.longrunning.Operation()
+            );
             expectedResponse.name = 'test';
             expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
             expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
@@ -1760,7 +1873,7 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -1778,9 +1891,9 @@ describe('v1alpha1.ReferrerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef()),
               generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef()),
               generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef()),
@@ -1788,8 +1901,6 @@ describe('v1alpha1.ReferrerClient', () => {
             client.innerApiCalls.listCrossRefs = stubSimpleCall(expectedResponse);
             const [response] = await client.listCrossRefs(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listCrossRefs without error using callback', async () => {
@@ -1798,9 +1909,9 @@ describe('v1alpha1.ReferrerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef()),
               generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef()),
               generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef()),
@@ -1819,8 +1930,6 @@ describe('v1alpha1.ReferrerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes listCrossRefs with error', async () => {
@@ -1829,13 +1938,12 @@ describe('v1alpha1.ReferrerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.listCrossRefs = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listCrossRefs(request), expectedError);
-            assert((client.innerApiCalls.listCrossRefs as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listCrossRefsStream without error', async () => {
@@ -1844,7 +1952,9 @@ describe('v1alpha1.ReferrerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef()),
               generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef()),
@@ -1876,7 +1986,9 @@ describe('v1alpha1.ReferrerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest()
+            );
             const expectedError = new Error('expected');
             client.descriptors.page.listCrossRefs.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listCrossRefsStream(request);
@@ -1901,9 +2013,11 @@ describe('v1alpha1.ReferrerClient', () => {
             const client = new referrerModule.v1alpha1.ReferrerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef()),
               generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.CrossRef()),
@@ -1927,7 +2041,10 @@ describe('v1alpha1.ReferrerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest());const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.crossrefs.v1alpha1.ListCrossRefsRequest()
+            );
+            const expectedError = new Error('expected');
             client.descriptors.page.listCrossRefs.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listCrossRefsAsync(request);
             await assert.rejects(async () => {

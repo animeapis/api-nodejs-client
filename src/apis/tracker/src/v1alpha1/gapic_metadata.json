@@ -30,6 +30,11 @@
                 "deleteTracker"
               ]
             },
+            "ComputeTracker": {
+              "methods": [
+                "computeTracker"
+              ]
+            },
             "CreateActivity": {
               "methods": [
                 "createActivity"
@@ -80,6 +85,11 @@
             "DeleteTracker": {
               "methods": [
                 "deleteTracker"
+              ]
+            },
+            "ComputeTracker": {
+              "methods": [
+                "computeTracker"
               ]
             },
             "CreateActivity": {

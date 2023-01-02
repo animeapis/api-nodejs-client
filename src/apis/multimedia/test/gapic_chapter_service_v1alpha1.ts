@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,25 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as chapterserviceModule from '../src';
 
 import {PassThrough} from 'stream';
 
 import {protobuf, LROperation, operationsProtos} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -103,97 +116,99 @@ function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?
 }
 
 describe('v1alpha1.ChapterServiceClient', () => {
-    it('has servicePath', () => {
-        const servicePath = chapterserviceModule.v1alpha1.ChapterServiceClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = chapterserviceModule.v1alpha1.ChapterServiceClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = chapterserviceModule.v1alpha1.ChapterServiceClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new chapterserviceModule.v1alpha1.ChapterServiceClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = chapterserviceModule.v1alpha1.ChapterServiceClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = chapterserviceModule.v1alpha1.ChapterServiceClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = chapterserviceModule.v1alpha1.ChapterServiceClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new chapterserviceModule.v1alpha1.ChapterServiceClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.chapterServiceStub, undefined);
+            await client.initialize();
+            assert(client.chapterServiceStub);
         });
-        assert.strictEqual(client.chapterServiceStub, undefined);
-        await client.initialize();
-        assert(client.chapterServiceStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
+        it('has close method for the initialized client', done => {
+            const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.chapterServiceStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.chapterServiceStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.chapterServiceStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.chapterServiceStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('getChapter', () => {
@@ -201,43 +216,45 @@ describe('v1alpha1.ChapterServiceClient', () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetChapterRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetChapterRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetChapterRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.Chapter()
+            );
             client.innerApiCalls.getChapter = stubSimpleCall(expectedResponse);
             const [response] = await client.getChapter(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getChapter as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getChapter as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getChapter as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getChapter without error using callback', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetChapterRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetChapterRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetChapterRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.Chapter()
+            );
             client.innerApiCalls.getChapter = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getChapter(
@@ -252,41 +269,50 @@ describe('v1alpha1.ChapterServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getChapter as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getChapter as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getChapter as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getChapter with error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetChapterRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetChapterRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetChapterRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getChapter = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getChapter(request), expectedError);
-            assert((client.innerApiCalls.getChapter as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getChapter as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getChapter as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getChapter with closed client', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetChapterRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetChapterRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetChapterRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getChapter(request), expectedError);
@@ -298,43 +324,45 @@ describe('v1alpha1.ChapterServiceClient', () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateChapterRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateChapterRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.CreateChapterRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.Chapter()
+            );
             client.innerApiCalls.createChapter = stubSimpleCall(expectedResponse);
             const [response] = await client.createChapter(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createChapter as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createChapter as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createChapter as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createChapter without error using callback', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateChapterRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateChapterRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.CreateChapterRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.Chapter()
+            );
             client.innerApiCalls.createChapter = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createChapter(
@@ -349,41 +377,50 @@ describe('v1alpha1.ChapterServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createChapter as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createChapter as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createChapter as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createChapter with error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateChapterRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateChapterRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.CreateChapterRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createChapter = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createChapter(request), expectedError);
-            assert((client.innerApiCalls.createChapter as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createChapter as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createChapter as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createChapter with closed client', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateChapterRequest());
-            request.parent = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateChapterRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.CreateChapterRequest', ['parent']);
+            request.parent = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createChapter(request), expectedError);
@@ -395,45 +432,47 @@ describe('v1alpha1.ChapterServiceClient', () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateChapterRequest());
-            request.chapter = {};
-            request.chapter.name = '';
-            const expectedHeaderRequestParams = "chapter.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateChapterRequest()
+            );
+            request.chapter ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateChapterRequest', ['chapter', 'name']);
+            request.chapter.name = defaultValue1;
+            const expectedHeaderRequestParams = `chapter.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.Chapter()
+            );
             client.innerApiCalls.updateChapter = stubSimpleCall(expectedResponse);
             const [response] = await client.updateChapter(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateChapter as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateChapter as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateChapter as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateChapter without error using callback', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateChapterRequest());
-            request.chapter = {};
-            request.chapter.name = '';
-            const expectedHeaderRequestParams = "chapter.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateChapterRequest()
+            );
+            request.chapter ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateChapterRequest', ['chapter', 'name']);
+            request.chapter.name = defaultValue1;
+            const expectedHeaderRequestParams = `chapter.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.Chapter()
+            );
             client.innerApiCalls.updateChapter = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updateChapter(
@@ -448,43 +487,52 @@ describe('v1alpha1.ChapterServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateChapter as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updateChapter as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateChapter as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateChapter with error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateChapterRequest());
-            request.chapter = {};
-            request.chapter.name = '';
-            const expectedHeaderRequestParams = "chapter.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateChapterRequest()
+            );
+            request.chapter ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateChapterRequest', ['chapter', 'name']);
+            request.chapter.name = defaultValue1;
+            const expectedHeaderRequestParams = `chapter.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updateChapter = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updateChapter(request), expectedError);
-            assert((client.innerApiCalls.updateChapter as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateChapter as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateChapter as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateChapter with closed client', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateChapterRequest());
-            request.chapter = {};
-            request.chapter.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateChapterRequest()
+            );
+            request.chapter ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateChapterRequest', ['chapter', 'name']);
+            request.chapter.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updateChapter(request), expectedError);
@@ -496,43 +544,45 @@ describe('v1alpha1.ChapterServiceClient', () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteChapterRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteChapterRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteChapterRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteChapter = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteChapter(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteChapter as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteChapter as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteChapter as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteChapter without error using callback', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteChapterRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteChapterRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteChapterRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteChapter = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteChapter(
@@ -547,41 +597,50 @@ describe('v1alpha1.ChapterServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteChapter as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteChapter as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteChapter as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteChapter with error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteChapterRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteChapterRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteChapterRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteChapter = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteChapter(request), expectedError);
-            assert((client.innerApiCalls.deleteChapter as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteChapter as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteChapter as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteChapter with closed client', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteChapterRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteChapterRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteChapterRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteChapter(request), expectedError);
@@ -593,44 +652,46 @@ describe('v1alpha1.ChapterServiceClient', () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateChaptersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.BatchCreateChaptersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.BatchCreateChaptersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.batchCreateChapters = stubLongRunningCall(expectedResponse);
             const [operation] = await client.batchCreateChapters(request);
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.batchCreateChapters as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.batchCreateChapters as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.batchCreateChapters as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes batchCreateChapters without error using callback', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateChaptersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.BatchCreateChaptersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.BatchCreateChaptersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.batchCreateChapters = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.batchCreateChapters(
@@ -648,64 +709,72 @@ describe('v1alpha1.ChapterServiceClient', () => {
             const operation = await promise as LROperation<protos.animeshon.multimedia.v1alpha1.IBatchCreateChaptersResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>;
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.batchCreateChapters as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.batchCreateChapters as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.batchCreateChapters as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes batchCreateChapters with call error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateChaptersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.BatchCreateChaptersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.BatchCreateChaptersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.batchCreateChapters = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.batchCreateChapters(request), expectedError);
-            assert((client.innerApiCalls.batchCreateChapters as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.batchCreateChapters as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.batchCreateChapters as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes batchCreateChapters with LRO error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateChaptersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.BatchCreateChaptersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.BatchCreateChaptersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.batchCreateChapters = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.batchCreateChapters(request);
             await assert.rejects(operation.promise(), expectedError);
-            assert((client.innerApiCalls.batchCreateChapters as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.batchCreateChapters as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.batchCreateChapters as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes checkBatchCreateChaptersProgress without error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
+            const expectedResponse = generateSampleMessage(
+              new operationsProtos.google.longrunning.Operation()
+            );
             expectedResponse.name = 'test';
             expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
             expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
@@ -721,7 +790,7 @@ describe('v1alpha1.ChapterServiceClient', () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -737,44 +806,46 @@ describe('v1alpha1.ChapterServiceClient', () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileChaptersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileChaptersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileChaptersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.reconcileChapters = stubLongRunningCall(expectedResponse);
             const [operation] = await client.reconcileChapters(request);
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.reconcileChapters as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.reconcileChapters as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileChapters as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes reconcileChapters without error using callback', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileChaptersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileChaptersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileChaptersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.reconcileChapters = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.reconcileChapters(
@@ -792,64 +863,72 @@ describe('v1alpha1.ChapterServiceClient', () => {
             const operation = await promise as LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileChaptersResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>;
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.reconcileChapters as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.reconcileChapters as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileChapters as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes reconcileChapters with call error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileChaptersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileChaptersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileChaptersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.reconcileChapters = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.reconcileChapters(request), expectedError);
-            assert((client.innerApiCalls.reconcileChapters as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.reconcileChapters as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileChapters as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes reconcileChapters with LRO error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileChaptersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileChaptersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileChaptersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.reconcileChapters = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.reconcileChapters(request);
             await assert.rejects(operation.promise(), expectedError);
-            assert((client.innerApiCalls.reconcileChapters as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.reconcileChapters as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileChapters as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes checkReconcileChaptersProgress without error', async () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
+            const expectedResponse = generateSampleMessage(
+              new operationsProtos.google.longrunning.Operation()
+            );
             expectedResponse.name = 'test';
             expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
             expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
@@ -865,7 +944,7 @@ describe('v1alpha1.ChapterServiceClient', () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -883,17 +962,13 @@ describe('v1alpha1.ChapterServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ListChaptersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
@@ -901,8 +976,12 @@ describe('v1alpha1.ChapterServiceClient', () => {
             client.innerApiCalls.listChapters = stubSimpleCall(expectedResponse);
             const [response] = await client.listChapters(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listChapters as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listChapters as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listChapters as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listChapters without error using callback', async () => {
@@ -911,17 +990,13 @@ describe('v1alpha1.ChapterServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ListChaptersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
@@ -940,8 +1015,12 @@ describe('v1alpha1.ChapterServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listChapters as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.listChapters as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listChapters as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listChapters with error', async () => {
@@ -950,21 +1029,22 @@ describe('v1alpha1.ChapterServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ListChaptersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.listChapters = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listChapters(request), expectedError);
-            assert((client.innerApiCalls.listChapters as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listChapters as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listChapters as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listChaptersStream without error', async () => {
@@ -973,9 +1053,13 @@ describe('v1alpha1.ChapterServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ListChaptersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
@@ -999,10 +1083,11 @@ describe('v1alpha1.ChapterServiceClient', () => {
             assert.deepStrictEqual(responses, expectedResponse);
             assert((client.descriptors.page.listChapters.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listChapters, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listChapters.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1012,9 +1097,13 @@ describe('v1alpha1.ChapterServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ListChaptersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.descriptors.page.listChapters.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listChaptersStream(request);
@@ -1033,10 +1122,11 @@ describe('v1alpha1.ChapterServiceClient', () => {
             await assert.rejects(promise, expectedError);
             assert((client.descriptors.page.listChapters.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listChapters, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listChapters.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                         expectedHeaderRequestParams
+                    ) 
             );
         });
 
@@ -1044,11 +1134,15 @@ describe('v1alpha1.ChapterServiceClient', () => {
             const client = new chapterserviceModule.v1alpha1.ChapterServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ListChaptersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Chapter()),
@@ -1064,10 +1158,11 @@ describe('v1alpha1.ChapterServiceClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listChapters.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listChapters.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1077,9 +1172,14 @@ describe('v1alpha1.ChapterServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListChaptersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ListChaptersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedError = new Error('expected');
             client.descriptors.page.listChapters.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listChaptersAsync(request);
             await assert.rejects(async () => {
@@ -1091,10 +1191,11 @@ describe('v1alpha1.ChapterServiceClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listChapters.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listChapters.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
     });

@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,25 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as lightnovelserviceModule from '../src';
 
 import {PassThrough} from 'stream';
 
 import {protobuf, LROperation, operationsProtos} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -103,97 +116,99 @@ function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?
 }
 
 describe('v1alpha1.LightNovelServiceClient', () => {
-    it('has servicePath', () => {
-        const servicePath = lightnovelserviceModule.v1alpha1.LightNovelServiceClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = lightnovelserviceModule.v1alpha1.LightNovelServiceClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = lightnovelserviceModule.v1alpha1.LightNovelServiceClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = lightnovelserviceModule.v1alpha1.LightNovelServiceClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = lightnovelserviceModule.v1alpha1.LightNovelServiceClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = lightnovelserviceModule.v1alpha1.LightNovelServiceClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.lightNovelServiceStub, undefined);
+            await client.initialize();
+            assert(client.lightNovelServiceStub);
         });
-        assert.strictEqual(client.lightNovelServiceStub, undefined);
-        await client.initialize();
-        assert(client.lightNovelServiceStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
+        it('has close method for the initialized client', done => {
+            const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.lightNovelServiceStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.lightNovelServiceStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.lightNovelServiceStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.lightNovelServiceStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('getLightNovel', () => {
@@ -201,43 +216,45 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetLightNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.LightNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetLightNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetLightNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.LightNovel()
+            );
             client.innerApiCalls.getLightNovel = stubSimpleCall(expectedResponse);
             const [response] = await client.getLightNovel(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getLightNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getLightNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getLightNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getLightNovel without error using callback', async () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetLightNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.LightNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetLightNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetLightNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.LightNovel()
+            );
             client.innerApiCalls.getLightNovel = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getLightNovel(
@@ -252,41 +269,50 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getLightNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getLightNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getLightNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getLightNovel with error', async () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetLightNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetLightNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetLightNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getLightNovel = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getLightNovel(request), expectedError);
-            assert((client.innerApiCalls.getLightNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getLightNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getLightNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getLightNovel with closed client', async () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetLightNovelRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetLightNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetLightNovelRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getLightNovel(request), expectedError);
@@ -298,27 +324,31 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateLightNovelRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.LightNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateLightNovelRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.LightNovel()
+            );
             client.innerApiCalls.createLightNovel = stubSimpleCall(expectedResponse);
             const [response] = await client.createLightNovel(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createLightNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes createLightNovel without error using callback', async () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateLightNovelRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.LightNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateLightNovelRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.LightNovel()
+            );
             client.innerApiCalls.createLightNovel = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createLightNovel(
@@ -333,32 +363,31 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createLightNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes createLightNovel with error', async () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateLightNovelRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateLightNovelRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.createLightNovel = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createLightNovel(request), expectedError);
-            assert((client.innerApiCalls.createLightNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes createLightNovel with closed client', async () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateLightNovelRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateLightNovelRequest()
+            );
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createLightNovel(request), expectedError);
@@ -370,45 +399,47 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateLightNovelRequest());
-            request.lightNovel = {};
-            request.lightNovel.name = '';
-            const expectedHeaderRequestParams = "light_novel.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.LightNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateLightNovelRequest()
+            );
+            request.lightNovel ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateLightNovelRequest', ['lightNovel', 'name']);
+            request.lightNovel.name = defaultValue1;
+            const expectedHeaderRequestParams = `light_novel.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.LightNovel()
+            );
             client.innerApiCalls.updateLightNovel = stubSimpleCall(expectedResponse);
             const [response] = await client.updateLightNovel(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateLightNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateLightNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateLightNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateLightNovel without error using callback', async () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateLightNovelRequest());
-            request.lightNovel = {};
-            request.lightNovel.name = '';
-            const expectedHeaderRequestParams = "light_novel.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.LightNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateLightNovelRequest()
+            );
+            request.lightNovel ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateLightNovelRequest', ['lightNovel', 'name']);
+            request.lightNovel.name = defaultValue1;
+            const expectedHeaderRequestParams = `light_novel.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.LightNovel()
+            );
             client.innerApiCalls.updateLightNovel = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updateLightNovel(
@@ -423,43 +454,52 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateLightNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updateLightNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateLightNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateLightNovel with error', async () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateLightNovelRequest());
-            request.lightNovel = {};
-            request.lightNovel.name = '';
-            const expectedHeaderRequestParams = "light_novel.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateLightNovelRequest()
+            );
+            request.lightNovel ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateLightNovelRequest', ['lightNovel', 'name']);
+            request.lightNovel.name = defaultValue1;
+            const expectedHeaderRequestParams = `light_novel.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updateLightNovel = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updateLightNovel(request), expectedError);
-            assert((client.innerApiCalls.updateLightNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateLightNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateLightNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateLightNovel with closed client', async () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateLightNovelRequest());
-            request.lightNovel = {};
-            request.lightNovel.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateLightNovelRequest()
+            );
+            request.lightNovel ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateLightNovelRequest', ['lightNovel', 'name']);
+            request.lightNovel.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updateLightNovel(request), expectedError);
@@ -471,43 +511,45 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteLightNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteLightNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteLightNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteLightNovel = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteLightNovel(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteLightNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteLightNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteLightNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteLightNovel without error using callback', async () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteLightNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteLightNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteLightNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteLightNovel = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteLightNovel(
@@ -522,41 +564,50 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteLightNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteLightNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteLightNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteLightNovel with error', async () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteLightNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteLightNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteLightNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteLightNovel = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteLightNovel(request), expectedError);
-            assert((client.innerApiCalls.deleteLightNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteLightNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteLightNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteLightNovel with closed client', async () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteLightNovelRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteLightNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteLightNovelRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteLightNovel(request), expectedError);
@@ -568,44 +619,46 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileLightNovelsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileLightNovelsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileLightNovelsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.reconcileLightNovels = stubLongRunningCall(expectedResponse);
             const [operation] = await client.reconcileLightNovels(request);
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.reconcileLightNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.reconcileLightNovels as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileLightNovels as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes reconcileLightNovels without error using callback', async () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileLightNovelsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileLightNovelsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileLightNovelsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.reconcileLightNovels = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.reconcileLightNovels(
@@ -623,64 +676,72 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             const operation = await promise as LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileLightNovelsResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>;
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.reconcileLightNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.reconcileLightNovels as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileLightNovels as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes reconcileLightNovels with call error', async () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileLightNovelsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileLightNovelsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileLightNovelsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.reconcileLightNovels = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.reconcileLightNovels(request), expectedError);
-            assert((client.innerApiCalls.reconcileLightNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.reconcileLightNovels as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileLightNovels as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes reconcileLightNovels with LRO error', async () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileLightNovelsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileLightNovelsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileLightNovelsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.reconcileLightNovels = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.reconcileLightNovels(request);
             await assert.rejects(operation.promise(), expectedError);
-            assert((client.innerApiCalls.reconcileLightNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.reconcileLightNovels as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileLightNovels as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes checkReconcileLightNovelsProgress without error', async () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
+            const expectedResponse = generateSampleMessage(
+              new operationsProtos.google.longrunning.Operation()
+            );
             expectedResponse.name = 'test';
             expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
             expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
@@ -696,7 +757,7 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -714,9 +775,9 @@ describe('v1alpha1.LightNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListLightNovelsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListLightNovelsRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.LightNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.LightNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.LightNovel()),
@@ -724,8 +785,6 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             client.innerApiCalls.listLightNovels = stubSimpleCall(expectedResponse);
             const [response] = await client.listLightNovels(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listLightNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listLightNovels without error using callback', async () => {
@@ -734,9 +793,9 @@ describe('v1alpha1.LightNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListLightNovelsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListLightNovelsRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.LightNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.LightNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.LightNovel()),
@@ -755,8 +814,6 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listLightNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes listLightNovels with error', async () => {
@@ -765,13 +822,12 @@ describe('v1alpha1.LightNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListLightNovelsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListLightNovelsRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.listLightNovels = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listLightNovels(request), expectedError);
-            assert((client.innerApiCalls.listLightNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listLightNovelsStream without error', async () => {
@@ -780,7 +836,9 @@ describe('v1alpha1.LightNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListLightNovelsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListLightNovelsRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.LightNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.LightNovel()),
@@ -812,7 +870,9 @@ describe('v1alpha1.LightNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListLightNovelsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListLightNovelsRequest()
+            );
             const expectedError = new Error('expected');
             client.descriptors.page.listLightNovels.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listLightNovelsStream(request);
@@ -837,9 +897,11 @@ describe('v1alpha1.LightNovelServiceClient', () => {
             const client = new lightnovelserviceModule.v1alpha1.LightNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListLightNovelsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListLightNovelsRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.LightNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.LightNovel()),
@@ -863,7 +925,10 @@ describe('v1alpha1.LightNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListLightNovelsRequest());const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListLightNovelsRequest()
+            );
+            const expectedError = new Error('expected');
             client.descriptors.page.listLightNovels.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listLightNovelsAsync(request);
             await assert.rejects(async () => {

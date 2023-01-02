@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,25 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as iamModule from '../src';
 
 import {PassThrough} from 'stream';
 
 import {protobuf, IamProtos} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -87,97 +100,99 @@ function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?
 }
 
 describe('v1alpha1.IAMClient', () => {
-    it('has servicePath', () => {
-        const servicePath = iamModule.v1alpha1.IAMClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = iamModule.v1alpha1.IAMClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = iamModule.v1alpha1.IAMClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new iamModule.v1alpha1.IAMClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new iamModule.v1alpha1.IAMClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = iamModule.v1alpha1.IAMClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new iamModule.v1alpha1.IAMClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = iamModule.v1alpha1.IAMClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = iamModule.v1alpha1.IAMClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new iamModule.v1alpha1.IAMClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new iamModule.v1alpha1.IAMClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.iAMStub, undefined);
+            await client.initialize();
+            assert(client.iAMStub);
         });
-        assert.strictEqual(client.iAMStub, undefined);
-        await client.initialize();
-        assert(client.iAMStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new iamModule.v1alpha1.IAMClient({
+        it('has close method for the initialized client', done => {
+            const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.iAMStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new iamModule.v1alpha1.IAMClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.iAMStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new iamModule.v1alpha1.IAMClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new iamModule.v1alpha1.IAMClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.iAMStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new iamModule.v1alpha1.IAMClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.iAMStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new iamModule.v1alpha1.IAMClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new iamModule.v1alpha1.IAMClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('getServiceAccount', () => {
@@ -185,43 +200,45 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetServiceAccountRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.GetServiceAccountRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.GetServiceAccountRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()
+            );
             client.innerApiCalls.getServiceAccount = stubSimpleCall(expectedResponse);
             const [response] = await client.getServiceAccount(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getServiceAccount as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getServiceAccount as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getServiceAccount as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getServiceAccount without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetServiceAccountRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.GetServiceAccountRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.GetServiceAccountRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()
+            );
             client.innerApiCalls.getServiceAccount = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getServiceAccount(
@@ -236,41 +253,50 @@ describe('v1alpha1.IAMClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getServiceAccount as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getServiceAccount as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getServiceAccount as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getServiceAccount with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetServiceAccountRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.GetServiceAccountRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.GetServiceAccountRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getServiceAccount = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getServiceAccount(request), expectedError);
-            assert((client.innerApiCalls.getServiceAccount as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getServiceAccount as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getServiceAccount as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getServiceAccount with closed client', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetServiceAccountRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.GetServiceAccountRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.GetServiceAccountRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getServiceAccount(request), expectedError);
@@ -282,45 +308,47 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreateServiceAccountRequest());
-            request.serviceAccount = {};
-            request.serviceAccount.name = '';
-            const expectedHeaderRequestParams = "service_account.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.CreateServiceAccountRequest()
+            );
+            request.serviceAccount ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.CreateServiceAccountRequest', ['serviceAccount', 'name']);
+            request.serviceAccount.name = defaultValue1;
+            const expectedHeaderRequestParams = `service_account.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()
+            );
             client.innerApiCalls.createServiceAccount = stubSimpleCall(expectedResponse);
             const [response] = await client.createServiceAccount(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createServiceAccount as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createServiceAccount as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createServiceAccount as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createServiceAccount without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreateServiceAccountRequest());
-            request.serviceAccount = {};
-            request.serviceAccount.name = '';
-            const expectedHeaderRequestParams = "service_account.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.CreateServiceAccountRequest()
+            );
+            request.serviceAccount ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.CreateServiceAccountRequest', ['serviceAccount', 'name']);
+            request.serviceAccount.name = defaultValue1;
+            const expectedHeaderRequestParams = `service_account.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()
+            );
             client.innerApiCalls.createServiceAccount = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createServiceAccount(
@@ -335,43 +363,52 @@ describe('v1alpha1.IAMClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createServiceAccount as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createServiceAccount as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createServiceAccount as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createServiceAccount with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreateServiceAccountRequest());
-            request.serviceAccount = {};
-            request.serviceAccount.name = '';
-            const expectedHeaderRequestParams = "service_account.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.CreateServiceAccountRequest()
+            );
+            request.serviceAccount ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.CreateServiceAccountRequest', ['serviceAccount', 'name']);
+            request.serviceAccount.name = defaultValue1;
+            const expectedHeaderRequestParams = `service_account.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createServiceAccount = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createServiceAccount(request), expectedError);
-            assert((client.innerApiCalls.createServiceAccount as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createServiceAccount as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createServiceAccount as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createServiceAccount with closed client', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreateServiceAccountRequest());
-            request.serviceAccount = {};
-            request.serviceAccount.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.CreateServiceAccountRequest()
+            );
+            request.serviceAccount ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.CreateServiceAccountRequest', ['serviceAccount', 'name']);
+            request.serviceAccount.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createServiceAccount(request), expectedError);
@@ -383,45 +420,47 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdateServiceAccountRequest());
-            request.serviceAccount = {};
-            request.serviceAccount.name = '';
-            const expectedHeaderRequestParams = "service_account.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.UpdateServiceAccountRequest()
+            );
+            request.serviceAccount ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.UpdateServiceAccountRequest', ['serviceAccount', 'name']);
+            request.serviceAccount.name = defaultValue1;
+            const expectedHeaderRequestParams = `service_account.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()
+            );
             client.innerApiCalls.updateServiceAccount = stubSimpleCall(expectedResponse);
             const [response] = await client.updateServiceAccount(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateServiceAccount as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateServiceAccount as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateServiceAccount as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateServiceAccount without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdateServiceAccountRequest());
-            request.serviceAccount = {};
-            request.serviceAccount.name = '';
-            const expectedHeaderRequestParams = "service_account.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.UpdateServiceAccountRequest()
+            );
+            request.serviceAccount ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.UpdateServiceAccountRequest', ['serviceAccount', 'name']);
+            request.serviceAccount.name = defaultValue1;
+            const expectedHeaderRequestParams = `service_account.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()
+            );
             client.innerApiCalls.updateServiceAccount = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updateServiceAccount(
@@ -436,43 +475,52 @@ describe('v1alpha1.IAMClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateServiceAccount as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updateServiceAccount as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateServiceAccount as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateServiceAccount with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdateServiceAccountRequest());
-            request.serviceAccount = {};
-            request.serviceAccount.name = '';
-            const expectedHeaderRequestParams = "service_account.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.UpdateServiceAccountRequest()
+            );
+            request.serviceAccount ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.UpdateServiceAccountRequest', ['serviceAccount', 'name']);
+            request.serviceAccount.name = defaultValue1;
+            const expectedHeaderRequestParams = `service_account.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updateServiceAccount = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updateServiceAccount(request), expectedError);
-            assert((client.innerApiCalls.updateServiceAccount as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateServiceAccount as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateServiceAccount as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateServiceAccount with closed client', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdateServiceAccountRequest());
-            request.serviceAccount = {};
-            request.serviceAccount.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.UpdateServiceAccountRequest()
+            );
+            request.serviceAccount ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.UpdateServiceAccountRequest', ['serviceAccount', 'name']);
+            request.serviceAccount.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updateServiceAccount(request), expectedError);
@@ -484,43 +532,45 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeleteServiceAccountRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.DeleteServiceAccountRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.DeleteServiceAccountRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteServiceAccount = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteServiceAccount(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteServiceAccount as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteServiceAccount as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteServiceAccount as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteServiceAccount without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeleteServiceAccountRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.DeleteServiceAccountRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.DeleteServiceAccountRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteServiceAccount = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteServiceAccount(
@@ -535,41 +585,50 @@ describe('v1alpha1.IAMClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteServiceAccount as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteServiceAccount as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteServiceAccount as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteServiceAccount with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeleteServiceAccountRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.DeleteServiceAccountRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.DeleteServiceAccountRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteServiceAccount = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteServiceAccount(request), expectedError);
-            assert((client.innerApiCalls.deleteServiceAccount as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteServiceAccount as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteServiceAccount as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteServiceAccount with closed client', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeleteServiceAccountRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.DeleteServiceAccountRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.DeleteServiceAccountRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteServiceAccount(request), expectedError);
@@ -581,43 +640,45 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetRoleRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.GetRoleRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.GetRoleRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.Role()
+            );
             client.innerApiCalls.getRole = stubSimpleCall(expectedResponse);
             const [response] = await client.getRole(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getRole without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetRoleRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.GetRoleRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.GetRoleRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.Role()
+            );
             client.innerApiCalls.getRole = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getRole(
@@ -632,41 +693,50 @@ describe('v1alpha1.IAMClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getRole with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetRoleRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.GetRoleRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.GetRoleRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getRole = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getRole(request), expectedError);
-            assert((client.innerApiCalls.getRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getRole with closed client', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetRoleRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.GetRoleRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.GetRoleRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getRole(request), expectedError);
@@ -678,45 +748,47 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreateRoleRequest());
-            request.role = {};
-            request.role.name = '';
-            const expectedHeaderRequestParams = "role.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.CreateRoleRequest()
+            );
+            request.role ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.CreateRoleRequest', ['role', 'name']);
+            request.role.name = defaultValue1;
+            const expectedHeaderRequestParams = `role.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.Role()
+            );
             client.innerApiCalls.createRole = stubSimpleCall(expectedResponse);
             const [response] = await client.createRole(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createRole without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreateRoleRequest());
-            request.role = {};
-            request.role.name = '';
-            const expectedHeaderRequestParams = "role.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.CreateRoleRequest()
+            );
+            request.role ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.CreateRoleRequest', ['role', 'name']);
+            request.role.name = defaultValue1;
+            const expectedHeaderRequestParams = `role.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.Role()
+            );
             client.innerApiCalls.createRole = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createRole(
@@ -731,43 +803,52 @@ describe('v1alpha1.IAMClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createRole with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreateRoleRequest());
-            request.role = {};
-            request.role.name = '';
-            const expectedHeaderRequestParams = "role.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.CreateRoleRequest()
+            );
+            request.role ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.CreateRoleRequest', ['role', 'name']);
+            request.role.name = defaultValue1;
+            const expectedHeaderRequestParams = `role.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createRole = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createRole(request), expectedError);
-            assert((client.innerApiCalls.createRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createRole with closed client', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreateRoleRequest());
-            request.role = {};
-            request.role.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.CreateRoleRequest()
+            );
+            request.role ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.CreateRoleRequest', ['role', 'name']);
+            request.role.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createRole(request), expectedError);
@@ -779,45 +860,47 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdateRoleRequest());
-            request.role = {};
-            request.role.name = '';
-            const expectedHeaderRequestParams = "role.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.UpdateRoleRequest()
+            );
+            request.role ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.UpdateRoleRequest', ['role', 'name']);
+            request.role.name = defaultValue1;
+            const expectedHeaderRequestParams = `role.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.Role()
+            );
             client.innerApiCalls.updateRole = stubSimpleCall(expectedResponse);
             const [response] = await client.updateRole(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateRole without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdateRoleRequest());
-            request.role = {};
-            request.role.name = '';
-            const expectedHeaderRequestParams = "role.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.UpdateRoleRequest()
+            );
+            request.role ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.UpdateRoleRequest', ['role', 'name']);
+            request.role.name = defaultValue1;
+            const expectedHeaderRequestParams = `role.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.Role()
+            );
             client.innerApiCalls.updateRole = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updateRole(
@@ -832,43 +915,52 @@ describe('v1alpha1.IAMClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updateRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateRole with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdateRoleRequest());
-            request.role = {};
-            request.role.name = '';
-            const expectedHeaderRequestParams = "role.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.UpdateRoleRequest()
+            );
+            request.role ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.UpdateRoleRequest', ['role', 'name']);
+            request.role.name = defaultValue1;
+            const expectedHeaderRequestParams = `role.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updateRole = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updateRole(request), expectedError);
-            assert((client.innerApiCalls.updateRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateRole with closed client', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdateRoleRequest());
-            request.role = {};
-            request.role.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.UpdateRoleRequest()
+            );
+            request.role ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.UpdateRoleRequest', ['role', 'name']);
+            request.role.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updateRole(request), expectedError);
@@ -880,43 +972,45 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeleteRoleRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.DeleteRoleRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.DeleteRoleRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteRole = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteRole(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteRole without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeleteRoleRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.DeleteRoleRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.DeleteRoleRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteRole = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteRole(
@@ -931,41 +1025,50 @@ describe('v1alpha1.IAMClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteRole with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeleteRoleRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.DeleteRoleRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.DeleteRoleRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteRole = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteRole(request), expectedError);
-            assert((client.innerApiCalls.deleteRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteRole with closed client', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeleteRoleRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.DeleteRoleRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.DeleteRoleRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteRole(request), expectedError);
@@ -977,43 +1080,45 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetPermissionRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.GetPermissionRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.GetPermissionRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.Permission()
+            );
             client.innerApiCalls.getPermission = stubSimpleCall(expectedResponse);
             const [response] = await client.getPermission(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getPermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getPermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getPermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getPermission without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetPermissionRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.GetPermissionRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.GetPermissionRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.Permission()
+            );
             client.innerApiCalls.getPermission = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getPermission(
@@ -1028,41 +1133,50 @@ describe('v1alpha1.IAMClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getPermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getPermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getPermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getPermission with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetPermissionRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.GetPermissionRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.GetPermissionRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getPermission = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getPermission(request), expectedError);
-            assert((client.innerApiCalls.getPermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getPermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getPermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getPermission with closed client', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.GetPermissionRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.GetPermissionRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.GetPermissionRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getPermission(request), expectedError);
@@ -1074,45 +1188,47 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreatePermissionRequest());
-            request.permission = {};
-            request.permission.name = '';
-            const expectedHeaderRequestParams = "permission.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.CreatePermissionRequest()
+            );
+            request.permission ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.CreatePermissionRequest', ['permission', 'name']);
+            request.permission.name = defaultValue1;
+            const expectedHeaderRequestParams = `permission.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.Permission()
+            );
             client.innerApiCalls.createPermission = stubSimpleCall(expectedResponse);
             const [response] = await client.createPermission(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createPermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createPermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createPermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createPermission without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreatePermissionRequest());
-            request.permission = {};
-            request.permission.name = '';
-            const expectedHeaderRequestParams = "permission.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.CreatePermissionRequest()
+            );
+            request.permission ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.CreatePermissionRequest', ['permission', 'name']);
+            request.permission.name = defaultValue1;
+            const expectedHeaderRequestParams = `permission.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.Permission()
+            );
             client.innerApiCalls.createPermission = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createPermission(
@@ -1127,43 +1243,52 @@ describe('v1alpha1.IAMClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createPermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createPermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createPermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createPermission with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreatePermissionRequest());
-            request.permission = {};
-            request.permission.name = '';
-            const expectedHeaderRequestParams = "permission.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.CreatePermissionRequest()
+            );
+            request.permission ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.CreatePermissionRequest', ['permission', 'name']);
+            request.permission.name = defaultValue1;
+            const expectedHeaderRequestParams = `permission.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createPermission = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createPermission(request), expectedError);
-            assert((client.innerApiCalls.createPermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createPermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createPermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createPermission with closed client', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.CreatePermissionRequest());
-            request.permission = {};
-            request.permission.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.CreatePermissionRequest()
+            );
+            request.permission ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.CreatePermissionRequest', ['permission', 'name']);
+            request.permission.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createPermission(request), expectedError);
@@ -1175,45 +1300,47 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdatePermissionRequest());
-            request.permission = {};
-            request.permission.name = '';
-            const expectedHeaderRequestParams = "permission.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.UpdatePermissionRequest()
+            );
+            request.permission ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.UpdatePermissionRequest', ['permission', 'name']);
+            request.permission.name = defaultValue1;
+            const expectedHeaderRequestParams = `permission.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.Permission()
+            );
             client.innerApiCalls.updatePermission = stubSimpleCall(expectedResponse);
             const [response] = await client.updatePermission(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updatePermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updatePermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updatePermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updatePermission without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdatePermissionRequest());
-            request.permission = {};
-            request.permission.name = '';
-            const expectedHeaderRequestParams = "permission.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.UpdatePermissionRequest()
+            );
+            request.permission ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.UpdatePermissionRequest', ['permission', 'name']);
+            request.permission.name = defaultValue1;
+            const expectedHeaderRequestParams = `permission.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.Permission()
+            );
             client.innerApiCalls.updatePermission = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updatePermission(
@@ -1228,43 +1355,52 @@ describe('v1alpha1.IAMClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updatePermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updatePermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updatePermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updatePermission with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdatePermissionRequest());
-            request.permission = {};
-            request.permission.name = '';
-            const expectedHeaderRequestParams = "permission.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.UpdatePermissionRequest()
+            );
+            request.permission ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.UpdatePermissionRequest', ['permission', 'name']);
+            request.permission.name = defaultValue1;
+            const expectedHeaderRequestParams = `permission.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updatePermission = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updatePermission(request), expectedError);
-            assert((client.innerApiCalls.updatePermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updatePermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updatePermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updatePermission with closed client', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.UpdatePermissionRequest());
-            request.permission = {};
-            request.permission.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.UpdatePermissionRequest()
+            );
+            request.permission ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.UpdatePermissionRequest', ['permission', 'name']);
+            request.permission.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updatePermission(request), expectedError);
@@ -1276,43 +1412,45 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeletePermissionRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.DeletePermissionRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.DeletePermissionRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deletePermission = stubSimpleCall(expectedResponse);
             const [response] = await client.deletePermission(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deletePermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deletePermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deletePermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deletePermission without error using callback', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeletePermissionRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.DeletePermissionRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.DeletePermissionRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deletePermission = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deletePermission(
@@ -1327,41 +1465,50 @@ describe('v1alpha1.IAMClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deletePermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deletePermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deletePermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deletePermission with error', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeletePermissionRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.DeletePermissionRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.DeletePermissionRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deletePermission = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deletePermission(request), expectedError);
-            assert((client.innerApiCalls.deletePermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deletePermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deletePermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deletePermission with closed client', async () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.DeletePermissionRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.DeletePermissionRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.DeletePermissionRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deletePermission(request), expectedError);
@@ -1375,17 +1522,13 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()),
@@ -1393,8 +1536,12 @@ describe('v1alpha1.IAMClient', () => {
             client.innerApiCalls.listServiceAccounts = stubSimpleCall(expectedResponse);
             const [response] = await client.listServiceAccounts(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listServiceAccounts as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listServiceAccounts as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listServiceAccounts as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listServiceAccounts without error using callback', async () => {
@@ -1403,17 +1550,13 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()),
@@ -1432,8 +1575,12 @@ describe('v1alpha1.IAMClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listServiceAccounts as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.listServiceAccounts as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listServiceAccounts as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listServiceAccounts with error', async () => {
@@ -1442,21 +1589,22 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.listServiceAccounts = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listServiceAccounts(request), expectedError);
-            assert((client.innerApiCalls.listServiceAccounts as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listServiceAccounts as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listServiceAccounts as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listServiceAccountsStream without error', async () => {
@@ -1465,9 +1613,13 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()),
@@ -1491,10 +1643,11 @@ describe('v1alpha1.IAMClient', () => {
             assert.deepStrictEqual(responses, expectedResponse);
             assert((client.descriptors.page.listServiceAccounts.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listServiceAccounts, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listServiceAccounts.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1504,9 +1657,13 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.descriptors.page.listServiceAccounts.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listServiceAccountsStream(request);
@@ -1525,10 +1682,11 @@ describe('v1alpha1.IAMClient', () => {
             await assert.rejects(promise, expectedError);
             assert((client.descriptors.page.listServiceAccounts.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listServiceAccounts, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listServiceAccounts.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                         expectedHeaderRequestParams
+                    ) 
             );
         });
 
@@ -1536,11 +1694,15 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ServiceAccount()),
@@ -1556,10 +1718,11 @@ describe('v1alpha1.IAMClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listServiceAccounts.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listServiceAccounts.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1569,9 +1732,14 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.iam.admin.v1alpha1.ListServiceAccountsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedError = new Error('expected');
             client.descriptors.page.listServiceAccounts.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listServiceAccountsAsync(request);
             await assert.rejects(async () => {
@@ -1583,10 +1751,11 @@ describe('v1alpha1.IAMClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listServiceAccounts.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listServiceAccounts.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
     });
@@ -1598,9 +1767,9 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role()),
@@ -1608,8 +1777,6 @@ describe('v1alpha1.IAMClient', () => {
             client.innerApiCalls.listRoles = stubSimpleCall(expectedResponse);
             const [response] = await client.listRoles(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listRoles as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listRoles without error using callback', async () => {
@@ -1618,9 +1785,9 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role()),
@@ -1639,8 +1806,6 @@ describe('v1alpha1.IAMClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listRoles as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes listRoles with error', async () => {
@@ -1649,13 +1814,12 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.listRoles = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listRoles(request), expectedError);
-            assert((client.innerApiCalls.listRoles as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listRolesStream without error', async () => {
@@ -1664,7 +1828,9 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role()),
@@ -1696,7 +1862,9 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest()
+            );
             const expectedError = new Error('expected');
             client.descriptors.page.listRoles.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listRolesStream(request);
@@ -1721,9 +1889,11 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Role()),
@@ -1747,7 +1917,10 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest());const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListRolesRequest()
+            );
+            const expectedError = new Error('expected');
             client.descriptors.page.listRoles.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listRolesAsync(request);
             await assert.rejects(async () => {
@@ -1769,9 +1942,9 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission()),
@@ -1779,8 +1952,6 @@ describe('v1alpha1.IAMClient', () => {
             client.innerApiCalls.listPermissions = stubSimpleCall(expectedResponse);
             const [response] = await client.listPermissions(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listPermissions as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listPermissions without error using callback', async () => {
@@ -1789,9 +1960,9 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission()),
@@ -1810,8 +1981,6 @@ describe('v1alpha1.IAMClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listPermissions as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes listPermissions with error', async () => {
@@ -1820,13 +1989,12 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.listPermissions = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listPermissions(request), expectedError);
-            assert((client.innerApiCalls.listPermissions as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listPermissionsStream without error', async () => {
@@ -1835,7 +2003,9 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission()),
@@ -1867,7 +2037,9 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest()
+            );
             const expectedError = new Error('expected');
             client.descriptors.page.listPermissions.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listPermissionsStream(request);
@@ -1892,9 +2064,11 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission()),
               generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.Permission()),
@@ -1918,7 +2092,10 @@ describe('v1alpha1.IAMClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest());const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.iam.admin.v1alpha1.ListPermissionsRequest()
+            );
+            const expectedError = new Error('expected');
             client.descriptors.page.listPermissions.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listPermissionsAsync(request);
             await assert.rejects(async () => {
@@ -1937,10 +2114,10 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.GetIamPolicyRequest()
+              new IamProtos.google.iam.v1.GetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1952,7 +2129,7 @@ describe('v1alpha1.IAMClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.Policy()
+              new IamProtos.google.iam.v1.Policy()
             );
             client.iamClient.getIamPolicy = stubSimpleCall(expectedResponse);
             const response = await client.getIamPolicy(request, expectedOptions);
@@ -1964,10 +2141,10 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.GetIamPolicyRequest()
+              new IamProtos.google.iam.v1.GetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1979,7 +2156,7 @@ describe('v1alpha1.IAMClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.Policy()
+              new IamProtos.google.iam.v1.Policy()
             );
             client.iamClient.getIamPolicy = sinon.stub().callsArgWith(2, null, expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -2003,10 +2180,10 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.GetIamPolicyRequest()
+              new IamProtos.google.iam.v1.GetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -2029,10 +2206,10 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.SetIamPolicyRequest()
+              new IamProtos.google.iam.v1.SetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -2044,7 +2221,7 @@ describe('v1alpha1.IAMClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.Policy()
+              new IamProtos.google.iam.v1.Policy()
             );
             client.iamClient.setIamPolicy = stubSimpleCall(expectedResponse);
             const response = await client.setIamPolicy(request, expectedOptions);
@@ -2056,10 +2233,10 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.SetIamPolicyRequest()
+              new IamProtos.google.iam.v1.SetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -2071,7 +2248,7 @@ describe('v1alpha1.IAMClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.Policy()
+              new IamProtos.google.iam.v1.Policy()
             );
             client.iamClient.setIamPolicy = sinon.stub().callsArgWith(2, null, expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -2095,10 +2272,10 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.SetIamPolicyRequest()
+              new IamProtos.google.iam.v1.SetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -2121,10 +2298,10 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsRequest()
+              new IamProtos.google.iam.v1.TestIamPermissionsRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -2136,7 +2313,7 @@ describe('v1alpha1.IAMClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsResponse()
+              new IamProtos.google.iam.v1.TestIamPermissionsResponse()
             );
             client.iamClient.testIamPermissions = stubSimpleCall(expectedResponse);
             const response = await client.testIamPermissions(request, expectedOptions);
@@ -2148,10 +2325,10 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsRequest()
+              new IamProtos.google.iam.v1.TestIamPermissionsRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -2163,7 +2340,7 @@ describe('v1alpha1.IAMClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsResponse()
+              new IamProtos.google.iam.v1.TestIamPermissionsResponse()
             );
             client.iamClient.testIamPermissions = sinon.stub().callsArgWith(2, null, expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -2187,10 +2364,10 @@ describe('v1alpha1.IAMClient', () => {
             const client = new iamModule.v1alpha1.IAMClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsRequest()
+              new IamProtos.google.iam.v1.TestIamPermissionsRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';

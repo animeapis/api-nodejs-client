@@ -22,7 +22,7 @@
       "segments": [
         {
           "start": 25,
-          "end": 50,
+          "end": 53,
           "type": "FULL"
         }
       ],
@@ -62,7 +62,7 @@
       "segments": [
         {
           "start": 25,
-          "end": 64,
+          "end": 67,
           "type": "FULL"
         }
       ],
@@ -114,7 +114,7 @@
       "segments": [
         {
           "start": 25,
-          "end": 55,
+          "end": 58,
           "type": "FULL"
         }
       ],
@@ -158,7 +158,7 @@
       "segments": [
         {
           "start": 25,
-          "end": 55,
+          "end": 58,
           "type": "FULL"
         }
       ],
@@ -202,7 +202,7 @@
       "segments": [
         {
           "start": 25,
-          "end": 50,
+          "end": 53,
           "type": "FULL"
         }
       ],
@@ -232,6 +232,46 @@
       }
     },
     {
+      "regionTag": "tracker_v1alpha1_generated_TrackerService_ComputeTracker_async",
+      "title": "TrackerService computeTracker Sample",
+      "origin": "API_DEFINITION",
+      "description": "",
+      "canonical": true,
+      "file": "tracker_service.compute_tracker.js",
+      "language": "JAVASCRIPT",
+      "segments": [
+        {
+          "start": 25,
+          "end": 52,
+          "type": "FULL"
+        }
+      ],
+      "clientMethod": {
+        "shortName": "ComputeTracker",
+        "fullName": "animeshon.tracker.v1alpha1.TrackerService.ComputeTracker",
+        "async": true,
+        "parameters": [
+          {
+            "name": "name",
+            "type": "TYPE_STRING"
+          }
+        ],
+        "resultType": ".animeshon.tracker.v1alpha1.ComputeTrackerResponse",
+        "client": {
+          "shortName": "TrackerServiceClient",
+          "fullName": "animeshon.tracker.v1alpha1.TrackerServiceClient"
+        },
+        "method": {
+          "shortName": "ComputeTracker",
+          "fullName": "animeshon.tracker.v1alpha1.TrackerService.ComputeTracker",
+          "service": {
+            "shortName": "TrackerService",
+            "fullName": "animeshon.tracker.v1alpha1.TrackerService"
+          }
+        }
+      }
+    },
+    {
       "regionTag": "tracker_v1alpha1_generated_TrackerService_ImportTrackers_async",
       "title": "TrackerService importTrackers Sample",
       "origin": "API_DEFINITION",
@@ -242,7 +282,7 @@
       "segments": [
         {
           "start": 25,
-          "end": 53,
+          "end": 56,
           "type": "FULL"
         }
       ],
@@ -286,7 +326,7 @@
       "segments": [
         {
           "start": 25,
-          "end": 53,
+          "end": 56,
           "type": "FULL"
         }
       ],
@@ -330,7 +370,7 @@
       "segments": [
         {
           "start": 25,
-          "end": 55,
+          "end": 58,
           "type": "FULL"
         }
       ],
@@ -374,7 +414,7 @@
       "segments": [
         {
           "start": 25,
-          "end": 50,
+          "end": 53,
           "type": "FULL"
         }
       ],

@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,10 +20,23 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as gitModule from '../src';
 
 import {protobuf} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -40,97 +53,99 @@ function stubSimpleCallWithCallback<ResponseType>(response?: ResponseType, error
 }
 
 describe('v1alpha1.GitClient', () => {
-    it('has servicePath', () => {
-        const servicePath = gitModule.v1alpha1.GitClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = gitModule.v1alpha1.GitClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = gitModule.v1alpha1.GitClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new gitModule.v1alpha1.GitClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new gitModule.v1alpha1.GitClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = gitModule.v1alpha1.GitClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new gitModule.v1alpha1.GitClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = gitModule.v1alpha1.GitClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = gitModule.v1alpha1.GitClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new gitModule.v1alpha1.GitClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new gitModule.v1alpha1.GitClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new gitModule.v1alpha1.GitClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.gitStub, undefined);
+            await client.initialize();
+            assert(client.gitStub);
         });
-        assert.strictEqual(client.gitStub, undefined);
-        await client.initialize();
-        assert(client.gitStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new gitModule.v1alpha1.GitClient({
+        it('has close method for the initialized client', done => {
+            const client = new gitModule.v1alpha1.GitClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.gitStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new gitModule.v1alpha1.GitClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.gitStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new gitModule.v1alpha1.GitClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new gitModule.v1alpha1.GitClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.gitStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new gitModule.v1alpha1.GitClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.gitStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new gitModule.v1alpha1.GitClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new gitModule.v1alpha1.GitClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('advertiseReferences', () => {
@@ -138,43 +153,45 @@ describe('v1alpha1.GitClient', () => {
             const client = new gitModule.v1alpha1.GitClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.AdvertiseReferencesRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.api.HttpBody());
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.AdvertiseReferencesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.AdvertiseReferencesRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.api.HttpBody()
+            );
             client.innerApiCalls.advertiseReferences = stubSimpleCall(expectedResponse);
             const [response] = await client.advertiseReferences(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.advertiseReferences as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.advertiseReferences as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.advertiseReferences as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes advertiseReferences without error using callback', async () => {
             const client = new gitModule.v1alpha1.GitClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.AdvertiseReferencesRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.api.HttpBody());
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.AdvertiseReferencesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.AdvertiseReferencesRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.api.HttpBody()
+            );
             client.innerApiCalls.advertiseReferences = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.advertiseReferences(
@@ -189,41 +206,50 @@ describe('v1alpha1.GitClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.advertiseReferences as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.advertiseReferences as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.advertiseReferences as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes advertiseReferences with error', async () => {
             const client = new gitModule.v1alpha1.GitClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.AdvertiseReferencesRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.AdvertiseReferencesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.AdvertiseReferencesRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.advertiseReferences = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.advertiseReferences(request), expectedError);
-            assert((client.innerApiCalls.advertiseReferences as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.advertiseReferences as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.advertiseReferences as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes advertiseReferences with closed client', async () => {
             const client = new gitModule.v1alpha1.GitClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.AdvertiseReferencesRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.AdvertiseReferencesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.AdvertiseReferencesRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.advertiseReferences(request), expectedError);
@@ -235,43 +261,45 @@ describe('v1alpha1.GitClient', () => {
             const client = new gitModule.v1alpha1.GitClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ReceivePackRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.api.HttpBody());
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.ReceivePackRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.ReceivePackRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.api.HttpBody()
+            );
             client.innerApiCalls.receivePack = stubSimpleCall(expectedResponse);
             const [response] = await client.receivePack(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.receivePack as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.receivePack as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.receivePack as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes receivePack without error using callback', async () => {
             const client = new gitModule.v1alpha1.GitClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ReceivePackRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.api.HttpBody());
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.ReceivePackRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.ReceivePackRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.api.HttpBody()
+            );
             client.innerApiCalls.receivePack = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.receivePack(
@@ -286,41 +314,50 @@ describe('v1alpha1.GitClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.receivePack as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.receivePack as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.receivePack as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes receivePack with error', async () => {
             const client = new gitModule.v1alpha1.GitClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ReceivePackRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.ReceivePackRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.ReceivePackRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.receivePack = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.receivePack(request), expectedError);
-            assert((client.innerApiCalls.receivePack as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.receivePack as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.receivePack as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes receivePack with closed client', async () => {
             const client = new gitModule.v1alpha1.GitClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ReceivePackRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.ReceivePackRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.ReceivePackRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.receivePack(request), expectedError);
@@ -332,43 +369,45 @@ describe('v1alpha1.GitClient', () => {
             const client = new gitModule.v1alpha1.GitClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.UploadPackRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.api.HttpBody());
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.UploadPackRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.UploadPackRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.api.HttpBody()
+            );
             client.innerApiCalls.uploadPack = stubSimpleCall(expectedResponse);
             const [response] = await client.uploadPack(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.uploadPack as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.uploadPack as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.uploadPack as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes uploadPack without error using callback', async () => {
             const client = new gitModule.v1alpha1.GitClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.UploadPackRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.api.HttpBody());
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.UploadPackRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.UploadPackRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.api.HttpBody()
+            );
             client.innerApiCalls.uploadPack = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.uploadPack(
@@ -383,41 +422,50 @@ describe('v1alpha1.GitClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.uploadPack as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.uploadPack as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.uploadPack as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes uploadPack with error', async () => {
             const client = new gitModule.v1alpha1.GitClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.UploadPackRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.UploadPackRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.UploadPackRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.uploadPack = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.uploadPack(request), expectedError);
-            assert((client.innerApiCalls.uploadPack as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.uploadPack as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.uploadPack as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes uploadPack with closed client', async () => {
             const client = new gitModule.v1alpha1.GitClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.UploadPackRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.UploadPackRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.UploadPackRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.uploadPack(request), expectedError);

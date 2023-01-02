@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,25 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as libraryModule from '../src';
 
 import {PassThrough} from 'stream';
 
 import {protobuf, IamProtos} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -87,97 +100,99 @@ function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?
 }
 
 describe('v1alpha1.LibraryClient', () => {
-    it('has servicePath', () => {
-        const servicePath = libraryModule.v1alpha1.LibraryClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = libraryModule.v1alpha1.LibraryClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = libraryModule.v1alpha1.LibraryClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new libraryModule.v1alpha1.LibraryClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new libraryModule.v1alpha1.LibraryClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = libraryModule.v1alpha1.LibraryClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new libraryModule.v1alpha1.LibraryClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = libraryModule.v1alpha1.LibraryClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = libraryModule.v1alpha1.LibraryClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new libraryModule.v1alpha1.LibraryClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new libraryModule.v1alpha1.LibraryClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.libraryStub, undefined);
+            await client.initialize();
+            assert(client.libraryStub);
         });
-        assert.strictEqual(client.libraryStub, undefined);
-        await client.initialize();
-        assert(client.libraryStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new libraryModule.v1alpha1.LibraryClient({
+        it('has close method for the initialized client', done => {
+            const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.libraryStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new libraryModule.v1alpha1.LibraryClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.libraryStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new libraryModule.v1alpha1.LibraryClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new libraryModule.v1alpha1.LibraryClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.libraryStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new libraryModule.v1alpha1.LibraryClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.libraryStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new libraryModule.v1alpha1.LibraryClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new libraryModule.v1alpha1.LibraryClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('getPlaylist', () => {
@@ -185,43 +200,45 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.GetPlaylistRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist());
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.GetPlaylistRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.GetPlaylistRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.Playlist()
+            );
             client.innerApiCalls.getPlaylist = stubSimpleCall(expectedResponse);
             const [response] = await client.getPlaylist(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getPlaylist as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getPlaylist as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getPlaylist as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getPlaylist without error using callback', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.GetPlaylistRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist());
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.GetPlaylistRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.GetPlaylistRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.Playlist()
+            );
             client.innerApiCalls.getPlaylist = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getPlaylist(
@@ -236,41 +253,50 @@ describe('v1alpha1.LibraryClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getPlaylist as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getPlaylist as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getPlaylist as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getPlaylist with error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.GetPlaylistRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.GetPlaylistRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.GetPlaylistRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getPlaylist = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getPlaylist(request), expectedError);
-            assert((client.innerApiCalls.getPlaylist as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getPlaylist as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getPlaylist as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getPlaylist with closed client', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.GetPlaylistRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.GetPlaylistRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.GetPlaylistRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getPlaylist(request), expectedError);
@@ -282,43 +308,45 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.CreatePlaylistRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist());
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.CreatePlaylistRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.CreatePlaylistRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.Playlist()
+            );
             client.innerApiCalls.createPlaylist = stubSimpleCall(expectedResponse);
             const [response] = await client.createPlaylist(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createPlaylist as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createPlaylist as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createPlaylist as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createPlaylist without error using callback', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.CreatePlaylistRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist());
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.CreatePlaylistRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.CreatePlaylistRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.Playlist()
+            );
             client.innerApiCalls.createPlaylist = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createPlaylist(
@@ -333,41 +361,50 @@ describe('v1alpha1.LibraryClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createPlaylist as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createPlaylist as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createPlaylist as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createPlaylist with error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.CreatePlaylistRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.CreatePlaylistRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.CreatePlaylistRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createPlaylist = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createPlaylist(request), expectedError);
-            assert((client.innerApiCalls.createPlaylist as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createPlaylist as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createPlaylist as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createPlaylist with closed client', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.CreatePlaylistRequest());
-            request.parent = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.CreatePlaylistRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.CreatePlaylistRequest', ['parent']);
+            request.parent = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createPlaylist(request), expectedError);
@@ -379,45 +416,47 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.UpdatePlaylistRequest());
-            request.playlist = {};
-            request.playlist.name = '';
-            const expectedHeaderRequestParams = "playlist.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist());
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.UpdatePlaylistRequest()
+            );
+            request.playlist ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.UpdatePlaylistRequest', ['playlist', 'name']);
+            request.playlist.name = defaultValue1;
+            const expectedHeaderRequestParams = `playlist.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.Playlist()
+            );
             client.innerApiCalls.updatePlaylist = stubSimpleCall(expectedResponse);
             const [response] = await client.updatePlaylist(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updatePlaylist as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updatePlaylist as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updatePlaylist as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updatePlaylist without error using callback', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.UpdatePlaylistRequest());
-            request.playlist = {};
-            request.playlist.name = '';
-            const expectedHeaderRequestParams = "playlist.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist());
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.UpdatePlaylistRequest()
+            );
+            request.playlist ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.UpdatePlaylistRequest', ['playlist', 'name']);
+            request.playlist.name = defaultValue1;
+            const expectedHeaderRequestParams = `playlist.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.Playlist()
+            );
             client.innerApiCalls.updatePlaylist = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updatePlaylist(
@@ -432,43 +471,52 @@ describe('v1alpha1.LibraryClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updatePlaylist as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updatePlaylist as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updatePlaylist as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updatePlaylist with error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.UpdatePlaylistRequest());
-            request.playlist = {};
-            request.playlist.name = '';
-            const expectedHeaderRequestParams = "playlist.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.UpdatePlaylistRequest()
+            );
+            request.playlist ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.UpdatePlaylistRequest', ['playlist', 'name']);
+            request.playlist.name = defaultValue1;
+            const expectedHeaderRequestParams = `playlist.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updatePlaylist = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updatePlaylist(request), expectedError);
-            assert((client.innerApiCalls.updatePlaylist as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updatePlaylist as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updatePlaylist as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updatePlaylist with closed client', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.UpdatePlaylistRequest());
-            request.playlist = {};
-            request.playlist.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.UpdatePlaylistRequest()
+            );
+            request.playlist ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.UpdatePlaylistRequest', ['playlist', 'name']);
+            request.playlist.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updatePlaylist(request), expectedError);
@@ -480,43 +528,45 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.DeletePlaylistRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.DeletePlaylistRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.DeletePlaylistRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deletePlaylist = stubSimpleCall(expectedResponse);
             const [response] = await client.deletePlaylist(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deletePlaylist as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deletePlaylist as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deletePlaylist as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deletePlaylist without error using callback', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.DeletePlaylistRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.DeletePlaylistRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.DeletePlaylistRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deletePlaylist = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deletePlaylist(
@@ -531,41 +581,50 @@ describe('v1alpha1.LibraryClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deletePlaylist as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deletePlaylist as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deletePlaylist as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deletePlaylist with error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.DeletePlaylistRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.DeletePlaylistRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.DeletePlaylistRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deletePlaylist = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deletePlaylist(request), expectedError);
-            assert((client.innerApiCalls.deletePlaylist as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deletePlaylist as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deletePlaylist as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deletePlaylist with closed client', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.DeletePlaylistRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.DeletePlaylistRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.DeletePlaylistRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deletePlaylist(request), expectedError);
@@ -577,43 +636,45 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.CreatePlaylistItemRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.library.v1alpha1.PlaylistItem());
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.CreatePlaylistItemRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.CreatePlaylistItemRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.PlaylistItem()
+            );
             client.innerApiCalls.createPlaylistItem = stubSimpleCall(expectedResponse);
             const [response] = await client.createPlaylistItem(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createPlaylistItem as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createPlaylistItem as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createPlaylistItem as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createPlaylistItem without error using callback', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.CreatePlaylistItemRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.library.v1alpha1.PlaylistItem());
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.CreatePlaylistItemRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.CreatePlaylistItemRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.PlaylistItem()
+            );
             client.innerApiCalls.createPlaylistItem = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createPlaylistItem(
@@ -628,41 +689,50 @@ describe('v1alpha1.LibraryClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createPlaylistItem as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createPlaylistItem as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createPlaylistItem as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createPlaylistItem with error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.CreatePlaylistItemRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.CreatePlaylistItemRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.CreatePlaylistItemRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createPlaylistItem = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createPlaylistItem(request), expectedError);
-            assert((client.innerApiCalls.createPlaylistItem as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createPlaylistItem as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createPlaylistItem as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createPlaylistItem with closed client', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.CreatePlaylistItemRequest());
-            request.parent = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.CreatePlaylistItemRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.CreatePlaylistItemRequest', ['parent']);
+            request.parent = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createPlaylistItem(request), expectedError);
@@ -674,43 +744,45 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.BatchCreatePlaylistItemsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.library.v1alpha1.BatchCreatePlaylistItemsResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.BatchCreatePlaylistItemsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.BatchCreatePlaylistItemsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.BatchCreatePlaylistItemsResponse()
+            );
             client.innerApiCalls.batchCreatePlaylistItems = stubSimpleCall(expectedResponse);
             const [response] = await client.batchCreatePlaylistItems(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.batchCreatePlaylistItems as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.batchCreatePlaylistItems as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.batchCreatePlaylistItems as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes batchCreatePlaylistItems without error using callback', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.BatchCreatePlaylistItemsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.library.v1alpha1.BatchCreatePlaylistItemsResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.BatchCreatePlaylistItemsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.BatchCreatePlaylistItemsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.BatchCreatePlaylistItemsResponse()
+            );
             client.innerApiCalls.batchCreatePlaylistItems = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.batchCreatePlaylistItems(
@@ -725,41 +797,50 @@ describe('v1alpha1.LibraryClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.batchCreatePlaylistItems as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.batchCreatePlaylistItems as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.batchCreatePlaylistItems as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes batchCreatePlaylistItems with error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.BatchCreatePlaylistItemsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.BatchCreatePlaylistItemsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.BatchCreatePlaylistItemsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.batchCreatePlaylistItems = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.batchCreatePlaylistItems(request), expectedError);
-            assert((client.innerApiCalls.batchCreatePlaylistItems as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.batchCreatePlaylistItems as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.batchCreatePlaylistItems as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes batchCreatePlaylistItems with closed client', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.BatchCreatePlaylistItemsRequest());
-            request.parent = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.BatchCreatePlaylistItemsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.BatchCreatePlaylistItemsRequest', ['parent']);
+            request.parent = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.batchCreatePlaylistItems(request), expectedError);
@@ -771,43 +852,45 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.DeletePlaylistItemRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.DeletePlaylistItemRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.DeletePlaylistItemRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deletePlaylistItem = stubSimpleCall(expectedResponse);
             const [response] = await client.deletePlaylistItem(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deletePlaylistItem as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deletePlaylistItem as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deletePlaylistItem as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deletePlaylistItem without error using callback', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.DeletePlaylistItemRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.DeletePlaylistItemRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.DeletePlaylistItemRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deletePlaylistItem = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deletePlaylistItem(
@@ -822,41 +905,50 @@ describe('v1alpha1.LibraryClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deletePlaylistItem as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deletePlaylistItem as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deletePlaylistItem as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deletePlaylistItem with error', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.DeletePlaylistItemRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.DeletePlaylistItemRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.DeletePlaylistItemRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deletePlaylistItem = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deletePlaylistItem(request), expectedError);
-            assert((client.innerApiCalls.deletePlaylistItem as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deletePlaylistItem as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deletePlaylistItem as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deletePlaylistItem with closed client', async () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.DeletePlaylistItemRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.DeletePlaylistItemRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.DeletePlaylistItemRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deletePlaylistItem(request), expectedError);
@@ -870,17 +962,13 @@ describe('v1alpha1.LibraryClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.ListPlaylistsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.ListPlaylistsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.ListPlaylistsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist()),
               generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist()),
               generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist()),
@@ -888,8 +976,12 @@ describe('v1alpha1.LibraryClient', () => {
             client.innerApiCalls.listPlaylists = stubSimpleCall(expectedResponse);
             const [response] = await client.listPlaylists(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listPlaylists as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listPlaylists as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listPlaylists as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listPlaylists without error using callback', async () => {
@@ -898,17 +990,13 @@ describe('v1alpha1.LibraryClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.ListPlaylistsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.ListPlaylistsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.ListPlaylistsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist()),
               generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist()),
               generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist()),
@@ -927,8 +1015,12 @@ describe('v1alpha1.LibraryClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listPlaylists as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.listPlaylists as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listPlaylists as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listPlaylists with error', async () => {
@@ -937,21 +1029,22 @@ describe('v1alpha1.LibraryClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.ListPlaylistsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.ListPlaylistsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.ListPlaylistsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.listPlaylists = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listPlaylists(request), expectedError);
-            assert((client.innerApiCalls.listPlaylists as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listPlaylists as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listPlaylists as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listPlaylistsStream without error', async () => {
@@ -960,9 +1053,13 @@ describe('v1alpha1.LibraryClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.ListPlaylistsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.ListPlaylistsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.ListPlaylistsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist()),
               generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist()),
@@ -986,10 +1083,11 @@ describe('v1alpha1.LibraryClient', () => {
             assert.deepStrictEqual(responses, expectedResponse);
             assert((client.descriptors.page.listPlaylists.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listPlaylists, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listPlaylists.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -999,9 +1097,13 @@ describe('v1alpha1.LibraryClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.ListPlaylistsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.ListPlaylistsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.ListPlaylistsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.descriptors.page.listPlaylists.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listPlaylistsStream(request);
@@ -1020,10 +1122,11 @@ describe('v1alpha1.LibraryClient', () => {
             await assert.rejects(promise, expectedError);
             assert((client.descriptors.page.listPlaylists.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listPlaylists, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listPlaylists.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                         expectedHeaderRequestParams
+                    ) 
             );
         });
 
@@ -1031,11 +1134,15 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.ListPlaylistsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.ListPlaylistsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.ListPlaylistsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist()),
               generateSampleMessage(new protos.animeshon.library.v1alpha1.Playlist()),
@@ -1051,10 +1158,11 @@ describe('v1alpha1.LibraryClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listPlaylists.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listPlaylists.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1064,9 +1172,14 @@ describe('v1alpha1.LibraryClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.ListPlaylistsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.ListPlaylistsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.ListPlaylistsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedError = new Error('expected');
             client.descriptors.page.listPlaylists.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listPlaylistsAsync(request);
             await assert.rejects(async () => {
@@ -1078,10 +1191,11 @@ describe('v1alpha1.LibraryClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listPlaylists.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listPlaylists.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
     });
@@ -1093,17 +1207,13 @@ describe('v1alpha1.LibraryClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.ListPlaylistItemsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.ListPlaylistItemsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.ListPlaylistItemsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.library.v1alpha1.PlaylistItem()),
               generateSampleMessage(new protos.animeshon.library.v1alpha1.PlaylistItem()),
               generateSampleMessage(new protos.animeshon.library.v1alpha1.PlaylistItem()),
@@ -1111,8 +1221,12 @@ describe('v1alpha1.LibraryClient', () => {
             client.innerApiCalls.listPlaylistItems = stubSimpleCall(expectedResponse);
             const [response] = await client.listPlaylistItems(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listPlaylistItems as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listPlaylistItems as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listPlaylistItems as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listPlaylistItems without error using callback', async () => {
@@ -1121,17 +1235,13 @@ describe('v1alpha1.LibraryClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.ListPlaylistItemsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.ListPlaylistItemsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.ListPlaylistItemsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.library.v1alpha1.PlaylistItem()),
               generateSampleMessage(new protos.animeshon.library.v1alpha1.PlaylistItem()),
               generateSampleMessage(new protos.animeshon.library.v1alpha1.PlaylistItem()),
@@ -1150,8 +1260,12 @@ describe('v1alpha1.LibraryClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listPlaylistItems as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.listPlaylistItems as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listPlaylistItems as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listPlaylistItems with error', async () => {
@@ -1160,21 +1274,22 @@ describe('v1alpha1.LibraryClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.ListPlaylistItemsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.ListPlaylistItemsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.ListPlaylistItemsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.listPlaylistItems = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listPlaylistItems(request), expectedError);
-            assert((client.innerApiCalls.listPlaylistItems as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listPlaylistItems as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listPlaylistItems as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listPlaylistItemsStream without error', async () => {
@@ -1183,9 +1298,13 @@ describe('v1alpha1.LibraryClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.ListPlaylistItemsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.ListPlaylistItemsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.ListPlaylistItemsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.library.v1alpha1.PlaylistItem()),
               generateSampleMessage(new protos.animeshon.library.v1alpha1.PlaylistItem()),
@@ -1209,10 +1328,11 @@ describe('v1alpha1.LibraryClient', () => {
             assert.deepStrictEqual(responses, expectedResponse);
             assert((client.descriptors.page.listPlaylistItems.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listPlaylistItems, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listPlaylistItems.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1222,9 +1342,13 @@ describe('v1alpha1.LibraryClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.ListPlaylistItemsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.ListPlaylistItemsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.ListPlaylistItemsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.descriptors.page.listPlaylistItems.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listPlaylistItemsStream(request);
@@ -1243,10 +1367,11 @@ describe('v1alpha1.LibraryClient', () => {
             await assert.rejects(promise, expectedError);
             assert((client.descriptors.page.listPlaylistItems.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listPlaylistItems, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listPlaylistItems.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                         expectedHeaderRequestParams
+                    ) 
             );
         });
 
@@ -1254,11 +1379,15 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.ListPlaylistItemsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.ListPlaylistItemsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.ListPlaylistItemsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.library.v1alpha1.PlaylistItem()),
               generateSampleMessage(new protos.animeshon.library.v1alpha1.PlaylistItem()),
@@ -1274,10 +1403,11 @@ describe('v1alpha1.LibraryClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listPlaylistItems.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listPlaylistItems.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1287,9 +1417,14 @@ describe('v1alpha1.LibraryClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.library.v1alpha1.ListPlaylistItemsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.library.v1alpha1.ListPlaylistItemsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.library.v1alpha1.ListPlaylistItemsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedError = new Error('expected');
             client.descriptors.page.listPlaylistItems.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listPlaylistItemsAsync(request);
             await assert.rejects(async () => {
@@ -1301,10 +1436,11 @@ describe('v1alpha1.LibraryClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listPlaylistItems.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listPlaylistItems.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
     });
@@ -1313,10 +1449,10 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.GetIamPolicyRequest()
+              new IamProtos.google.iam.v1.GetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1328,7 +1464,7 @@ describe('v1alpha1.LibraryClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.Policy()
+              new IamProtos.google.iam.v1.Policy()
             );
             client.iamClient.getIamPolicy = stubSimpleCall(expectedResponse);
             const response = await client.getIamPolicy(request, expectedOptions);
@@ -1340,10 +1476,10 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.GetIamPolicyRequest()
+              new IamProtos.google.iam.v1.GetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1355,7 +1491,7 @@ describe('v1alpha1.LibraryClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.Policy()
+              new IamProtos.google.iam.v1.Policy()
             );
             client.iamClient.getIamPolicy = sinon.stub().callsArgWith(2, null, expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -1379,10 +1515,10 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.GetIamPolicyRequest()
+              new IamProtos.google.iam.v1.GetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1405,10 +1541,10 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.SetIamPolicyRequest()
+              new IamProtos.google.iam.v1.SetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1420,7 +1556,7 @@ describe('v1alpha1.LibraryClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.Policy()
+              new IamProtos.google.iam.v1.Policy()
             );
             client.iamClient.setIamPolicy = stubSimpleCall(expectedResponse);
             const response = await client.setIamPolicy(request, expectedOptions);
@@ -1432,10 +1568,10 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.SetIamPolicyRequest()
+              new IamProtos.google.iam.v1.SetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1447,7 +1583,7 @@ describe('v1alpha1.LibraryClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.Policy()
+              new IamProtos.google.iam.v1.Policy()
             );
             client.iamClient.setIamPolicy = sinon.stub().callsArgWith(2, null, expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -1471,10 +1607,10 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.SetIamPolicyRequest()
+              new IamProtos.google.iam.v1.SetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1497,10 +1633,10 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsRequest()
+              new IamProtos.google.iam.v1.TestIamPermissionsRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1512,7 +1648,7 @@ describe('v1alpha1.LibraryClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsResponse()
+              new IamProtos.google.iam.v1.TestIamPermissionsResponse()
             );
             client.iamClient.testIamPermissions = stubSimpleCall(expectedResponse);
             const response = await client.testIamPermissions(request, expectedOptions);
@@ -1524,10 +1660,10 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsRequest()
+              new IamProtos.google.iam.v1.TestIamPermissionsRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1539,7 +1675,7 @@ describe('v1alpha1.LibraryClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsResponse()
+              new IamProtos.google.iam.v1.TestIamPermissionsResponse()
             );
             client.iamClient.testIamPermissions = sinon.stub().callsArgWith(2, null, expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -1563,10 +1699,10 @@ describe('v1alpha1.LibraryClient', () => {
             const client = new libraryModule.v1alpha1.LibraryClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsRequest()
+              new IamProtos.google.iam.v1.TestIamPermissionsRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';

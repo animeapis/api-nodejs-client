@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,25 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as keeperModule from '../src';
 
 import {PassThrough} from 'stream';
 
 import {protobuf, IamProtos} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -87,97 +100,99 @@ function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?
 }
 
 describe('v1alpha1.KeeperClient', () => {
-    it('has servicePath', () => {
-        const servicePath = keeperModule.v1alpha1.KeeperClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = keeperModule.v1alpha1.KeeperClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = keeperModule.v1alpha1.KeeperClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new keeperModule.v1alpha1.KeeperClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new keeperModule.v1alpha1.KeeperClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = keeperModule.v1alpha1.KeeperClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new keeperModule.v1alpha1.KeeperClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = keeperModule.v1alpha1.KeeperClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = keeperModule.v1alpha1.KeeperClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new keeperModule.v1alpha1.KeeperClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new keeperModule.v1alpha1.KeeperClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.keeperStub, undefined);
+            await client.initialize();
+            assert(client.keeperStub);
         });
-        assert.strictEqual(client.keeperStub, undefined);
-        await client.initialize();
-        assert(client.keeperStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new keeperModule.v1alpha1.KeeperClient({
+        it('has close method for the initialized client', done => {
+            const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.keeperStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new keeperModule.v1alpha1.KeeperClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.keeperStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new keeperModule.v1alpha1.KeeperClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new keeperModule.v1alpha1.KeeperClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.keeperStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new keeperModule.v1alpha1.KeeperClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.keeperStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new keeperModule.v1alpha1.KeeperClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new keeperModule.v1alpha1.KeeperClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('getCredentials', () => {
@@ -185,43 +200,45 @@ describe('v1alpha1.KeeperClient', () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.GetCredentialsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.Credentials());
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.GetCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.GetCredentialsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.Credentials()
+            );
             client.innerApiCalls.getCredentials = stubSimpleCall(expectedResponse);
             const [response] = await client.getCredentials(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getCredentials as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getCredentials as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getCredentials as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getCredentials without error using callback', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.GetCredentialsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.Credentials());
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.GetCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.GetCredentialsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.Credentials()
+            );
             client.innerApiCalls.getCredentials = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getCredentials(
@@ -236,41 +253,50 @@ describe('v1alpha1.KeeperClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getCredentials as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getCredentials as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getCredentials as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getCredentials with error', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.GetCredentialsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.GetCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.GetCredentialsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getCredentials = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getCredentials(request), expectedError);
-            assert((client.innerApiCalls.getCredentials as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getCredentials as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getCredentials as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getCredentials with closed client', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.GetCredentialsRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.GetCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.GetCredentialsRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getCredentials(request), expectedError);
@@ -282,45 +308,47 @@ describe('v1alpha1.KeeperClient', () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.CreateCredentialsRequest());
-            request.credentials = {};
-            request.credentials.name = '';
-            const expectedHeaderRequestParams = "credentials.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.Credentials());
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.CreateCredentialsRequest()
+            );
+            request.credentials ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.CreateCredentialsRequest', ['credentials', 'name']);
+            request.credentials.name = defaultValue1;
+            const expectedHeaderRequestParams = `credentials.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.Credentials()
+            );
             client.innerApiCalls.createCredentials = stubSimpleCall(expectedResponse);
             const [response] = await client.createCredentials(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createCredentials as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createCredentials as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createCredentials as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createCredentials without error using callback', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.CreateCredentialsRequest());
-            request.credentials = {};
-            request.credentials.name = '';
-            const expectedHeaderRequestParams = "credentials.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.Credentials());
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.CreateCredentialsRequest()
+            );
+            request.credentials ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.CreateCredentialsRequest', ['credentials', 'name']);
+            request.credentials.name = defaultValue1;
+            const expectedHeaderRequestParams = `credentials.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.Credentials()
+            );
             client.innerApiCalls.createCredentials = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createCredentials(
@@ -335,43 +363,52 @@ describe('v1alpha1.KeeperClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createCredentials as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createCredentials as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createCredentials as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createCredentials with error', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.CreateCredentialsRequest());
-            request.credentials = {};
-            request.credentials.name = '';
-            const expectedHeaderRequestParams = "credentials.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.CreateCredentialsRequest()
+            );
+            request.credentials ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.CreateCredentialsRequest', ['credentials', 'name']);
+            request.credentials.name = defaultValue1;
+            const expectedHeaderRequestParams = `credentials.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createCredentials = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createCredentials(request), expectedError);
-            assert((client.innerApiCalls.createCredentials as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createCredentials as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createCredentials as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createCredentials with closed client', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.CreateCredentialsRequest());
-            request.credentials = {};
-            request.credentials.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.CreateCredentialsRequest()
+            );
+            request.credentials ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.CreateCredentialsRequest', ['credentials', 'name']);
+            request.credentials.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createCredentials(request), expectedError);
@@ -383,43 +420,45 @@ describe('v1alpha1.KeeperClient', () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.DeleteCredentialsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.DeleteCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.DeleteCredentialsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteCredentials = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteCredentials(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteCredentials as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteCredentials as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteCredentials as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteCredentials without error using callback', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.DeleteCredentialsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.DeleteCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.DeleteCredentialsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteCredentials = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteCredentials(
@@ -434,41 +473,50 @@ describe('v1alpha1.KeeperClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteCredentials as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteCredentials as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteCredentials as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteCredentials with error', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.DeleteCredentialsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.DeleteCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.DeleteCredentialsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteCredentials = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteCredentials(request), expectedError);
-            assert((client.innerApiCalls.deleteCredentials as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteCredentials as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteCredentials as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteCredentials with closed client', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.DeleteCredentialsRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.DeleteCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.DeleteCredentialsRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteCredentials(request), expectedError);
@@ -480,43 +528,45 @@ describe('v1alpha1.KeeperClient', () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ActAsCredentialsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ActAsCredentialsResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.ActAsCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.ActAsCredentialsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.ActAsCredentialsResponse()
+            );
             client.innerApiCalls.actAsCredentials = stubSimpleCall(expectedResponse);
             const [response] = await client.actAsCredentials(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.actAsCredentials as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.actAsCredentials as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.actAsCredentials as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes actAsCredentials without error using callback', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ActAsCredentialsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ActAsCredentialsResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.ActAsCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.ActAsCredentialsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.ActAsCredentialsResponse()
+            );
             client.innerApiCalls.actAsCredentials = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.actAsCredentials(
@@ -531,41 +581,50 @@ describe('v1alpha1.KeeperClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.actAsCredentials as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.actAsCredentials as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.actAsCredentials as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes actAsCredentials with error', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ActAsCredentialsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.ActAsCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.ActAsCredentialsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.actAsCredentials = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.actAsCredentials(request), expectedError);
-            assert((client.innerApiCalls.actAsCredentials as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.actAsCredentials as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.actAsCredentials as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes actAsCredentials with closed client', async () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ActAsCredentialsRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.ActAsCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.ActAsCredentialsRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.actAsCredentials(request), expectedError);
@@ -579,17 +638,13 @@ describe('v1alpha1.KeeperClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ListCredentialsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.ListCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.ListCredentialsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.credentials.v1alpha1.Credentials()),
               generateSampleMessage(new protos.animeshon.credentials.v1alpha1.Credentials()),
               generateSampleMessage(new protos.animeshon.credentials.v1alpha1.Credentials()),
@@ -597,8 +652,12 @@ describe('v1alpha1.KeeperClient', () => {
             client.innerApiCalls.listCredentials = stubSimpleCall(expectedResponse);
             const [response] = await client.listCredentials(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listCredentials as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listCredentials as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listCredentials as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listCredentials without error using callback', async () => {
@@ -607,17 +666,13 @@ describe('v1alpha1.KeeperClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ListCredentialsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.ListCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.ListCredentialsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.credentials.v1alpha1.Credentials()),
               generateSampleMessage(new protos.animeshon.credentials.v1alpha1.Credentials()),
               generateSampleMessage(new protos.animeshon.credentials.v1alpha1.Credentials()),
@@ -636,8 +691,12 @@ describe('v1alpha1.KeeperClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listCredentials as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.listCredentials as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listCredentials as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listCredentials with error', async () => {
@@ -646,21 +705,22 @@ describe('v1alpha1.KeeperClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ListCredentialsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.ListCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.ListCredentialsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.listCredentials = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listCredentials(request), expectedError);
-            assert((client.innerApiCalls.listCredentials as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listCredentials as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listCredentials as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listCredentialsStream without error', async () => {
@@ -669,9 +729,13 @@ describe('v1alpha1.KeeperClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ListCredentialsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.ListCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.ListCredentialsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.credentials.v1alpha1.Credentials()),
               generateSampleMessage(new protos.animeshon.credentials.v1alpha1.Credentials()),
@@ -695,10 +759,11 @@ describe('v1alpha1.KeeperClient', () => {
             assert.deepStrictEqual(responses, expectedResponse);
             assert((client.descriptors.page.listCredentials.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listCredentials, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listCredentials.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -708,9 +773,13 @@ describe('v1alpha1.KeeperClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ListCredentialsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.ListCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.ListCredentialsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.descriptors.page.listCredentials.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listCredentialsStream(request);
@@ -729,10 +798,11 @@ describe('v1alpha1.KeeperClient', () => {
             await assert.rejects(promise, expectedError);
             assert((client.descriptors.page.listCredentials.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listCredentials, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listCredentials.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                         expectedHeaderRequestParams
+                    ) 
             );
         });
 
@@ -740,11 +810,15 @@ describe('v1alpha1.KeeperClient', () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ListCredentialsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.ListCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.ListCredentialsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.credentials.v1alpha1.Credentials()),
               generateSampleMessage(new protos.animeshon.credentials.v1alpha1.Credentials()),
@@ -760,10 +834,11 @@ describe('v1alpha1.KeeperClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listCredentials.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listCredentials.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -773,9 +848,14 @@ describe('v1alpha1.KeeperClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.credentials.v1alpha1.ListCredentialsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.credentials.v1alpha1.ListCredentialsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.credentials.v1alpha1.ListCredentialsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedError = new Error('expected');
             client.descriptors.page.listCredentials.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listCredentialsAsync(request);
             await assert.rejects(async () => {
@@ -787,10 +867,11 @@ describe('v1alpha1.KeeperClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listCredentials.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listCredentials.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
     });
@@ -799,10 +880,10 @@ describe('v1alpha1.KeeperClient', () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.GetIamPolicyRequest()
+              new IamProtos.google.iam.v1.GetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -814,7 +895,7 @@ describe('v1alpha1.KeeperClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.Policy()
+              new IamProtos.google.iam.v1.Policy()
             );
             client.iamClient.getIamPolicy = stubSimpleCall(expectedResponse);
             const response = await client.getIamPolicy(request, expectedOptions);
@@ -826,10 +907,10 @@ describe('v1alpha1.KeeperClient', () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.GetIamPolicyRequest()
+              new IamProtos.google.iam.v1.GetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -841,7 +922,7 @@ describe('v1alpha1.KeeperClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.Policy()
+              new IamProtos.google.iam.v1.Policy()
             );
             client.iamClient.getIamPolicy = sinon.stub().callsArgWith(2, null, expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -865,10 +946,10 @@ describe('v1alpha1.KeeperClient', () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.GetIamPolicyRequest()
+              new IamProtos.google.iam.v1.GetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -891,10 +972,10 @@ describe('v1alpha1.KeeperClient', () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.SetIamPolicyRequest()
+              new IamProtos.google.iam.v1.SetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -906,7 +987,7 @@ describe('v1alpha1.KeeperClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.Policy()
+              new IamProtos.google.iam.v1.Policy()
             );
             client.iamClient.setIamPolicy = stubSimpleCall(expectedResponse);
             const response = await client.setIamPolicy(request, expectedOptions);
@@ -918,10 +999,10 @@ describe('v1alpha1.KeeperClient', () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.SetIamPolicyRequest()
+              new IamProtos.google.iam.v1.SetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -933,7 +1014,7 @@ describe('v1alpha1.KeeperClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.Policy()
+              new IamProtos.google.iam.v1.Policy()
             );
             client.iamClient.setIamPolicy = sinon.stub().callsArgWith(2, null, expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -957,10 +1038,10 @@ describe('v1alpha1.KeeperClient', () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.SetIamPolicyRequest()
+              new IamProtos.google.iam.v1.SetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -983,10 +1064,10 @@ describe('v1alpha1.KeeperClient', () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsRequest()
+              new IamProtos.google.iam.v1.TestIamPermissionsRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -998,7 +1079,7 @@ describe('v1alpha1.KeeperClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsResponse()
+              new IamProtos.google.iam.v1.TestIamPermissionsResponse()
             );
             client.iamClient.testIamPermissions = stubSimpleCall(expectedResponse);
             const response = await client.testIamPermissions(request, expectedOptions);
@@ -1010,10 +1091,10 @@ describe('v1alpha1.KeeperClient', () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsRequest()
+              new IamProtos.google.iam.v1.TestIamPermissionsRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1025,7 +1106,7 @@ describe('v1alpha1.KeeperClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsResponse()
+              new IamProtos.google.iam.v1.TestIamPermissionsResponse()
             );
             client.iamClient.testIamPermissions = sinon.stub().callsArgWith(2, null, expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -1049,10 +1130,10 @@ describe('v1alpha1.KeeperClient', () => {
             const client = new keeperModule.v1alpha1.KeeperClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsRequest()
+              new IamProtos.google.iam.v1.TestIamPermissionsRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';

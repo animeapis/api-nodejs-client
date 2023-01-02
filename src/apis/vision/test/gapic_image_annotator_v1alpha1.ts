@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,25 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as imageannotatorModule from '../src';
 
 import {PassThrough} from 'stream';
 
 import {protobuf} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -87,97 +100,99 @@ function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?
 }
 
 describe('v1alpha1.ImageAnnotatorClient', () => {
-    it('has servicePath', () => {
-        const servicePath = imageannotatorModule.v1alpha1.ImageAnnotatorClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = imageannotatorModule.v1alpha1.ImageAnnotatorClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = imageannotatorModule.v1alpha1.ImageAnnotatorClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = imageannotatorModule.v1alpha1.ImageAnnotatorClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = imageannotatorModule.v1alpha1.ImageAnnotatorClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = imageannotatorModule.v1alpha1.ImageAnnotatorClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.imageAnnotatorStub, undefined);
+            await client.initialize();
+            assert(client.imageAnnotatorStub);
         });
-        assert.strictEqual(client.imageAnnotatorStub, undefined);
-        await client.initialize();
-        assert(client.imageAnnotatorStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
+        it('has close method for the initialized client', done => {
+            const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.imageAnnotatorStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.imageAnnotatorStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.imageAnnotatorStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.imageAnnotatorStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('analyzeImage', () => {
@@ -185,43 +200,45 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.AnalyzeImageRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.vision.v1alpha1.AnalyzeImageResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.AnalyzeImageRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.AnalyzeImageRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.AnalyzeImageResponse()
+            );
             client.innerApiCalls.analyzeImage = stubSimpleCall(expectedResponse);
             const [response] = await client.analyzeImage(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.analyzeImage as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.analyzeImage as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.analyzeImage as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes analyzeImage without error using callback', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.AnalyzeImageRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.vision.v1alpha1.AnalyzeImageResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.AnalyzeImageRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.AnalyzeImageRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.AnalyzeImageResponse()
+            );
             client.innerApiCalls.analyzeImage = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.analyzeImage(
@@ -236,41 +253,50 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.analyzeImage as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.analyzeImage as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.analyzeImage as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes analyzeImage with error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.AnalyzeImageRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.AnalyzeImageRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.AnalyzeImageRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.analyzeImage = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.analyzeImage(request), expectedError);
-            assert((client.innerApiCalls.analyzeImage as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.analyzeImage as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.analyzeImage as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes analyzeImage with closed client', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.AnalyzeImageRequest());
-            request.parent = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.AnalyzeImageRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.AnalyzeImageRequest', ['parent']);
+            request.parent = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.analyzeImage(request), expectedError);
@@ -282,43 +308,45 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.GetImageAnalysisRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnalysis());
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.GetImageAnalysisRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.GetImageAnalysisRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ImageAnalysis()
+            );
             client.innerApiCalls.getImageAnalysis = stubSimpleCall(expectedResponse);
             const [response] = await client.getImageAnalysis(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getImageAnalysis as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getImageAnalysis as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getImageAnalysis as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getImageAnalysis without error using callback', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.GetImageAnalysisRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnalysis());
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.GetImageAnalysisRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.GetImageAnalysisRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ImageAnalysis()
+            );
             client.innerApiCalls.getImageAnalysis = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getImageAnalysis(
@@ -333,41 +361,50 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getImageAnalysis as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getImageAnalysis as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getImageAnalysis as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getImageAnalysis with error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.GetImageAnalysisRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.GetImageAnalysisRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.GetImageAnalysisRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getImageAnalysis = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getImageAnalysis(request), expectedError);
-            assert((client.innerApiCalls.getImageAnalysis as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getImageAnalysis as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getImageAnalysis as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getImageAnalysis with closed client', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.GetImageAnalysisRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.GetImageAnalysisRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.GetImageAnalysisRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getImageAnalysis(request), expectedError);
@@ -379,43 +416,45 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.DeleteImageAnalysisRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.DeleteImageAnalysisRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.DeleteImageAnalysisRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteImageAnalysis = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteImageAnalysis(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteImageAnalysis as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteImageAnalysis as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteImageAnalysis as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteImageAnalysis without error using callback', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.DeleteImageAnalysisRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.DeleteImageAnalysisRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.DeleteImageAnalysisRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteImageAnalysis = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteImageAnalysis(
@@ -430,41 +469,50 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteImageAnalysis as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteImageAnalysis as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteImageAnalysis as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteImageAnalysis with error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.DeleteImageAnalysisRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.DeleteImageAnalysisRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.DeleteImageAnalysisRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteImageAnalysis = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteImageAnalysis(request), expectedError);
-            assert((client.innerApiCalls.deleteImageAnalysis as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteImageAnalysis as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteImageAnalysis as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteImageAnalysis with closed client', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.DeleteImageAnalysisRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.DeleteImageAnalysisRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.DeleteImageAnalysisRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteImageAnalysis(request), expectedError);
@@ -476,43 +524,45 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.GetImageAnnotationRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation());
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.GetImageAnnotationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.GetImageAnnotationRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ImageAnnotation()
+            );
             client.innerApiCalls.getImageAnnotation = stubSimpleCall(expectedResponse);
             const [response] = await client.getImageAnnotation(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getImageAnnotation as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getImageAnnotation as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getImageAnnotation as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getImageAnnotation without error using callback', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.GetImageAnnotationRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation());
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.GetImageAnnotationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.GetImageAnnotationRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ImageAnnotation()
+            );
             client.innerApiCalls.getImageAnnotation = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getImageAnnotation(
@@ -527,41 +577,50 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getImageAnnotation as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getImageAnnotation as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getImageAnnotation as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getImageAnnotation with error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.GetImageAnnotationRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.GetImageAnnotationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.GetImageAnnotationRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getImageAnnotation = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getImageAnnotation(request), expectedError);
-            assert((client.innerApiCalls.getImageAnnotation as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getImageAnnotation as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getImageAnnotation as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getImageAnnotation with closed client', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.GetImageAnnotationRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.GetImageAnnotationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.GetImageAnnotationRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getImageAnnotation(request), expectedError);
@@ -573,43 +632,45 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.CreateImageAnnotationRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation());
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.CreateImageAnnotationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.CreateImageAnnotationRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ImageAnnotation()
+            );
             client.innerApiCalls.createImageAnnotation = stubSimpleCall(expectedResponse);
             const [response] = await client.createImageAnnotation(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createImageAnnotation as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createImageAnnotation as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createImageAnnotation as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createImageAnnotation without error using callback', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.CreateImageAnnotationRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation());
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.CreateImageAnnotationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.CreateImageAnnotationRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ImageAnnotation()
+            );
             client.innerApiCalls.createImageAnnotation = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createImageAnnotation(
@@ -624,41 +685,50 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createImageAnnotation as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createImageAnnotation as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createImageAnnotation as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createImageAnnotation with error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.CreateImageAnnotationRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.CreateImageAnnotationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.CreateImageAnnotationRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createImageAnnotation = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createImageAnnotation(request), expectedError);
-            assert((client.innerApiCalls.createImageAnnotation as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createImageAnnotation as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createImageAnnotation as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createImageAnnotation with closed client', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.CreateImageAnnotationRequest());
-            request.parent = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.CreateImageAnnotationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.CreateImageAnnotationRequest', ['parent']);
+            request.parent = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createImageAnnotation(request), expectedError);
@@ -670,45 +740,47 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.UpdateImageAnnotationRequest());
-            request.annotation = {};
-            request.annotation.name = '';
-            const expectedHeaderRequestParams = "annotation.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation());
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.UpdateImageAnnotationRequest()
+            );
+            request.annotation ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.UpdateImageAnnotationRequest', ['annotation', 'name']);
+            request.annotation.name = defaultValue1;
+            const expectedHeaderRequestParams = `annotation.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ImageAnnotation()
+            );
             client.innerApiCalls.updateImageAnnotation = stubSimpleCall(expectedResponse);
             const [response] = await client.updateImageAnnotation(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateImageAnnotation as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateImageAnnotation as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateImageAnnotation as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateImageAnnotation without error using callback', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.UpdateImageAnnotationRequest());
-            request.annotation = {};
-            request.annotation.name = '';
-            const expectedHeaderRequestParams = "annotation.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation());
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.UpdateImageAnnotationRequest()
+            );
+            request.annotation ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.UpdateImageAnnotationRequest', ['annotation', 'name']);
+            request.annotation.name = defaultValue1;
+            const expectedHeaderRequestParams = `annotation.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ImageAnnotation()
+            );
             client.innerApiCalls.updateImageAnnotation = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updateImageAnnotation(
@@ -723,43 +795,52 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateImageAnnotation as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updateImageAnnotation as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateImageAnnotation as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateImageAnnotation with error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.UpdateImageAnnotationRequest());
-            request.annotation = {};
-            request.annotation.name = '';
-            const expectedHeaderRequestParams = "annotation.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.UpdateImageAnnotationRequest()
+            );
+            request.annotation ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.UpdateImageAnnotationRequest', ['annotation', 'name']);
+            request.annotation.name = defaultValue1;
+            const expectedHeaderRequestParams = `annotation.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updateImageAnnotation = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updateImageAnnotation(request), expectedError);
-            assert((client.innerApiCalls.updateImageAnnotation as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateImageAnnotation as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateImageAnnotation as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateImageAnnotation with closed client', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.UpdateImageAnnotationRequest());
-            request.annotation = {};
-            request.annotation.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.UpdateImageAnnotationRequest()
+            );
+            request.annotation ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.UpdateImageAnnotationRequest', ['annotation', 'name']);
+            request.annotation.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updateImageAnnotation(request), expectedError);
@@ -771,43 +852,45 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.DeleteImageAnnotationRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.DeleteImageAnnotationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.DeleteImageAnnotationRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteImageAnnotation = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteImageAnnotation(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteImageAnnotation as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteImageAnnotation as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteImageAnnotation as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteImageAnnotation without error using callback', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.DeleteImageAnnotationRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.DeleteImageAnnotationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.DeleteImageAnnotationRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteImageAnnotation = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteImageAnnotation(
@@ -822,41 +905,50 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteImageAnnotation as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteImageAnnotation as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteImageAnnotation as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteImageAnnotation with error', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.DeleteImageAnnotationRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.DeleteImageAnnotationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.DeleteImageAnnotationRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteImageAnnotation = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteImageAnnotation(request), expectedError);
-            assert((client.innerApiCalls.deleteImageAnnotation as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteImageAnnotation as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteImageAnnotation as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteImageAnnotation with closed client', async () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.DeleteImageAnnotationRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.DeleteImageAnnotationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.DeleteImageAnnotationRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteImageAnnotation(request), expectedError);
@@ -870,17 +962,13 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ListImageAnalysesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ListImageAnalysesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.ListImageAnalysesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnalysis()),
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnalysis()),
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnalysis()),
@@ -888,8 +976,12 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             client.innerApiCalls.listImageAnalyses = stubSimpleCall(expectedResponse);
             const [response] = await client.listImageAnalyses(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listImageAnalyses as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listImageAnalyses as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listImageAnalyses as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listImageAnalyses without error using callback', async () => {
@@ -898,17 +990,13 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ListImageAnalysesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ListImageAnalysesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.ListImageAnalysesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnalysis()),
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnalysis()),
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnalysis()),
@@ -927,8 +1015,12 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listImageAnalyses as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.listImageAnalyses as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listImageAnalyses as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listImageAnalyses with error', async () => {
@@ -937,21 +1029,22 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ListImageAnalysesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ListImageAnalysesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.ListImageAnalysesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.listImageAnalyses = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listImageAnalyses(request), expectedError);
-            assert((client.innerApiCalls.listImageAnalyses as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listImageAnalyses as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listImageAnalyses as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listImageAnalysesStream without error', async () => {
@@ -960,9 +1053,13 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ListImageAnalysesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ListImageAnalysesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.ListImageAnalysesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnalysis()),
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnalysis()),
@@ -986,10 +1083,11 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             assert.deepStrictEqual(responses, expectedResponse);
             assert((client.descriptors.page.listImageAnalyses.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listImageAnalyses, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listImageAnalyses.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -999,9 +1097,13 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ListImageAnalysesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ListImageAnalysesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.ListImageAnalysesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.descriptors.page.listImageAnalyses.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listImageAnalysesStream(request);
@@ -1020,10 +1122,11 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             await assert.rejects(promise, expectedError);
             assert((client.descriptors.page.listImageAnalyses.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listImageAnalyses, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listImageAnalyses.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                         expectedHeaderRequestParams
+                    ) 
             );
         });
 
@@ -1031,11 +1134,15 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ListImageAnalysesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ListImageAnalysesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.ListImageAnalysesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnalysis()),
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnalysis()),
@@ -1051,10 +1158,11 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listImageAnalyses.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listImageAnalyses.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1064,9 +1172,14 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ListImageAnalysesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ListImageAnalysesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.ListImageAnalysesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedError = new Error('expected');
             client.descriptors.page.listImageAnalyses.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listImageAnalysesAsync(request);
             await assert.rejects(async () => {
@@ -1078,10 +1191,11 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listImageAnalyses.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listImageAnalyses.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
     });
@@ -1093,17 +1207,13 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ListImageAnnotationsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ListImageAnnotationsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.ListImageAnnotationsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation()),
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation()),
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation()),
@@ -1111,8 +1221,12 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             client.innerApiCalls.listImageAnnotations = stubSimpleCall(expectedResponse);
             const [response] = await client.listImageAnnotations(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listImageAnnotations as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listImageAnnotations as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listImageAnnotations as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listImageAnnotations without error using callback', async () => {
@@ -1121,17 +1235,13 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ListImageAnnotationsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ListImageAnnotationsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.ListImageAnnotationsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation()),
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation()),
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation()),
@@ -1150,8 +1260,12 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listImageAnnotations as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.listImageAnnotations as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listImageAnnotations as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listImageAnnotations with error', async () => {
@@ -1160,21 +1274,22 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ListImageAnnotationsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ListImageAnnotationsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.ListImageAnnotationsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.listImageAnnotations = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listImageAnnotations(request), expectedError);
-            assert((client.innerApiCalls.listImageAnnotations as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listImageAnnotations as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listImageAnnotations as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listImageAnnotationsStream without error', async () => {
@@ -1183,9 +1298,13 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ListImageAnnotationsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ListImageAnnotationsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.ListImageAnnotationsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation()),
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation()),
@@ -1209,10 +1328,11 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             assert.deepStrictEqual(responses, expectedResponse);
             assert((client.descriptors.page.listImageAnnotations.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listImageAnnotations, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listImageAnnotations.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1222,9 +1342,13 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ListImageAnnotationsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ListImageAnnotationsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.ListImageAnnotationsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.descriptors.page.listImageAnnotations.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listImageAnnotationsStream(request);
@@ -1243,10 +1367,11 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             await assert.rejects(promise, expectedError);
             assert((client.descriptors.page.listImageAnnotations.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listImageAnnotations, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listImageAnnotations.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                         expectedHeaderRequestParams
+                    ) 
             );
         });
 
@@ -1254,11 +1379,15 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             const client = new imageannotatorModule.v1alpha1.ImageAnnotatorClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ListImageAnnotationsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ListImageAnnotationsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.ListImageAnnotationsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation()),
               generateSampleMessage(new protos.animeshon.vision.v1alpha1.ImageAnnotation()),
@@ -1274,10 +1403,11 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listImageAnnotations.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listImageAnnotations.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1287,9 +1417,14 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.vision.v1alpha1.ListImageAnnotationsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.vision.v1alpha1.ListImageAnnotationsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.vision.v1alpha1.ListImageAnnotationsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedError = new Error('expected');
             client.descriptors.page.listImageAnnotations.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listImageAnnotationsAsync(request);
             await assert.rejects(async () => {
@@ -1301,10 +1436,11 @@ describe('v1alpha1.ImageAnnotatorClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listImageAnnotations.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listImageAnnotations.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
     });

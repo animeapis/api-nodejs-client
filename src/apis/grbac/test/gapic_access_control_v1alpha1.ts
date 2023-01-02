@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,10 +20,23 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as accesscontrolModule from '../src';
 
 import {protobuf} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -40,97 +53,99 @@ function stubSimpleCallWithCallback<ResponseType>(response?: ResponseType, error
 }
 
 describe('v1alpha1.AccessControlClient', () => {
-    it('has servicePath', () => {
-        const servicePath = accesscontrolModule.v1alpha1.AccessControlClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = accesscontrolModule.v1alpha1.AccessControlClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = accesscontrolModule.v1alpha1.AccessControlClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new accesscontrolModule.v1alpha1.AccessControlClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = accesscontrolModule.v1alpha1.AccessControlClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = accesscontrolModule.v1alpha1.AccessControlClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = accesscontrolModule.v1alpha1.AccessControlClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.accessControlStub, undefined);
+            await client.initialize();
+            assert(client.accessControlStub);
         });
-        assert.strictEqual(client.accessControlStub, undefined);
-        await client.initialize();
-        assert(client.accessControlStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+        it('has close method for the initialized client', done => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.accessControlStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.accessControlStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new accesscontrolModule.v1alpha1.AccessControlClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.accessControlStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.accessControlStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new accesscontrolModule.v1alpha1.AccessControlClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('testIamPolicy', () => {
@@ -138,27 +153,31 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.TestIamPolicyRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.TestIamPolicyRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.testIamPolicy = stubSimpleCall(expectedResponse);
             const [response] = await client.testIamPolicy(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.testIamPolicy as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes testIamPolicy without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.TestIamPolicyRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.TestIamPolicyRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.testIamPolicy = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.testIamPolicy(
@@ -173,32 +192,31 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.testIamPolicy as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes testIamPolicy with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.TestIamPolicyRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.TestIamPolicyRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.testIamPolicy = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.testIamPolicy(request), expectedError);
-            assert((client.innerApiCalls.testIamPolicy as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes testIamPolicy with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.TestIamPolicyRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.TestIamPolicyRequest()
+            );
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.testIamPolicy(request), expectedError);
@@ -210,27 +228,31 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.iam.v1.GetIamPolicyRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.iam.v1.Policy());
+            const request = generateSampleMessage(
+              new protos.google.iam.v1.GetIamPolicyRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.iam.v1.Policy()
+            );
             client.innerApiCalls.getIamPolicy = stubSimpleCall(expectedResponse);
             const [response] = await client.getIamPolicy(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getIamPolicy as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes getIamPolicy without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.iam.v1.GetIamPolicyRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.iam.v1.Policy());
+            const request = generateSampleMessage(
+              new protos.google.iam.v1.GetIamPolicyRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.iam.v1.Policy()
+            );
             client.innerApiCalls.getIamPolicy = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getIamPolicy(
@@ -245,32 +267,31 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getIamPolicy as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes getIamPolicy with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.iam.v1.GetIamPolicyRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.google.iam.v1.GetIamPolicyRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.getIamPolicy = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getIamPolicy(request), expectedError);
-            assert((client.innerApiCalls.getIamPolicy as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes getIamPolicy with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.iam.v1.GetIamPolicyRequest());
+            const request = generateSampleMessage(
+              new protos.google.iam.v1.GetIamPolicyRequest()
+            );
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getIamPolicy(request), expectedError);
@@ -282,27 +303,31 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.iam.v1.SetIamPolicyRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.iam.v1.Policy());
+            const request = generateSampleMessage(
+              new protos.google.iam.v1.SetIamPolicyRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.iam.v1.Policy()
+            );
             client.innerApiCalls.setIamPolicy = stubSimpleCall(expectedResponse);
             const [response] = await client.setIamPolicy(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.setIamPolicy as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes setIamPolicy without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.iam.v1.SetIamPolicyRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.google.iam.v1.Policy());
+            const request = generateSampleMessage(
+              new protos.google.iam.v1.SetIamPolicyRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.google.iam.v1.Policy()
+            );
             client.innerApiCalls.setIamPolicy = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.setIamPolicy(
@@ -317,32 +342,31 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.setIamPolicy as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes setIamPolicy with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.iam.v1.SetIamPolicyRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.google.iam.v1.SetIamPolicyRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.setIamPolicy = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.setIamPolicy(request), expectedError);
-            assert((client.innerApiCalls.setIamPolicy as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes setIamPolicy with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.google.iam.v1.SetIamPolicyRequest());
+            const request = generateSampleMessage(
+              new protos.google.iam.v1.SetIamPolicyRequest()
+            );
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.setIamPolicy(request), expectedError);
@@ -354,43 +378,45 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetResourceRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Resource());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.GetResourceRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.GetResourceRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Resource()
+            );
             client.innerApiCalls.getResource = stubSimpleCall(expectedResponse);
             const [response] = await client.getResource(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getResource as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getResource as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getResource as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getResource without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetResourceRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Resource());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.GetResourceRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.GetResourceRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Resource()
+            );
             client.innerApiCalls.getResource = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getResource(
@@ -405,41 +431,50 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getResource as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getResource as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getResource as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getResource with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetResourceRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.GetResourceRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.GetResourceRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getResource = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getResource(request), expectedError);
-            assert((client.innerApiCalls.getResource as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getResource as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getResource as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getResource with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetResourceRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.GetResourceRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.GetResourceRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getResource(request), expectedError);
@@ -451,45 +486,47 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateResourceRequest());
-            request.resource = {};
-            request.resource.name = '';
-            const expectedHeaderRequestParams = "resource.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Resource());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreateResourceRequest()
+            );
+            request.resource ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreateResourceRequest', ['resource', 'name']);
+            request.resource.name = defaultValue1;
+            const expectedHeaderRequestParams = `resource.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Resource()
+            );
             client.innerApiCalls.createResource = stubSimpleCall(expectedResponse);
             const [response] = await client.createResource(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createResource as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createResource as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createResource as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createResource without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateResourceRequest());
-            request.resource = {};
-            request.resource.name = '';
-            const expectedHeaderRequestParams = "resource.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Resource());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreateResourceRequest()
+            );
+            request.resource ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreateResourceRequest', ['resource', 'name']);
+            request.resource.name = defaultValue1;
+            const expectedHeaderRequestParams = `resource.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Resource()
+            );
             client.innerApiCalls.createResource = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createResource(
@@ -504,43 +541,52 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createResource as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createResource as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createResource as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createResource with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateResourceRequest());
-            request.resource = {};
-            request.resource.name = '';
-            const expectedHeaderRequestParams = "resource.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreateResourceRequest()
+            );
+            request.resource ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreateResourceRequest', ['resource', 'name']);
+            request.resource.name = defaultValue1;
+            const expectedHeaderRequestParams = `resource.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createResource = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createResource(request), expectedError);
-            assert((client.innerApiCalls.createResource as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createResource as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createResource as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createResource with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateResourceRequest());
-            request.resource = {};
-            request.resource.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreateResourceRequest()
+            );
+            request.resource ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreateResourceRequest', ['resource', 'name']);
+            request.resource.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createResource(request), expectedError);
@@ -552,43 +598,45 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.TransferResourceRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Resource());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.TransferResourceRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.TransferResourceRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Resource()
+            );
             client.innerApiCalls.transferResource = stubSimpleCall(expectedResponse);
             const [response] = await client.transferResource(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.transferResource as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.transferResource as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.transferResource as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes transferResource without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.TransferResourceRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Resource());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.TransferResourceRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.TransferResourceRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Resource()
+            );
             client.innerApiCalls.transferResource = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.transferResource(
@@ -603,41 +651,50 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.transferResource as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.transferResource as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.transferResource as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes transferResource with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.TransferResourceRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.TransferResourceRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.TransferResourceRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.transferResource = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.transferResource(request), expectedError);
-            assert((client.innerApiCalls.transferResource as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.transferResource as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.transferResource as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes transferResource with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.TransferResourceRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.TransferResourceRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.TransferResourceRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.transferResource(request), expectedError);
@@ -649,43 +706,45 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteResourceRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeleteResourceRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeleteResourceRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteResource = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteResource(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteResource as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteResource as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteResource as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteResource without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteResourceRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeleteResourceRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeleteResourceRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteResource = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteResource(
@@ -700,41 +759,50 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteResource as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteResource as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteResource as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteResource with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteResourceRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeleteResourceRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeleteResourceRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteResource = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteResource(request), expectedError);
-            assert((client.innerApiCalls.deleteResource as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteResource as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteResource as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteResource with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteResourceRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeleteResourceRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeleteResourceRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteResource(request), expectedError);
@@ -746,45 +814,47 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateSubjectRequest());
-            request.subject = {};
-            request.subject.name = '';
-            const expectedHeaderRequestParams = "subject.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Subject());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreateSubjectRequest()
+            );
+            request.subject ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreateSubjectRequest', ['subject', 'name']);
+            request.subject.name = defaultValue1;
+            const expectedHeaderRequestParams = `subject.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Subject()
+            );
             client.innerApiCalls.createSubject = stubSimpleCall(expectedResponse);
             const [response] = await client.createSubject(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createSubject as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createSubject as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createSubject as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createSubject without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateSubjectRequest());
-            request.subject = {};
-            request.subject.name = '';
-            const expectedHeaderRequestParams = "subject.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Subject());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreateSubjectRequest()
+            );
+            request.subject ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreateSubjectRequest', ['subject', 'name']);
+            request.subject.name = defaultValue1;
+            const expectedHeaderRequestParams = `subject.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Subject()
+            );
             client.innerApiCalls.createSubject = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createSubject(
@@ -799,43 +869,52 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createSubject as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createSubject as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createSubject as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createSubject with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateSubjectRequest());
-            request.subject = {};
-            request.subject.name = '';
-            const expectedHeaderRequestParams = "subject.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreateSubjectRequest()
+            );
+            request.subject ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreateSubjectRequest', ['subject', 'name']);
+            request.subject.name = defaultValue1;
+            const expectedHeaderRequestParams = `subject.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createSubject = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createSubject(request), expectedError);
-            assert((client.innerApiCalls.createSubject as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createSubject as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createSubject as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createSubject with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateSubjectRequest());
-            request.subject = {};
-            request.subject.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreateSubjectRequest()
+            );
+            request.subject ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreateSubjectRequest', ['subject', 'name']);
+            request.subject.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createSubject(request), expectedError);
@@ -847,43 +926,45 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteSubjectRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeleteSubjectRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeleteSubjectRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteSubject = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteSubject(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteSubject as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteSubject as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteSubject as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteSubject without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteSubjectRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeleteSubjectRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeleteSubjectRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteSubject = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteSubject(
@@ -898,41 +979,50 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteSubject as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteSubject as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteSubject as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteSubject with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteSubjectRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeleteSubjectRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeleteSubjectRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteSubject = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteSubject(request), expectedError);
-            assert((client.innerApiCalls.deleteSubject as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteSubject as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteSubject as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteSubject with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteSubjectRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeleteSubjectRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeleteSubjectRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteSubject(request), expectedError);
@@ -944,43 +1034,45 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetGroupRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Group());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.GetGroupRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.GetGroupRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Group()
+            );
             client.innerApiCalls.getGroup = stubSimpleCall(expectedResponse);
             const [response] = await client.getGroup(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getGroup as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getGroup as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getGroup as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getGroup without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetGroupRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Group());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.GetGroupRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.GetGroupRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Group()
+            );
             client.innerApiCalls.getGroup = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getGroup(
@@ -995,41 +1087,50 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getGroup as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getGroup as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getGroup as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getGroup with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetGroupRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.GetGroupRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.GetGroupRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getGroup = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getGroup(request), expectedError);
-            assert((client.innerApiCalls.getGroup as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getGroup as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getGroup as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getGroup with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetGroupRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.GetGroupRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.GetGroupRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getGroup(request), expectedError);
@@ -1041,45 +1142,47 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateGroupRequest());
-            request.group = {};
-            request.group.name = '';
-            const expectedHeaderRequestParams = "group.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Group());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreateGroupRequest()
+            );
+            request.group ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreateGroupRequest', ['group', 'name']);
+            request.group.name = defaultValue1;
+            const expectedHeaderRequestParams = `group.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Group()
+            );
             client.innerApiCalls.createGroup = stubSimpleCall(expectedResponse);
             const [response] = await client.createGroup(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createGroup as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createGroup as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createGroup as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createGroup without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateGroupRequest());
-            request.group = {};
-            request.group.name = '';
-            const expectedHeaderRequestParams = "group.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Group());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreateGroupRequest()
+            );
+            request.group ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreateGroupRequest', ['group', 'name']);
+            request.group.name = defaultValue1;
+            const expectedHeaderRequestParams = `group.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Group()
+            );
             client.innerApiCalls.createGroup = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createGroup(
@@ -1094,43 +1197,52 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createGroup as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createGroup as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createGroup as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createGroup with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateGroupRequest());
-            request.group = {};
-            request.group.name = '';
-            const expectedHeaderRequestParams = "group.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreateGroupRequest()
+            );
+            request.group ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreateGroupRequest', ['group', 'name']);
+            request.group.name = defaultValue1;
+            const expectedHeaderRequestParams = `group.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createGroup = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createGroup(request), expectedError);
-            assert((client.innerApiCalls.createGroup as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createGroup as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createGroup as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createGroup with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateGroupRequest());
-            request.group = {};
-            request.group.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreateGroupRequest()
+            );
+            request.group ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreateGroupRequest', ['group', 'name']);
+            request.group.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createGroup(request), expectedError);
@@ -1142,45 +1254,47 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.UpdateGroupRequest());
-            request.group = {};
-            request.group.name = '';
-            const expectedHeaderRequestParams = "group.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Group());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.UpdateGroupRequest()
+            );
+            request.group ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.UpdateGroupRequest', ['group', 'name']);
+            request.group.name = defaultValue1;
+            const expectedHeaderRequestParams = `group.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Group()
+            );
             client.innerApiCalls.updateGroup = stubSimpleCall(expectedResponse);
             const [response] = await client.updateGroup(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateGroup as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateGroup as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateGroup as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateGroup without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.UpdateGroupRequest());
-            request.group = {};
-            request.group.name = '';
-            const expectedHeaderRequestParams = "group.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Group());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.UpdateGroupRequest()
+            );
+            request.group ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.UpdateGroupRequest', ['group', 'name']);
+            request.group.name = defaultValue1;
+            const expectedHeaderRequestParams = `group.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Group()
+            );
             client.innerApiCalls.updateGroup = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updateGroup(
@@ -1195,43 +1309,52 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateGroup as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updateGroup as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateGroup as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateGroup with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.UpdateGroupRequest());
-            request.group = {};
-            request.group.name = '';
-            const expectedHeaderRequestParams = "group.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.UpdateGroupRequest()
+            );
+            request.group ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.UpdateGroupRequest', ['group', 'name']);
+            request.group.name = defaultValue1;
+            const expectedHeaderRequestParams = `group.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updateGroup = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updateGroup(request), expectedError);
-            assert((client.innerApiCalls.updateGroup as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateGroup as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateGroup as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateGroup with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.UpdateGroupRequest());
-            request.group = {};
-            request.group.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.UpdateGroupRequest()
+            );
+            request.group ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.UpdateGroupRequest', ['group', 'name']);
+            request.group.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updateGroup(request), expectedError);
@@ -1243,43 +1366,45 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.AddGroupMemberRequest());
-            request.group = '';
-            const expectedHeaderRequestParams = "group=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Group());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.AddGroupMemberRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.AddGroupMemberRequest', ['group']);
+            request.group = defaultValue1;
+            const expectedHeaderRequestParams = `group=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Group()
+            );
             client.innerApiCalls.addGroupMember = stubSimpleCall(expectedResponse);
             const [response] = await client.addGroupMember(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.addGroupMember as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.addGroupMember as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.addGroupMember as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes addGroupMember without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.AddGroupMemberRequest());
-            request.group = '';
-            const expectedHeaderRequestParams = "group=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Group());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.AddGroupMemberRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.AddGroupMemberRequest', ['group']);
+            request.group = defaultValue1;
+            const expectedHeaderRequestParams = `group=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Group()
+            );
             client.innerApiCalls.addGroupMember = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.addGroupMember(
@@ -1294,41 +1419,50 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.addGroupMember as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.addGroupMember as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.addGroupMember as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes addGroupMember with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.AddGroupMemberRequest());
-            request.group = '';
-            const expectedHeaderRequestParams = "group=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.AddGroupMemberRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.AddGroupMemberRequest', ['group']);
+            request.group = defaultValue1;
+            const expectedHeaderRequestParams = `group=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.addGroupMember = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.addGroupMember(request), expectedError);
-            assert((client.innerApiCalls.addGroupMember as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.addGroupMember as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.addGroupMember as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes addGroupMember with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.AddGroupMemberRequest());
-            request.group = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.AddGroupMemberRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.AddGroupMemberRequest', ['group']);
+            request.group = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.addGroupMember(request), expectedError);
@@ -1340,43 +1474,45 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.RemoveGroupMemberRequest());
-            request.group = '';
-            const expectedHeaderRequestParams = "group=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Group());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.RemoveGroupMemberRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.RemoveGroupMemberRequest', ['group']);
+            request.group = defaultValue1;
+            const expectedHeaderRequestParams = `group=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Group()
+            );
             client.innerApiCalls.removeGroupMember = stubSimpleCall(expectedResponse);
             const [response] = await client.removeGroupMember(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.removeGroupMember as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.removeGroupMember as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.removeGroupMember as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes removeGroupMember without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.RemoveGroupMemberRequest());
-            request.group = '';
-            const expectedHeaderRequestParams = "group=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Group());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.RemoveGroupMemberRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.RemoveGroupMemberRequest', ['group']);
+            request.group = defaultValue1;
+            const expectedHeaderRequestParams = `group=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Group()
+            );
             client.innerApiCalls.removeGroupMember = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.removeGroupMember(
@@ -1391,41 +1527,50 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.removeGroupMember as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.removeGroupMember as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.removeGroupMember as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes removeGroupMember with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.RemoveGroupMemberRequest());
-            request.group = '';
-            const expectedHeaderRequestParams = "group=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.RemoveGroupMemberRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.RemoveGroupMemberRequest', ['group']);
+            request.group = defaultValue1;
+            const expectedHeaderRequestParams = `group=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.removeGroupMember = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.removeGroupMember(request), expectedError);
-            assert((client.innerApiCalls.removeGroupMember as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.removeGroupMember as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.removeGroupMember as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes removeGroupMember with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.RemoveGroupMemberRequest());
-            request.group = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.RemoveGroupMemberRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.RemoveGroupMemberRequest', ['group']);
+            request.group = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.removeGroupMember(request), expectedError);
@@ -1437,43 +1582,45 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteGroupRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeleteGroupRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeleteGroupRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteGroup = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteGroup(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteGroup as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteGroup as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteGroup as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteGroup without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteGroupRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeleteGroupRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeleteGroupRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteGroup = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteGroup(
@@ -1488,41 +1635,50 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteGroup as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteGroup as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteGroup as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteGroup with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteGroupRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeleteGroupRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeleteGroupRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteGroup = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteGroup(request), expectedError);
-            assert((client.innerApiCalls.deleteGroup as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteGroup as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteGroup as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteGroup with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteGroupRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeleteGroupRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeleteGroupRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteGroup(request), expectedError);
@@ -1534,45 +1690,47 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreatePermissionRequest());
-            request.permission = {};
-            request.permission.name = '';
-            const expectedHeaderRequestParams = "permission.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Permission());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreatePermissionRequest()
+            );
+            request.permission ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreatePermissionRequest', ['permission', 'name']);
+            request.permission.name = defaultValue1;
+            const expectedHeaderRequestParams = `permission.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Permission()
+            );
             client.innerApiCalls.createPermission = stubSimpleCall(expectedResponse);
             const [response] = await client.createPermission(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createPermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createPermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createPermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createPermission without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreatePermissionRequest());
-            request.permission = {};
-            request.permission.name = '';
-            const expectedHeaderRequestParams = "permission.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Permission());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreatePermissionRequest()
+            );
+            request.permission ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreatePermissionRequest', ['permission', 'name']);
+            request.permission.name = defaultValue1;
+            const expectedHeaderRequestParams = `permission.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Permission()
+            );
             client.innerApiCalls.createPermission = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createPermission(
@@ -1587,43 +1745,52 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createPermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createPermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createPermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createPermission with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreatePermissionRequest());
-            request.permission = {};
-            request.permission.name = '';
-            const expectedHeaderRequestParams = "permission.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreatePermissionRequest()
+            );
+            request.permission ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreatePermissionRequest', ['permission', 'name']);
+            request.permission.name = defaultValue1;
+            const expectedHeaderRequestParams = `permission.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createPermission = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createPermission(request), expectedError);
-            assert((client.innerApiCalls.createPermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createPermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createPermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createPermission with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreatePermissionRequest());
-            request.permission = {};
-            request.permission.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreatePermissionRequest()
+            );
+            request.permission ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreatePermissionRequest', ['permission', 'name']);
+            request.permission.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createPermission(request), expectedError);
@@ -1635,43 +1802,45 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeletePermissionRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeletePermissionRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeletePermissionRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deletePermission = stubSimpleCall(expectedResponse);
             const [response] = await client.deletePermission(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deletePermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deletePermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deletePermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deletePermission without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeletePermissionRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeletePermissionRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeletePermissionRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deletePermission = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deletePermission(
@@ -1686,41 +1855,50 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deletePermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deletePermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deletePermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deletePermission with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeletePermissionRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeletePermissionRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeletePermissionRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deletePermission = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deletePermission(request), expectedError);
-            assert((client.innerApiCalls.deletePermission as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deletePermission as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deletePermission as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deletePermission with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeletePermissionRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeletePermissionRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeletePermissionRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deletePermission(request), expectedError);
@@ -1732,43 +1910,45 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetRoleRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Role());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.GetRoleRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.GetRoleRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Role()
+            );
             client.innerApiCalls.getRole = stubSimpleCall(expectedResponse);
             const [response] = await client.getRole(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getRole without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetRoleRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Role());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.GetRoleRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.GetRoleRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Role()
+            );
             client.innerApiCalls.getRole = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getRole(
@@ -1783,41 +1963,50 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getRole with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetRoleRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.GetRoleRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.GetRoleRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getRole = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getRole(request), expectedError);
-            assert((client.innerApiCalls.getRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getRole with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.GetRoleRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.GetRoleRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.GetRoleRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getRole(request), expectedError);
@@ -1829,45 +2018,47 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateRoleRequest());
-            request.role = {};
-            request.role.name = '';
-            const expectedHeaderRequestParams = "role.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Role());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreateRoleRequest()
+            );
+            request.role ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreateRoleRequest', ['role', 'name']);
+            request.role.name = defaultValue1;
+            const expectedHeaderRequestParams = `role.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Role()
+            );
             client.innerApiCalls.createRole = stubSimpleCall(expectedResponse);
             const [response] = await client.createRole(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createRole without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateRoleRequest());
-            request.role = {};
-            request.role.name = '';
-            const expectedHeaderRequestParams = "role.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Role());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreateRoleRequest()
+            );
+            request.role ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreateRoleRequest', ['role', 'name']);
+            request.role.name = defaultValue1;
+            const expectedHeaderRequestParams = `role.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Role()
+            );
             client.innerApiCalls.createRole = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createRole(
@@ -1882,43 +2073,52 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createRole with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateRoleRequest());
-            request.role = {};
-            request.role.name = '';
-            const expectedHeaderRequestParams = "role.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreateRoleRequest()
+            );
+            request.role ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreateRoleRequest', ['role', 'name']);
+            request.role.name = defaultValue1;
+            const expectedHeaderRequestParams = `role.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createRole = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createRole(request), expectedError);
-            assert((client.innerApiCalls.createRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createRole with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.CreateRoleRequest());
-            request.role = {};
-            request.role.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.CreateRoleRequest()
+            );
+            request.role ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.CreateRoleRequest', ['role', 'name']);
+            request.role.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createRole(request), expectedError);
@@ -1930,45 +2130,47 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.UpdateRoleRequest());
-            request.role = {};
-            request.role.name = '';
-            const expectedHeaderRequestParams = "role.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Role());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.UpdateRoleRequest()
+            );
+            request.role ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.UpdateRoleRequest', ['role', 'name']);
+            request.role.name = defaultValue1;
+            const expectedHeaderRequestParams = `role.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Role()
+            );
             client.innerApiCalls.updateRole = stubSimpleCall(expectedResponse);
             const [response] = await client.updateRole(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateRole without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.UpdateRoleRequest());
-            request.role = {};
-            request.role.name = '';
-            const expectedHeaderRequestParams = "role.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.Role());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.UpdateRoleRequest()
+            );
+            request.role ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.UpdateRoleRequest', ['role', 'name']);
+            request.role.name = defaultValue1;
+            const expectedHeaderRequestParams = `role.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.Role()
+            );
             client.innerApiCalls.updateRole = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updateRole(
@@ -1983,43 +2185,52 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updateRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateRole with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.UpdateRoleRequest());
-            request.role = {};
-            request.role.name = '';
-            const expectedHeaderRequestParams = "role.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.UpdateRoleRequest()
+            );
+            request.role ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.UpdateRoleRequest', ['role', 'name']);
+            request.role.name = defaultValue1;
+            const expectedHeaderRequestParams = `role.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updateRole = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updateRole(request), expectedError);
-            assert((client.innerApiCalls.updateRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateRole with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.UpdateRoleRequest());
-            request.role = {};
-            request.role.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.UpdateRoleRequest()
+            );
+            request.role ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.UpdateRoleRequest', ['role', 'name']);
+            request.role.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updateRole(request), expectedError);
@@ -2031,43 +2242,45 @@ describe('v1alpha1.AccessControlClient', () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteRoleRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeleteRoleRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeleteRoleRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteRole = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteRole(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteRole without error using callback', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteRoleRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeleteRoleRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeleteRoleRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteRole = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteRole(
@@ -2082,41 +2295,50 @@ describe('v1alpha1.AccessControlClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteRole with error', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteRoleRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeleteRoleRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeleteRoleRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteRole = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteRole(request), expectedError);
-            assert((client.innerApiCalls.deleteRole as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteRole as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteRole as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteRole with closed client', async () => {
             const client = new accesscontrolModule.v1alpha1.AccessControlClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.grbac.v1alpha1.DeleteRoleRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.grbac.v1alpha1.DeleteRoleRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.grbac.v1alpha1.DeleteRoleRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteRole(request), expectedError);

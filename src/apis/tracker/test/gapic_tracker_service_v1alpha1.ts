@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,25 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as trackerserviceModule from '../src';
 
 import {PassThrough} from 'stream';
 
 import {protobuf, LROperation, operationsProtos} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -103,97 +116,99 @@ function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?
 }
 
 describe('v1alpha1.TrackerServiceClient', () => {
-    it('has servicePath', () => {
-        const servicePath = trackerserviceModule.v1alpha1.TrackerServiceClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = trackerserviceModule.v1alpha1.TrackerServiceClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = trackerserviceModule.v1alpha1.TrackerServiceClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new trackerserviceModule.v1alpha1.TrackerServiceClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = trackerserviceModule.v1alpha1.TrackerServiceClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = trackerserviceModule.v1alpha1.TrackerServiceClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = trackerserviceModule.v1alpha1.TrackerServiceClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new trackerserviceModule.v1alpha1.TrackerServiceClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.trackerServiceStub, undefined);
+            await client.initialize();
+            assert(client.trackerServiceStub);
         });
-        assert.strictEqual(client.trackerServiceStub, undefined);
-        await client.initialize();
-        assert(client.trackerServiceStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
+        it('has close method for the initialized client', done => {
+            const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.trackerServiceStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.trackerServiceStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.trackerServiceStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.trackerServiceStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('getTracker', () => {
@@ -201,43 +216,45 @@ describe('v1alpha1.TrackerServiceClient', () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.GetTrackerRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker());
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.GetTrackerRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.GetTrackerRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.Tracker()
+            );
             client.innerApiCalls.getTracker = stubSimpleCall(expectedResponse);
             const [response] = await client.getTracker(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getTracker as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getTracker as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getTracker as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getTracker without error using callback', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.GetTrackerRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker());
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.GetTrackerRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.GetTrackerRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.Tracker()
+            );
             client.innerApiCalls.getTracker = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getTracker(
@@ -252,41 +269,50 @@ describe('v1alpha1.TrackerServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getTracker as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getTracker as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getTracker as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getTracker with error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.GetTrackerRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.GetTrackerRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.GetTrackerRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getTracker = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getTracker(request), expectedError);
-            assert((client.innerApiCalls.getTracker as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getTracker as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getTracker as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getTracker with closed client', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.GetTrackerRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.GetTrackerRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.GetTrackerRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getTracker(request), expectedError);
@@ -298,43 +324,45 @@ describe('v1alpha1.TrackerServiceClient', () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.CreateTrackerRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker());
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.CreateTrackerRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.CreateTrackerRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.Tracker()
+            );
             client.innerApiCalls.createTracker = stubSimpleCall(expectedResponse);
             const [response] = await client.createTracker(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createTracker as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createTracker as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createTracker as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createTracker without error using callback', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.CreateTrackerRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker());
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.CreateTrackerRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.CreateTrackerRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.Tracker()
+            );
             client.innerApiCalls.createTracker = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createTracker(
@@ -349,41 +377,50 @@ describe('v1alpha1.TrackerServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createTracker as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createTracker as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createTracker as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createTracker with error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.CreateTrackerRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.CreateTrackerRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.CreateTrackerRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createTracker = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createTracker(request), expectedError);
-            assert((client.innerApiCalls.createTracker as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createTracker as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createTracker as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createTracker with closed client', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.CreateTrackerRequest());
-            request.parent = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.CreateTrackerRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.CreateTrackerRequest', ['parent']);
+            request.parent = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createTracker(request), expectedError);
@@ -395,45 +432,47 @@ describe('v1alpha1.TrackerServiceClient', () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.UpdateTrackerRequest());
-            request.tracker = {};
-            request.tracker.name = '';
-            const expectedHeaderRequestParams = "tracker.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker());
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.UpdateTrackerRequest()
+            );
+            request.tracker ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.UpdateTrackerRequest', ['tracker', 'name']);
+            request.tracker.name = defaultValue1;
+            const expectedHeaderRequestParams = `tracker.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.Tracker()
+            );
             client.innerApiCalls.updateTracker = stubSimpleCall(expectedResponse);
             const [response] = await client.updateTracker(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateTracker as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateTracker as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateTracker as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateTracker without error using callback', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.UpdateTrackerRequest());
-            request.tracker = {};
-            request.tracker.name = '';
-            const expectedHeaderRequestParams = "tracker.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker());
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.UpdateTrackerRequest()
+            );
+            request.tracker ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.UpdateTrackerRequest', ['tracker', 'name']);
+            request.tracker.name = defaultValue1;
+            const expectedHeaderRequestParams = `tracker.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.Tracker()
+            );
             client.innerApiCalls.updateTracker = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updateTracker(
@@ -448,43 +487,52 @@ describe('v1alpha1.TrackerServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateTracker as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updateTracker as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateTracker as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateTracker with error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.UpdateTrackerRequest());
-            request.tracker = {};
-            request.tracker.name = '';
-            const expectedHeaderRequestParams = "tracker.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.UpdateTrackerRequest()
+            );
+            request.tracker ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.UpdateTrackerRequest', ['tracker', 'name']);
+            request.tracker.name = defaultValue1;
+            const expectedHeaderRequestParams = `tracker.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updateTracker = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updateTracker(request), expectedError);
-            assert((client.innerApiCalls.updateTracker as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateTracker as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateTracker as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateTracker with closed client', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.UpdateTrackerRequest());
-            request.tracker = {};
-            request.tracker.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.UpdateTrackerRequest()
+            );
+            request.tracker ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.UpdateTrackerRequest', ['tracker', 'name']);
+            request.tracker.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updateTracker(request), expectedError);
@@ -496,43 +544,45 @@ describe('v1alpha1.TrackerServiceClient', () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.DeleteTrackerRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.DeleteTrackerRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.DeleteTrackerRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteTracker = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteTracker(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteTracker as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteTracker as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteTracker as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteTracker without error using callback', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.DeleteTrackerRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.DeleteTrackerRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.DeleteTrackerRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteTracker = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteTracker(
@@ -547,44 +597,161 @@ describe('v1alpha1.TrackerServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteTracker as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteTracker as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteTracker as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteTracker with error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.DeleteTrackerRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.DeleteTrackerRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.DeleteTrackerRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteTracker = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteTracker(request), expectedError);
-            assert((client.innerApiCalls.deleteTracker as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteTracker as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteTracker as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteTracker with closed client', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.DeleteTrackerRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.DeleteTrackerRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.DeleteTrackerRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteTracker(request), expectedError);
+        });
+    });
+
+    describe('computeTracker', () => {
+        it('invokes computeTracker without error', async () => {
+            const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ComputeTrackerRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ComputeTrackerRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ComputeTrackerResponse()
+            );
+            client.innerApiCalls.computeTracker = stubSimpleCall(expectedResponse);
+            const [response] = await client.computeTracker(request);
+            assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.computeTracker as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.computeTracker as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes computeTracker without error using callback', async () => {
+            const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ComputeTrackerRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ComputeTrackerRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ComputeTrackerResponse()
+            );
+            client.innerApiCalls.computeTracker = stubSimpleCallWithCallback(expectedResponse);
+            const promise = new Promise((resolve, reject) => {
+                 client.computeTracker(
+                    request,
+                    (err?: Error|null, result?: protos.animeshon.tracker.v1alpha1.IComputeTrackerResponse|null) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    });
+            });
+            const response = await promise;
+            assert.deepStrictEqual(response, expectedResponse);
+            const actualRequest = (client.innerApiCalls.computeTracker as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.computeTracker as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes computeTracker with error', async () => {
+            const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ComputeTrackerRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ComputeTrackerRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedError = new Error('expected');
+            client.innerApiCalls.computeTracker = stubSimpleCall(undefined, expectedError);
+            await assert.rejects(client.computeTracker(request), expectedError);
+            const actualRequest = (client.innerApiCalls.computeTracker as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.computeTracker as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
+        });
+
+        it('invokes computeTracker with closed client', async () => {
+            const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.initialize();
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ComputeTrackerRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ComputeTrackerRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedError = new Error('The client has already been closed.');
+            client.close();
+            await assert.rejects(client.computeTracker(request), expectedError);
         });
     });
 
@@ -593,43 +760,45 @@ describe('v1alpha1.TrackerServiceClient', () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.CreateActivityRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Activity());
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.CreateActivityRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.CreateActivityRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.Activity()
+            );
             client.innerApiCalls.createActivity = stubSimpleCall(expectedResponse);
             const [response] = await client.createActivity(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createActivity as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createActivity as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createActivity as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createActivity without error using callback', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.CreateActivityRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Activity());
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.CreateActivityRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.CreateActivityRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.Activity()
+            );
             client.innerApiCalls.createActivity = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createActivity(
@@ -644,41 +813,50 @@ describe('v1alpha1.TrackerServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createActivity as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createActivity as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createActivity as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createActivity with error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.CreateActivityRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.CreateActivityRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.CreateActivityRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createActivity = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createActivity(request), expectedError);
-            assert((client.innerApiCalls.createActivity as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createActivity as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createActivity as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createActivity with closed client', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.CreateActivityRequest());
-            request.parent = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.CreateActivityRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.CreateActivityRequest', ['parent']);
+            request.parent = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createActivity(request), expectedError);
@@ -690,43 +868,45 @@ describe('v1alpha1.TrackerServiceClient', () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.DeleteActivityRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.DeleteActivityRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.DeleteActivityRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteActivity = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteActivity(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteActivity as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteActivity as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteActivity as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteActivity without error using callback', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.DeleteActivityRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.DeleteActivityRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.DeleteActivityRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteActivity = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteActivity(
@@ -741,41 +921,50 @@ describe('v1alpha1.TrackerServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteActivity as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteActivity as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteActivity as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteActivity with error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.DeleteActivityRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.DeleteActivityRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.DeleteActivityRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteActivity = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteActivity(request), expectedError);
-            assert((client.innerApiCalls.deleteActivity as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteActivity as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteActivity as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteActivity with closed client', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.DeleteActivityRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.DeleteActivityRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.DeleteActivityRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteActivity(request), expectedError);
@@ -787,44 +976,46 @@ describe('v1alpha1.TrackerServiceClient', () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ImportTrackersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ImportTrackersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ImportTrackersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.importTrackers = stubLongRunningCall(expectedResponse);
             const [operation] = await client.importTrackers(request);
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.importTrackers as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.importTrackers as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.importTrackers as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes importTrackers without error using callback', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ImportTrackersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ImportTrackersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ImportTrackersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.importTrackers = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.importTrackers(
@@ -842,64 +1033,72 @@ describe('v1alpha1.TrackerServiceClient', () => {
             const operation = await promise as LROperation<protos.animeshon.tracker.v1alpha1.IImportTrackersResponse, protos.animeshon.tracker.v1alpha1.IOperationMetadata>;
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.importTrackers as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.importTrackers as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.importTrackers as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes importTrackers with call error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ImportTrackersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ImportTrackersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ImportTrackersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.importTrackers = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.importTrackers(request), expectedError);
-            assert((client.innerApiCalls.importTrackers as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.importTrackers as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.importTrackers as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes importTrackers with LRO error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ImportTrackersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ImportTrackersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ImportTrackersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.importTrackers = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.importTrackers(request);
             await assert.rejects(operation.promise(), expectedError);
-            assert((client.innerApiCalls.importTrackers as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.importTrackers as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.importTrackers as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes checkImportTrackersProgress without error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
+            const expectedResponse = generateSampleMessage(
+              new operationsProtos.google.longrunning.Operation()
+            );
             expectedResponse.name = 'test';
             expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
             expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
@@ -915,7 +1114,7 @@ describe('v1alpha1.TrackerServiceClient', () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -931,44 +1130,46 @@ describe('v1alpha1.TrackerServiceClient', () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ExportTrackersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ExportTrackersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ExportTrackersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.exportTrackers = stubLongRunningCall(expectedResponse);
             const [operation] = await client.exportTrackers(request);
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.exportTrackers as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.exportTrackers as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.exportTrackers as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes exportTrackers without error using callback', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ExportTrackersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ExportTrackersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ExportTrackersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.exportTrackers = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.exportTrackers(
@@ -986,64 +1187,72 @@ describe('v1alpha1.TrackerServiceClient', () => {
             const operation = await promise as LROperation<protos.animeshon.tracker.v1alpha1.IExportTrackersResponse, protos.animeshon.tracker.v1alpha1.IOperationMetadata>;
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.exportTrackers as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.exportTrackers as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.exportTrackers as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes exportTrackers with call error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ExportTrackersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ExportTrackersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ExportTrackersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.exportTrackers = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.exportTrackers(request), expectedError);
-            assert((client.innerApiCalls.exportTrackers as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.exportTrackers as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.exportTrackers as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes exportTrackers with LRO error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ExportTrackersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ExportTrackersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ExportTrackersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.exportTrackers = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.exportTrackers(request);
             await assert.rejects(operation.promise(), expectedError);
-            assert((client.innerApiCalls.exportTrackers as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.exportTrackers as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.exportTrackers as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes checkExportTrackersProgress without error', async () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
+            const expectedResponse = generateSampleMessage(
+              new operationsProtos.google.longrunning.Operation()
+            );
             expectedResponse.name = 'test';
             expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
             expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
@@ -1059,7 +1268,7 @@ describe('v1alpha1.TrackerServiceClient', () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -1077,17 +1286,13 @@ describe('v1alpha1.TrackerServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ListTrackersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ListTrackersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ListTrackersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker()),
               generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker()),
               generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker()),
@@ -1095,8 +1300,12 @@ describe('v1alpha1.TrackerServiceClient', () => {
             client.innerApiCalls.listTrackers = stubSimpleCall(expectedResponse);
             const [response] = await client.listTrackers(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listTrackers as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listTrackers as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listTrackers as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listTrackers without error using callback', async () => {
@@ -1105,17 +1314,13 @@ describe('v1alpha1.TrackerServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ListTrackersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ListTrackersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ListTrackersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker()),
               generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker()),
               generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker()),
@@ -1134,8 +1339,12 @@ describe('v1alpha1.TrackerServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listTrackers as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.listTrackers as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listTrackers as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listTrackers with error', async () => {
@@ -1144,21 +1353,22 @@ describe('v1alpha1.TrackerServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ListTrackersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ListTrackersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ListTrackersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.listTrackers = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listTrackers(request), expectedError);
-            assert((client.innerApiCalls.listTrackers as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listTrackers as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listTrackers as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listTrackersStream without error', async () => {
@@ -1167,9 +1377,13 @@ describe('v1alpha1.TrackerServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ListTrackersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ListTrackersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ListTrackersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker()),
               generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker()),
@@ -1193,10 +1407,11 @@ describe('v1alpha1.TrackerServiceClient', () => {
             assert.deepStrictEqual(responses, expectedResponse);
             assert((client.descriptors.page.listTrackers.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listTrackers, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listTrackers.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1206,9 +1421,13 @@ describe('v1alpha1.TrackerServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ListTrackersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ListTrackersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ListTrackersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.descriptors.page.listTrackers.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listTrackersStream(request);
@@ -1227,10 +1446,11 @@ describe('v1alpha1.TrackerServiceClient', () => {
             await assert.rejects(promise, expectedError);
             assert((client.descriptors.page.listTrackers.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listTrackers, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listTrackers.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                         expectedHeaderRequestParams
+                    ) 
             );
         });
 
@@ -1238,11 +1458,15 @@ describe('v1alpha1.TrackerServiceClient', () => {
             const client = new trackerserviceModule.v1alpha1.TrackerServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ListTrackersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ListTrackersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ListTrackersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker()),
               generateSampleMessage(new protos.animeshon.tracker.v1alpha1.Tracker()),
@@ -1258,10 +1482,11 @@ describe('v1alpha1.TrackerServiceClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listTrackers.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listTrackers.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1271,9 +1496,14 @@ describe('v1alpha1.TrackerServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.tracker.v1alpha1.ListTrackersRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.tracker.v1alpha1.ListTrackersRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.tracker.v1alpha1.ListTrackersRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedError = new Error('expected');
             client.descriptors.page.listTrackers.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listTrackersAsync(request);
             await assert.rejects(async () => {
@@ -1285,10 +1515,11 @@ describe('v1alpha1.TrackerServiceClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listTrackers.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listTrackers.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
     });

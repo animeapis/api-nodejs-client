@@ -20,8 +20,8 @@
 
 'use strict';
 
-function main(parent) {
-  // [START webpage_v1alpha1_generated_Archive_ListPages_async]
+function main(name) {
+  // [START tracker_v1alpha1_generated_TrackerService_ComputeTracker_async]
   /**
    * This snippet has been automatically generated and should be regarded as a code template only.
    * It will require modifications to work.
@@ -29,43 +29,28 @@ function main(parent) {
    * TODO(developer): Uncomment these variables before running the sample.
    */
   /**
-   *  The parent this page belongs to.
    */
-  // const parent = 'abc123'
-  /**
-   *  If unspecified, server will pick an appropriate default.
-   */
-  // const pageSize = 1234
-  /**
-   *  The value returned from the previous call.
-   */
-  // const pageToken = 'abc123'
-  /**
-   *  A filter to be applied to results.
-   */
-  // const filter = 'abc123'
+  // const name = 'abc123'
 
-  // Imports the Webpage library
-  const {ArchiveClient} = require('@animeapis/webpage').v1alpha1;
+  // Imports the Tracker library
+  const {TrackerServiceClient} = require('@animeapis/tracker').v1alpha1;
 
   // Instantiates a client
-  const webpageClient = new ArchiveClient();
+  const trackerClient = new TrackerServiceClient();
 
-  async function callListPages() {
+  async function callComputeTracker() {
     // Construct request
     const request = {
-      parent,
+      name,
     };
 
     // Run request
-    const iterable = await webpageClient.listPagesAsync(request);
-    for await (const response of iterable) {
-        console.log(response);
-    }
+    const response = await trackerClient.computeTracker(request);
+    console.log(response);
   }
 
-  callListPages();
-  // [END webpage_v1alpha1_generated_Archive_ListPages_async]
+  callComputeTracker();
+  // [END tracker_v1alpha1_generated_TrackerService_ComputeTracker_async]
 }
 
 process.on('unhandledRejection', err => {

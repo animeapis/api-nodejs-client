@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,25 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as episodeserviceModule from '../src';
 
 import {PassThrough} from 'stream';
 
 import {protobuf, LROperation, operationsProtos} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -103,97 +116,99 @@ function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?
 }
 
 describe('v1alpha1.EpisodeServiceClient', () => {
-    it('has servicePath', () => {
-        const servicePath = episodeserviceModule.v1alpha1.EpisodeServiceClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = episodeserviceModule.v1alpha1.EpisodeServiceClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = episodeserviceModule.v1alpha1.EpisodeServiceClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = episodeserviceModule.v1alpha1.EpisodeServiceClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = episodeserviceModule.v1alpha1.EpisodeServiceClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = episodeserviceModule.v1alpha1.EpisodeServiceClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.episodeServiceStub, undefined);
+            await client.initialize();
+            assert(client.episodeServiceStub);
         });
-        assert.strictEqual(client.episodeServiceStub, undefined);
-        await client.initialize();
-        assert(client.episodeServiceStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
+        it('has close method for the initialized client', done => {
+            const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.episodeServiceStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.episodeServiceStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.episodeServiceStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.episodeServiceStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('getEpisode', () => {
@@ -201,43 +216,45 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetEpisodeRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetEpisodeRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetEpisodeRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.Episode()
+            );
             client.innerApiCalls.getEpisode = stubSimpleCall(expectedResponse);
             const [response] = await client.getEpisode(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getEpisode as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getEpisode as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getEpisode as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getEpisode without error using callback', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetEpisodeRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetEpisodeRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetEpisodeRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.Episode()
+            );
             client.innerApiCalls.getEpisode = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getEpisode(
@@ -252,41 +269,50 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getEpisode as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getEpisode as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getEpisode as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getEpisode with error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetEpisodeRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetEpisodeRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetEpisodeRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getEpisode = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getEpisode(request), expectedError);
-            assert((client.innerApiCalls.getEpisode as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getEpisode as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getEpisode as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getEpisode with closed client', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetEpisodeRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetEpisodeRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetEpisodeRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getEpisode(request), expectedError);
@@ -298,43 +324,45 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateEpisodeRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateEpisodeRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.CreateEpisodeRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.Episode()
+            );
             client.innerApiCalls.createEpisode = stubSimpleCall(expectedResponse);
             const [response] = await client.createEpisode(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createEpisode as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createEpisode as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createEpisode as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createEpisode without error using callback', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateEpisodeRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateEpisodeRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.CreateEpisodeRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.Episode()
+            );
             client.innerApiCalls.createEpisode = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createEpisode(
@@ -349,41 +377,50 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createEpisode as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createEpisode as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createEpisode as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createEpisode with error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateEpisodeRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateEpisodeRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.CreateEpisodeRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createEpisode = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createEpisode(request), expectedError);
-            assert((client.innerApiCalls.createEpisode as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createEpisode as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createEpisode as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createEpisode with closed client', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateEpisodeRequest());
-            request.parent = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateEpisodeRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.CreateEpisodeRequest', ['parent']);
+            request.parent = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createEpisode(request), expectedError);
@@ -395,45 +432,47 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateEpisodeRequest());
-            request.episode = {};
-            request.episode.name = '';
-            const expectedHeaderRequestParams = "episode.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateEpisodeRequest()
+            );
+            request.episode ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateEpisodeRequest', ['episode', 'name']);
+            request.episode.name = defaultValue1;
+            const expectedHeaderRequestParams = `episode.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.Episode()
+            );
             client.innerApiCalls.updateEpisode = stubSimpleCall(expectedResponse);
             const [response] = await client.updateEpisode(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateEpisode as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateEpisode as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateEpisode as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateEpisode without error using callback', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateEpisodeRequest());
-            request.episode = {};
-            request.episode.name = '';
-            const expectedHeaderRequestParams = "episode.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateEpisodeRequest()
+            );
+            request.episode ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateEpisodeRequest', ['episode', 'name']);
+            request.episode.name = defaultValue1;
+            const expectedHeaderRequestParams = `episode.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.Episode()
+            );
             client.innerApiCalls.updateEpisode = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updateEpisode(
@@ -448,43 +487,52 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateEpisode as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updateEpisode as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateEpisode as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateEpisode with error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateEpisodeRequest());
-            request.episode = {};
-            request.episode.name = '';
-            const expectedHeaderRequestParams = "episode.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateEpisodeRequest()
+            );
+            request.episode ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateEpisodeRequest', ['episode', 'name']);
+            request.episode.name = defaultValue1;
+            const expectedHeaderRequestParams = `episode.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updateEpisode = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updateEpisode(request), expectedError);
-            assert((client.innerApiCalls.updateEpisode as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateEpisode as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateEpisode as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateEpisode with closed client', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateEpisodeRequest());
-            request.episode = {};
-            request.episode.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateEpisodeRequest()
+            );
+            request.episode ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateEpisodeRequest', ['episode', 'name']);
+            request.episode.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updateEpisode(request), expectedError);
@@ -496,43 +544,45 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteEpisodeRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteEpisodeRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteEpisodeRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteEpisode = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteEpisode(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteEpisode as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteEpisode as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteEpisode as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteEpisode without error using callback', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteEpisodeRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteEpisodeRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteEpisodeRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteEpisode = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteEpisode(
@@ -547,41 +597,50 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteEpisode as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteEpisode as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteEpisode as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteEpisode with error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteEpisodeRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteEpisodeRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteEpisodeRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteEpisode = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteEpisode(request), expectedError);
-            assert((client.innerApiCalls.deleteEpisode as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteEpisode as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteEpisode as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteEpisode with closed client', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteEpisodeRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteEpisodeRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteEpisodeRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteEpisode(request), expectedError);
@@ -593,44 +652,46 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateEpisodesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.BatchCreateEpisodesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.BatchCreateEpisodesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.batchCreateEpisodes = stubLongRunningCall(expectedResponse);
             const [operation] = await client.batchCreateEpisodes(request);
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.batchCreateEpisodes as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.batchCreateEpisodes as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.batchCreateEpisodes as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes batchCreateEpisodes without error using callback', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateEpisodesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.BatchCreateEpisodesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.BatchCreateEpisodesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.batchCreateEpisodes = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.batchCreateEpisodes(
@@ -648,64 +709,72 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             const operation = await promise as LROperation<protos.animeshon.multimedia.v1alpha1.IBatchCreateEpisodesResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>;
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.batchCreateEpisodes as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.batchCreateEpisodes as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.batchCreateEpisodes as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes batchCreateEpisodes with call error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateEpisodesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.BatchCreateEpisodesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.BatchCreateEpisodesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.batchCreateEpisodes = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.batchCreateEpisodes(request), expectedError);
-            assert((client.innerApiCalls.batchCreateEpisodes as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.batchCreateEpisodes as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.batchCreateEpisodes as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes batchCreateEpisodes with LRO error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.BatchCreateEpisodesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.BatchCreateEpisodesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.BatchCreateEpisodesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.batchCreateEpisodes = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.batchCreateEpisodes(request);
             await assert.rejects(operation.promise(), expectedError);
-            assert((client.innerApiCalls.batchCreateEpisodes as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.batchCreateEpisodes as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.batchCreateEpisodes as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes checkBatchCreateEpisodesProgress without error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
+            const expectedResponse = generateSampleMessage(
+              new operationsProtos.google.longrunning.Operation()
+            );
             expectedResponse.name = 'test';
             expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
             expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
@@ -721,7 +790,7 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -737,44 +806,46 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileEpisodesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileEpisodesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileEpisodesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.reconcileEpisodes = stubLongRunningCall(expectedResponse);
             const [operation] = await client.reconcileEpisodes(request);
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.reconcileEpisodes as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.reconcileEpisodes as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileEpisodes as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes reconcileEpisodes without error using callback', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileEpisodesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileEpisodesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileEpisodesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.reconcileEpisodes = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.reconcileEpisodes(
@@ -792,64 +863,72 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             const operation = await promise as LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileEpisodesResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>;
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.reconcileEpisodes as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.reconcileEpisodes as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileEpisodes as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes reconcileEpisodes with call error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileEpisodesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileEpisodesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileEpisodesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.reconcileEpisodes = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.reconcileEpisodes(request), expectedError);
-            assert((client.innerApiCalls.reconcileEpisodes as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.reconcileEpisodes as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileEpisodes as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes reconcileEpisodes with LRO error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileEpisodesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileEpisodesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileEpisodesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.reconcileEpisodes = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.reconcileEpisodes(request);
             await assert.rejects(operation.promise(), expectedError);
-            assert((client.innerApiCalls.reconcileEpisodes as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.reconcileEpisodes as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileEpisodes as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes checkReconcileEpisodesProgress without error', async () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
+            const expectedResponse = generateSampleMessage(
+              new operationsProtos.google.longrunning.Operation()
+            );
             expectedResponse.name = 'test';
             expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
             expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
@@ -865,7 +944,7 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -883,17 +962,13 @@ describe('v1alpha1.EpisodeServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ListEpisodesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
@@ -901,8 +976,12 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             client.innerApiCalls.listEpisodes = stubSimpleCall(expectedResponse);
             const [response] = await client.listEpisodes(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listEpisodes as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listEpisodes as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listEpisodes as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listEpisodes without error using callback', async () => {
@@ -911,17 +990,13 @@ describe('v1alpha1.EpisodeServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ListEpisodesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
@@ -940,8 +1015,12 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listEpisodes as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.listEpisodes as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listEpisodes as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listEpisodes with error', async () => {
@@ -950,21 +1029,22 @@ describe('v1alpha1.EpisodeServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ListEpisodesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.listEpisodes = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listEpisodes(request), expectedError);
-            assert((client.innerApiCalls.listEpisodes as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listEpisodes as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listEpisodes as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listEpisodesStream without error', async () => {
@@ -973,9 +1053,13 @@ describe('v1alpha1.EpisodeServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ListEpisodesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
@@ -999,10 +1083,11 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             assert.deepStrictEqual(responses, expectedResponse);
             assert((client.descriptors.page.listEpisodes.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listEpisodes, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listEpisodes.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1012,9 +1097,13 @@ describe('v1alpha1.EpisodeServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ListEpisodesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.descriptors.page.listEpisodes.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listEpisodesStream(request);
@@ -1033,10 +1122,11 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             await assert.rejects(promise, expectedError);
             assert((client.descriptors.page.listEpisodes.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listEpisodes, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listEpisodes.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                         expectedHeaderRequestParams
+                    ) 
             );
         });
 
@@ -1044,11 +1134,15 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             const client = new episodeserviceModule.v1alpha1.EpisodeServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ListEpisodesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.Episode()),
@@ -1064,10 +1158,11 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listEpisodes.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listEpisodes.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1077,9 +1172,14 @@ describe('v1alpha1.EpisodeServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListEpisodesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ListEpisodesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedError = new Error('expected');
             client.descriptors.page.listEpisodes.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listEpisodesAsync(request);
             await assert.rejects(async () => {
@@ -1091,10 +1191,11 @@ describe('v1alpha1.EpisodeServiceClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listEpisodes.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listEpisodes.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
     });

@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,25 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as graphicnovelserviceModule from '../src';
 
 import {PassThrough} from 'stream';
 
 import {protobuf, LROperation, operationsProtos} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -103,97 +116,99 @@ function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?
 }
 
 describe('v1alpha1.GraphicNovelServiceClient', () => {
-    it('has servicePath', () => {
-        const servicePath = graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.graphicNovelServiceStub, undefined);
+            await client.initialize();
+            assert(client.graphicNovelServiceStub);
         });
-        assert.strictEqual(client.graphicNovelServiceStub, undefined);
-        await client.initialize();
-        assert(client.graphicNovelServiceStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
+        it('has close method for the initialized client', done => {
+            const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.graphicNovelServiceStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.graphicNovelServiceStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.graphicNovelServiceStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.graphicNovelServiceStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('getGraphicNovel', () => {
@@ -201,43 +216,45 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetGraphicNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GraphicNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetGraphicNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetGraphicNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GraphicNovel()
+            );
             client.innerApiCalls.getGraphicNovel = stubSimpleCall(expectedResponse);
             const [response] = await client.getGraphicNovel(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getGraphicNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getGraphicNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getGraphicNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getGraphicNovel without error using callback', async () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetGraphicNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GraphicNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetGraphicNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetGraphicNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GraphicNovel()
+            );
             client.innerApiCalls.getGraphicNovel = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getGraphicNovel(
@@ -252,41 +269,50 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getGraphicNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getGraphicNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getGraphicNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getGraphicNovel with error', async () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetGraphicNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetGraphicNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetGraphicNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getGraphicNovel = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getGraphicNovel(request), expectedError);
-            assert((client.innerApiCalls.getGraphicNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getGraphicNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getGraphicNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getGraphicNovel with closed client', async () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GetGraphicNovelRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GetGraphicNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.GetGraphicNovelRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getGraphicNovel(request), expectedError);
@@ -298,27 +324,31 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateGraphicNovelRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GraphicNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateGraphicNovelRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GraphicNovel()
+            );
             client.innerApiCalls.createGraphicNovel = stubSimpleCall(expectedResponse);
             const [response] = await client.createGraphicNovel(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createGraphicNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes createGraphicNovel without error using callback', async () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateGraphicNovelRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GraphicNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateGraphicNovelRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GraphicNovel()
+            );
             client.innerApiCalls.createGraphicNovel = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createGraphicNovel(
@@ -333,32 +363,31 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createGraphicNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes createGraphicNovel with error', async () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateGraphicNovelRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateGraphicNovelRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.createGraphicNovel = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createGraphicNovel(request), expectedError);
-            assert((client.innerApiCalls.createGraphicNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes createGraphicNovel with closed client', async () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.CreateGraphicNovelRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.CreateGraphicNovelRequest()
+            );
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createGraphicNovel(request), expectedError);
@@ -370,45 +399,47 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateGraphicNovelRequest());
-            request.graphicNovel = {};
-            request.graphicNovel.name = '';
-            const expectedHeaderRequestParams = "graphic_novel.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GraphicNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateGraphicNovelRequest()
+            );
+            request.graphicNovel ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateGraphicNovelRequest', ['graphicNovel', 'name']);
+            request.graphicNovel.name = defaultValue1;
+            const expectedHeaderRequestParams = `graphic_novel.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GraphicNovel()
+            );
             client.innerApiCalls.updateGraphicNovel = stubSimpleCall(expectedResponse);
             const [response] = await client.updateGraphicNovel(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateGraphicNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateGraphicNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateGraphicNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateGraphicNovel without error using callback', async () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateGraphicNovelRequest());
-            request.graphicNovel = {};
-            request.graphicNovel.name = '';
-            const expectedHeaderRequestParams = "graphic_novel.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GraphicNovel());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateGraphicNovelRequest()
+            );
+            request.graphicNovel ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateGraphicNovelRequest', ['graphicNovel', 'name']);
+            request.graphicNovel.name = defaultValue1;
+            const expectedHeaderRequestParams = `graphic_novel.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.GraphicNovel()
+            );
             client.innerApiCalls.updateGraphicNovel = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updateGraphicNovel(
@@ -423,43 +454,52 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateGraphicNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updateGraphicNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateGraphicNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateGraphicNovel with error', async () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateGraphicNovelRequest());
-            request.graphicNovel = {};
-            request.graphicNovel.name = '';
-            const expectedHeaderRequestParams = "graphic_novel.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateGraphicNovelRequest()
+            );
+            request.graphicNovel ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateGraphicNovelRequest', ['graphicNovel', 'name']);
+            request.graphicNovel.name = defaultValue1;
+            const expectedHeaderRequestParams = `graphic_novel.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updateGraphicNovel = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updateGraphicNovel(request), expectedError);
-            assert((client.innerApiCalls.updateGraphicNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateGraphicNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateGraphicNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateGraphicNovel with closed client', async () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.UpdateGraphicNovelRequest());
-            request.graphicNovel = {};
-            request.graphicNovel.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.UpdateGraphicNovelRequest()
+            );
+            request.graphicNovel ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.UpdateGraphicNovelRequest', ['graphicNovel', 'name']);
+            request.graphicNovel.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updateGraphicNovel(request), expectedError);
@@ -471,43 +511,45 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteGraphicNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteGraphicNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteGraphicNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteGraphicNovel = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteGraphicNovel(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteGraphicNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteGraphicNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteGraphicNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteGraphicNovel without error using callback', async () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteGraphicNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteGraphicNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteGraphicNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteGraphicNovel = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteGraphicNovel(
@@ -522,41 +564,50 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteGraphicNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteGraphicNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteGraphicNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteGraphicNovel with error', async () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteGraphicNovelRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteGraphicNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteGraphicNovelRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteGraphicNovel = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteGraphicNovel(request), expectedError);
-            assert((client.innerApiCalls.deleteGraphicNovel as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteGraphicNovel as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteGraphicNovel as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteGraphicNovel with closed client', async () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.DeleteGraphicNovelRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.DeleteGraphicNovelRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.DeleteGraphicNovelRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteGraphicNovel(request), expectedError);
@@ -568,44 +619,46 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileGraphicNovelsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileGraphicNovelsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileGraphicNovelsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.reconcileGraphicNovels = stubLongRunningCall(expectedResponse);
             const [operation] = await client.reconcileGraphicNovels(request);
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.reconcileGraphicNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.reconcileGraphicNovels as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileGraphicNovels as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes reconcileGraphicNovels without error using callback', async () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileGraphicNovelsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.longrunning.Operation());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileGraphicNovelsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileGraphicNovelsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.longrunning.Operation()
+            );
             client.innerApiCalls.reconcileGraphicNovels = stubLongRunningCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.reconcileGraphicNovels(
@@ -623,64 +676,72 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             const operation = await promise as LROperation<protos.animeshon.multimedia.v1alpha1.IReconcileGraphicNovelsResponse, protos.animeshon.multimedia.v1alpha1.IOperationMetadata>;
             const [response] = await operation.promise();
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.reconcileGraphicNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.reconcileGraphicNovels as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileGraphicNovels as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes reconcileGraphicNovels with call error', async () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileGraphicNovelsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileGraphicNovelsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileGraphicNovelsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.reconcileGraphicNovels = stubLongRunningCall(undefined, expectedError);
             await assert.rejects(client.reconcileGraphicNovels(request), expectedError);
-            assert((client.innerApiCalls.reconcileGraphicNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.reconcileGraphicNovels as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileGraphicNovels as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes reconcileGraphicNovels with LRO error', async () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ReconcileGraphicNovelsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ReconcileGraphicNovelsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.multimedia.v1alpha1.ReconcileGraphicNovelsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.reconcileGraphicNovels = stubLongRunningCall(undefined, undefined, expectedError);
             const [operation] = await client.reconcileGraphicNovels(request);
             await assert.rejects(operation.promise(), expectedError);
-            assert((client.innerApiCalls.reconcileGraphicNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.reconcileGraphicNovels as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.reconcileGraphicNovels as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes checkReconcileGraphicNovelsProgress without error', async () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const expectedResponse = generateSampleMessage(new operationsProtos.google.longrunning.Operation());
+            const expectedResponse = generateSampleMessage(
+              new operationsProtos.google.longrunning.Operation()
+            );
             expectedResponse.name = 'test';
             expectedResponse.response = {type_url: 'url', value: Buffer.from('')};
             expectedResponse.metadata = {type_url: 'url', value: Buffer.from('')}
@@ -696,7 +757,7 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const expectedError = new Error('expected');
 
@@ -714,9 +775,9 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListGraphicNovelsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListGraphicNovelsRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GraphicNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GraphicNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GraphicNovel()),
@@ -724,8 +785,6 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             client.innerApiCalls.listGraphicNovels = stubSimpleCall(expectedResponse);
             const [response] = await client.listGraphicNovels(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listGraphicNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listGraphicNovels without error using callback', async () => {
@@ -734,9 +793,9 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListGraphicNovelsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListGraphicNovelsRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GraphicNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GraphicNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GraphicNovel()),
@@ -755,8 +814,6 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listGraphicNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes listGraphicNovels with error', async () => {
@@ -765,13 +822,12 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListGraphicNovelsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListGraphicNovelsRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.listGraphicNovels = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listGraphicNovels(request), expectedError);
-            assert((client.innerApiCalls.listGraphicNovels as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listGraphicNovelsStream without error', async () => {
@@ -780,7 +836,9 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListGraphicNovelsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListGraphicNovelsRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GraphicNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GraphicNovel()),
@@ -812,7 +870,9 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListGraphicNovelsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListGraphicNovelsRequest()
+            );
             const expectedError = new Error('expected');
             client.descriptors.page.listGraphicNovels.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listGraphicNovelsStream(request);
@@ -837,9 +897,11 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
             const client = new graphicnovelserviceModule.v1alpha1.GraphicNovelServiceClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListGraphicNovelsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListGraphicNovelsRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GraphicNovel()),
               generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.GraphicNovel()),
@@ -863,7 +925,10 @@ describe('v1alpha1.GraphicNovelServiceClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.multimedia.v1alpha1.ListGraphicNovelsRequest());const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.multimedia.v1alpha1.ListGraphicNovelsRequest()
+            );
+            const expectedError = new Error('expected');
             client.descriptors.page.listGraphicNovels.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listGraphicNovelsAsync(request);
             await assert.rejects(async () => {

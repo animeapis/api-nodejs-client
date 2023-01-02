@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,25 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as hubModule from '../src';
 
 import {PassThrough} from 'stream';
 
 import {protobuf} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -87,97 +100,99 @@ function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?
 }
 
 describe('v1alpha1.HubClient', () => {
-    it('has servicePath', () => {
-        const servicePath = hubModule.v1alpha1.HubClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = hubModule.v1alpha1.HubClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = hubModule.v1alpha1.HubClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new hubModule.v1alpha1.HubClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new hubModule.v1alpha1.HubClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = hubModule.v1alpha1.HubClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new hubModule.v1alpha1.HubClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = hubModule.v1alpha1.HubClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = hubModule.v1alpha1.HubClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new hubModule.v1alpha1.HubClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new hubModule.v1alpha1.HubClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new hubModule.v1alpha1.HubClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.hubStub, undefined);
+            await client.initialize();
+            assert(client.hubStub);
         });
-        assert.strictEqual(client.hubStub, undefined);
-        await client.initialize();
-        assert(client.hubStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new hubModule.v1alpha1.HubClient({
+        it('has close method for the initialized client', done => {
+            const client = new hubModule.v1alpha1.HubClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.hubStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new hubModule.v1alpha1.HubClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.hubStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new hubModule.v1alpha1.HubClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new hubModule.v1alpha1.HubClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.hubStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new hubModule.v1alpha1.HubClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.hubStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new hubModule.v1alpha1.HubClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new hubModule.v1alpha1.HubClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('createRepository', () => {
@@ -185,43 +200,45 @@ describe('v1alpha1.HubClient', () => {
             const client = new hubModule.v1alpha1.HubClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.CreateRepositoryRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository());
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.CreateRepositoryRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.CreateRepositoryRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.Repository()
+            );
             client.innerApiCalls.createRepository = stubSimpleCall(expectedResponse);
             const [response] = await client.createRepository(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createRepository as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createRepository as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createRepository as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createRepository without error using callback', async () => {
             const client = new hubModule.v1alpha1.HubClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.CreateRepositoryRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository());
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.CreateRepositoryRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.CreateRepositoryRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.Repository()
+            );
             client.innerApiCalls.createRepository = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createRepository(
@@ -236,41 +253,50 @@ describe('v1alpha1.HubClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createRepository as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createRepository as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createRepository as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createRepository with error', async () => {
             const client = new hubModule.v1alpha1.HubClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.CreateRepositoryRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.CreateRepositoryRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.CreateRepositoryRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createRepository = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createRepository(request), expectedError);
-            assert((client.innerApiCalls.createRepository as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createRepository as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createRepository as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createRepository with closed client', async () => {
             const client = new hubModule.v1alpha1.HubClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.CreateRepositoryRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.CreateRepositoryRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.CreateRepositoryRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createRepository(request), expectedError);
@@ -282,43 +308,45 @@ describe('v1alpha1.HubClient', () => {
             const client = new hubModule.v1alpha1.HubClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.DeleteRepositoryRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.DeleteRepositoryRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.DeleteRepositoryRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteRepository = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteRepository(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteRepository as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteRepository as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteRepository as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteRepository without error using callback', async () => {
             const client = new hubModule.v1alpha1.HubClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.DeleteRepositoryRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.DeleteRepositoryRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.DeleteRepositoryRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteRepository = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteRepository(
@@ -333,41 +361,50 @@ describe('v1alpha1.HubClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteRepository as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteRepository as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteRepository as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteRepository with error', async () => {
             const client = new hubModule.v1alpha1.HubClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.DeleteRepositoryRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.DeleteRepositoryRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.DeleteRepositoryRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteRepository = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteRepository(request), expectedError);
-            assert((client.innerApiCalls.deleteRepository as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteRepository as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteRepository as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteRepository with closed client', async () => {
             const client = new hubModule.v1alpha1.HubClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.DeleteRepositoryRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.DeleteRepositoryRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.DeleteRepositoryRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteRepository(request), expectedError);
@@ -381,17 +418,13 @@ describe('v1alpha1.HubClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.ListRepositoriesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
               generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
               generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
@@ -399,8 +432,12 @@ describe('v1alpha1.HubClient', () => {
             client.innerApiCalls.listRepositories = stubSimpleCall(expectedResponse);
             const [response] = await client.listRepositories(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listRepositories as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listRepositories as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listRepositories as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listRepositories without error using callback', async () => {
@@ -409,17 +446,13 @@ describe('v1alpha1.HubClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.ListRepositoriesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
               generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
               generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
@@ -438,8 +471,12 @@ describe('v1alpha1.HubClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listRepositories as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.listRepositories as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listRepositories as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listRepositories with error', async () => {
@@ -448,21 +485,22 @@ describe('v1alpha1.HubClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.ListRepositoriesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.listRepositories = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listRepositories(request), expectedError);
-            assert((client.innerApiCalls.listRepositories as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listRepositories as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listRepositories as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listRepositoriesStream without error', async () => {
@@ -471,9 +509,13 @@ describe('v1alpha1.HubClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.ListRepositoriesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
               generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
@@ -497,10 +539,11 @@ describe('v1alpha1.HubClient', () => {
             assert.deepStrictEqual(responses, expectedResponse);
             assert((client.descriptors.page.listRepositories.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listRepositories, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listRepositories.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -510,9 +553,13 @@ describe('v1alpha1.HubClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.ListRepositoriesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.descriptors.page.listRepositories.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listRepositoriesStream(request);
@@ -531,10 +578,11 @@ describe('v1alpha1.HubClient', () => {
             await assert.rejects(promise, expectedError);
             assert((client.descriptors.page.listRepositories.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listRepositories, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listRepositories.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                         expectedHeaderRequestParams
+                    ) 
             );
         });
 
@@ -542,11 +590,15 @@ describe('v1alpha1.HubClient', () => {
             const client = new hubModule.v1alpha1.HubClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.ListRepositoriesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
               generateSampleMessage(new protos.animeshon.hub.v1alpha1.Repository()),
@@ -562,10 +614,11 @@ describe('v1alpha1.HubClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listRepositories.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listRepositories.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -575,9 +628,14 @@ describe('v1alpha1.HubClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.hub.v1alpha1.ListRepositoriesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.hub.v1alpha1.ListRepositoriesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedError = new Error('expected');
             client.descriptors.page.listRepositories.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listRepositoriesAsync(request);
             await assert.rejects(async () => {
@@ -589,10 +647,11 @@ describe('v1alpha1.HubClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listRepositories.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listRepositories.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
     });

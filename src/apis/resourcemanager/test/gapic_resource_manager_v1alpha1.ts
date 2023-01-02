@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,25 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as resourcemanagerModule from '../src';
 
 import {PassThrough} from 'stream';
 
 import {protobuf} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -87,97 +100,99 @@ function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?
 }
 
 describe('v1alpha1.ResourceManagerClient', () => {
-    it('has servicePath', () => {
-        const servicePath = resourcemanagerModule.v1alpha1.ResourceManagerClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = resourcemanagerModule.v1alpha1.ResourceManagerClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = resourcemanagerModule.v1alpha1.ResourceManagerClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = resourcemanagerModule.v1alpha1.ResourceManagerClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = resourcemanagerModule.v1alpha1.ResourceManagerClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = resourcemanagerModule.v1alpha1.ResourceManagerClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.resourceManagerStub, undefined);
+            await client.initialize();
+            assert(client.resourceManagerStub);
         });
-        assert.strictEqual(client.resourceManagerStub, undefined);
-        await client.initialize();
-        assert(client.resourceManagerStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
+        it('has close method for the initialized client', done => {
+            const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.resourceManagerStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.resourceManagerStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.resourceManagerStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.resourceManagerStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('getOrganization', () => {
@@ -185,43 +200,45 @@ describe('v1alpha1.ResourceManagerClient', () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.GetOrganizationRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.GetOrganizationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.GetOrganizationRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.Organization()
+            );
             client.innerApiCalls.getOrganization = stubSimpleCall(expectedResponse);
             const [response] = await client.getOrganization(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getOrganization as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getOrganization as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getOrganization as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getOrganization without error using callback', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.GetOrganizationRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.GetOrganizationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.GetOrganizationRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.Organization()
+            );
             client.innerApiCalls.getOrganization = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getOrganization(
@@ -236,41 +253,50 @@ describe('v1alpha1.ResourceManagerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getOrganization as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getOrganization as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getOrganization as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getOrganization with error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.GetOrganizationRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.GetOrganizationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.GetOrganizationRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getOrganization = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getOrganization(request), expectedError);
-            assert((client.innerApiCalls.getOrganization as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getOrganization as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getOrganization as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getOrganization with closed client', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.GetOrganizationRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.GetOrganizationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.GetOrganizationRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getOrganization(request), expectedError);
@@ -282,27 +308,31 @@ describe('v1alpha1.ResourceManagerClient', () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.CreateOrganizationRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.CreateOrganizationRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.Organization()
+            );
             client.innerApiCalls.createOrganization = stubSimpleCall(expectedResponse);
             const [response] = await client.createOrganization(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createOrganization as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes createOrganization without error using callback', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.CreateOrganizationRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.CreateOrganizationRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.Organization()
+            );
             client.innerApiCalls.createOrganization = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createOrganization(
@@ -317,32 +347,31 @@ describe('v1alpha1.ResourceManagerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createOrganization as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes createOrganization with error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.CreateOrganizationRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.CreateOrganizationRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.createOrganization = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createOrganization(request), expectedError);
-            assert((client.innerApiCalls.createOrganization as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes createOrganization with closed client', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.CreateOrganizationRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.CreateOrganizationRequest()
+            );
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createOrganization(request), expectedError);
@@ -354,45 +383,47 @@ describe('v1alpha1.ResourceManagerClient', () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.UpdateOrganizationRequest());
-            request.organization = {};
-            request.organization.name = '';
-            const expectedHeaderRequestParams = "organization.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.UpdateOrganizationRequest()
+            );
+            request.organization ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.UpdateOrganizationRequest', ['organization', 'name']);
+            request.organization.name = defaultValue1;
+            const expectedHeaderRequestParams = `organization.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.Organization()
+            );
             client.innerApiCalls.updateOrganization = stubSimpleCall(expectedResponse);
             const [response] = await client.updateOrganization(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateOrganization as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateOrganization as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateOrganization as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateOrganization without error using callback', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.UpdateOrganizationRequest());
-            request.organization = {};
-            request.organization.name = '';
-            const expectedHeaderRequestParams = "organization.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.UpdateOrganizationRequest()
+            );
+            request.organization ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.UpdateOrganizationRequest', ['organization', 'name']);
+            request.organization.name = defaultValue1;
+            const expectedHeaderRequestParams = `organization.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.Organization()
+            );
             client.innerApiCalls.updateOrganization = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updateOrganization(
@@ -407,43 +438,52 @@ describe('v1alpha1.ResourceManagerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateOrganization as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updateOrganization as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateOrganization as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateOrganization with error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.UpdateOrganizationRequest());
-            request.organization = {};
-            request.organization.name = '';
-            const expectedHeaderRequestParams = "organization.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.UpdateOrganizationRequest()
+            );
+            request.organization ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.UpdateOrganizationRequest', ['organization', 'name']);
+            request.organization.name = defaultValue1;
+            const expectedHeaderRequestParams = `organization.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updateOrganization = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updateOrganization(request), expectedError);
-            assert((client.innerApiCalls.updateOrganization as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateOrganization as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateOrganization as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateOrganization with closed client', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.UpdateOrganizationRequest());
-            request.organization = {};
-            request.organization.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.UpdateOrganizationRequest()
+            );
+            request.organization ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.UpdateOrganizationRequest', ['organization', 'name']);
+            request.organization.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updateOrganization(request), expectedError);
@@ -455,43 +495,45 @@ describe('v1alpha1.ResourceManagerClient', () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.DeleteOrganizationRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.DeleteOrganizationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.DeleteOrganizationRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteOrganization = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteOrganization(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteOrganization as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteOrganization as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteOrganization as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteOrganization without error using callback', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.DeleteOrganizationRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.DeleteOrganizationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.DeleteOrganizationRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteOrganization = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteOrganization(
@@ -506,41 +548,50 @@ describe('v1alpha1.ResourceManagerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteOrganization as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteOrganization as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteOrganization as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteOrganization with error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.DeleteOrganizationRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.DeleteOrganizationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.DeleteOrganizationRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteOrganization = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteOrganization(request), expectedError);
-            assert((client.innerApiCalls.deleteOrganization as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteOrganization as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteOrganization as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteOrganization with closed client', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.DeleteOrganizationRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.DeleteOrganizationRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.DeleteOrganizationRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteOrganization(request), expectedError);
@@ -552,43 +603,45 @@ describe('v1alpha1.ResourceManagerClient', () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.GetTeamRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.GetTeamRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.GetTeamRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.Team()
+            );
             client.innerApiCalls.getTeam = stubSimpleCall(expectedResponse);
             const [response] = await client.getTeam(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getTeam as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getTeam as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getTeam as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getTeam without error using callback', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.GetTeamRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.GetTeamRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.GetTeamRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.Team()
+            );
             client.innerApiCalls.getTeam = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getTeam(
@@ -603,41 +656,50 @@ describe('v1alpha1.ResourceManagerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getTeam as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getTeam as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getTeam as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getTeam with error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.GetTeamRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.GetTeamRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.GetTeamRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getTeam = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getTeam(request), expectedError);
-            assert((client.innerApiCalls.getTeam as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getTeam as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getTeam as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getTeam with closed client', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.GetTeamRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.GetTeamRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.GetTeamRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getTeam(request), expectedError);
@@ -649,27 +711,31 @@ describe('v1alpha1.ResourceManagerClient', () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.CreateTeamRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.CreateTeamRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.Team()
+            );
             client.innerApiCalls.createTeam = stubSimpleCall(expectedResponse);
             const [response] = await client.createTeam(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createTeam as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes createTeam without error using callback', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.CreateTeamRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.CreateTeamRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.Team()
+            );
             client.innerApiCalls.createTeam = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createTeam(
@@ -684,32 +750,31 @@ describe('v1alpha1.ResourceManagerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createTeam as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes createTeam with error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.CreateTeamRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.CreateTeamRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.createTeam = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createTeam(request), expectedError);
-            assert((client.innerApiCalls.createTeam as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes createTeam with closed client', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.CreateTeamRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.CreateTeamRequest()
+            );
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createTeam(request), expectedError);
@@ -721,45 +786,47 @@ describe('v1alpha1.ResourceManagerClient', () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.UpdateTeamRequest());
-            request.team = {};
-            request.team.name = '';
-            const expectedHeaderRequestParams = "team.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.UpdateTeamRequest()
+            );
+            request.team ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.UpdateTeamRequest', ['team', 'name']);
+            request.team.name = defaultValue1;
+            const expectedHeaderRequestParams = `team.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.Team()
+            );
             client.innerApiCalls.updateTeam = stubSimpleCall(expectedResponse);
             const [response] = await client.updateTeam(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateTeam as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateTeam as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateTeam as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateTeam without error using callback', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.UpdateTeamRequest());
-            request.team = {};
-            request.team.name = '';
-            const expectedHeaderRequestParams = "team.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.UpdateTeamRequest()
+            );
+            request.team ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.UpdateTeamRequest', ['team', 'name']);
+            request.team.name = defaultValue1;
+            const expectedHeaderRequestParams = `team.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.Team()
+            );
             client.innerApiCalls.updateTeam = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updateTeam(
@@ -774,43 +841,52 @@ describe('v1alpha1.ResourceManagerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateTeam as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updateTeam as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateTeam as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateTeam with error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.UpdateTeamRequest());
-            request.team = {};
-            request.team.name = '';
-            const expectedHeaderRequestParams = "team.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.UpdateTeamRequest()
+            );
+            request.team ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.UpdateTeamRequest', ['team', 'name']);
+            request.team.name = defaultValue1;
+            const expectedHeaderRequestParams = `team.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updateTeam = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updateTeam(request), expectedError);
-            assert((client.innerApiCalls.updateTeam as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateTeam as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateTeam as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateTeam with closed client', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.UpdateTeamRequest());
-            request.team = {};
-            request.team.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.UpdateTeamRequest()
+            );
+            request.team ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.UpdateTeamRequest', ['team', 'name']);
+            request.team.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updateTeam(request), expectedError);
@@ -822,43 +898,45 @@ describe('v1alpha1.ResourceManagerClient', () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.DeleteTeamRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.DeleteTeamRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.DeleteTeamRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteTeam = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteTeam(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteTeam as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteTeam as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteTeam as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteTeam without error using callback', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.DeleteTeamRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.DeleteTeamRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.DeleteTeamRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteTeam = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteTeam(
@@ -873,41 +951,50 @@ describe('v1alpha1.ResourceManagerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteTeam as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteTeam as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteTeam as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteTeam with error', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.DeleteTeamRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.DeleteTeamRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.DeleteTeamRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteTeam = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteTeam(request), expectedError);
-            assert((client.innerApiCalls.deleteTeam as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteTeam as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteTeam as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteTeam with closed client', async () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.DeleteTeamRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.DeleteTeamRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.resourcemanager.v1alpha1.DeleteTeamRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteTeam(request), expectedError);
@@ -921,9 +1008,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization()),
@@ -931,8 +1018,6 @@ describe('v1alpha1.ResourceManagerClient', () => {
             client.innerApiCalls.listOrganizations = stubSimpleCall(expectedResponse);
             const [response] = await client.listOrganizations(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listOrganizations as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listOrganizations without error using callback', async () => {
@@ -941,9 +1026,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization()),
@@ -962,8 +1047,6 @@ describe('v1alpha1.ResourceManagerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listOrganizations as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes listOrganizations with error', async () => {
@@ -972,13 +1055,12 @@ describe('v1alpha1.ResourceManagerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.listOrganizations = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listOrganizations(request), expectedError);
-            assert((client.innerApiCalls.listOrganizations as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listOrganizationsStream without error', async () => {
@@ -987,7 +1069,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization()),
@@ -1019,7 +1103,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest()
+            );
             const expectedError = new Error('expected');
             client.descriptors.page.listOrganizations.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listOrganizationsStream(request);
@@ -1044,9 +1130,11 @@ describe('v1alpha1.ResourceManagerClient', () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Organization()),
@@ -1070,7 +1158,10 @@ describe('v1alpha1.ResourceManagerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest());const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.ListOrganizationsRequest()
+            );
+            const expectedError = new Error('expected');
             client.descriptors.page.listOrganizations.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listOrganizationsAsync(request);
             await assert.rejects(async () => {
@@ -1092,9 +1183,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team()),
@@ -1102,8 +1193,6 @@ describe('v1alpha1.ResourceManagerClient', () => {
             client.innerApiCalls.listTeams = stubSimpleCall(expectedResponse);
             const [response] = await client.listTeams(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listTeams as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listTeams without error using callback', async () => {
@@ -1112,9 +1201,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team()),
@@ -1133,8 +1222,6 @@ describe('v1alpha1.ResourceManagerClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listTeams as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes listTeams with error', async () => {
@@ -1143,13 +1230,12 @@ describe('v1alpha1.ResourceManagerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.listTeams = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listTeams(request), expectedError);
-            assert((client.innerApiCalls.listTeams as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listTeamsStream without error', async () => {
@@ -1158,7 +1244,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team()),
@@ -1190,7 +1278,9 @@ describe('v1alpha1.ResourceManagerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest()
+            );
             const expectedError = new Error('expected');
             client.descriptors.page.listTeams.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listTeamsStream(request);
@@ -1215,9 +1305,11 @@ describe('v1alpha1.ResourceManagerClient', () => {
             const client = new resourcemanagerModule.v1alpha1.ResourceManagerClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team()),
               generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.Team()),
@@ -1241,7 +1333,10 @@ describe('v1alpha1.ResourceManagerClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest());const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.resourcemanager.v1alpha1.ListTeamsRequest()
+            );
+            const expectedError = new Error('expected');
             client.descriptors.page.listTeams.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listTeamsAsync(request);
             await assert.rejects(async () => {

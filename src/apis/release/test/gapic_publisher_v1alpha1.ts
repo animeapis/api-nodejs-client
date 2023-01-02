@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,25 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as publisherModule from '../src';
 
 import {PassThrough} from 'stream';
 
 import {protobuf} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -87,97 +100,99 @@ function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?
 }
 
 describe('v1alpha1.PublisherClient', () => {
-    it('has servicePath', () => {
-        const servicePath = publisherModule.v1alpha1.PublisherClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = publisherModule.v1alpha1.PublisherClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = publisherModule.v1alpha1.PublisherClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new publisherModule.v1alpha1.PublisherClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new publisherModule.v1alpha1.PublisherClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = publisherModule.v1alpha1.PublisherClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new publisherModule.v1alpha1.PublisherClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = publisherModule.v1alpha1.PublisherClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = publisherModule.v1alpha1.PublisherClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new publisherModule.v1alpha1.PublisherClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new publisherModule.v1alpha1.PublisherClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.publisherStub, undefined);
+            await client.initialize();
+            assert(client.publisherStub);
         });
-        assert.strictEqual(client.publisherStub, undefined);
-        await client.initialize();
-        assert(client.publisherStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new publisherModule.v1alpha1.PublisherClient({
+        it('has close method for the initialized client', done => {
+            const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.publisherStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new publisherModule.v1alpha1.PublisherClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.publisherStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new publisherModule.v1alpha1.PublisherClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new publisherModule.v1alpha1.PublisherClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.publisherStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new publisherModule.v1alpha1.PublisherClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.publisherStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new publisherModule.v1alpha1.PublisherClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new publisherModule.v1alpha1.PublisherClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('getRelease', () => {
@@ -185,43 +200,45 @@ describe('v1alpha1.PublisherClient', () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.GetReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.Release());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.GetReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.GetReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.Release()
+            );
             client.innerApiCalls.getRelease = stubSimpleCall(expectedResponse);
             const [response] = await client.getRelease(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.GetReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.Release());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.GetReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.GetReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.Release()
+            );
             client.innerApiCalls.getRelease = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getRelease(
@@ -236,41 +253,50 @@ describe('v1alpha1.PublisherClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.GetReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.GetReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.GetReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getRelease = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getRelease(request), expectedError);
-            assert((client.innerApiCalls.getRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getRelease with closed client', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.GetReleaseRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.GetReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.GetReleaseRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getRelease(request), expectedError);
@@ -282,43 +308,45 @@ describe('v1alpha1.PublisherClient', () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.CreateReleaseRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.Release());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.CreateReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.CreateReleaseRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.Release()
+            );
             client.innerApiCalls.createRelease = stubSimpleCall(expectedResponse);
             const [response] = await client.createRelease(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.CreateReleaseRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.Release());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.CreateReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.CreateReleaseRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.Release()
+            );
             client.innerApiCalls.createRelease = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createRelease(
@@ -333,41 +361,50 @@ describe('v1alpha1.PublisherClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.CreateReleaseRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.CreateReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.CreateReleaseRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createRelease = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createRelease(request), expectedError);
-            assert((client.innerApiCalls.createRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createRelease with closed client', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.CreateReleaseRequest());
-            request.parent = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.CreateReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.CreateReleaseRequest', ['parent']);
+            request.parent = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createRelease(request), expectedError);
@@ -379,45 +416,47 @@ describe('v1alpha1.PublisherClient', () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UpdateReleaseRequest());
-            request.release = {};
-            request.release.name = '';
-            const expectedHeaderRequestParams = "release.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.Release());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.UpdateReleaseRequest()
+            );
+            request.release ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.UpdateReleaseRequest', ['release', 'name']);
+            request.release.name = defaultValue1;
+            const expectedHeaderRequestParams = `release.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.Release()
+            );
             client.innerApiCalls.updateRelease = stubSimpleCall(expectedResponse);
             const [response] = await client.updateRelease(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UpdateReleaseRequest());
-            request.release = {};
-            request.release.name = '';
-            const expectedHeaderRequestParams = "release.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.Release());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.UpdateReleaseRequest()
+            );
+            request.release ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.UpdateReleaseRequest', ['release', 'name']);
+            request.release.name = defaultValue1;
+            const expectedHeaderRequestParams = `release.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.Release()
+            );
             client.innerApiCalls.updateRelease = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updateRelease(
@@ -432,43 +471,52 @@ describe('v1alpha1.PublisherClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updateRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UpdateReleaseRequest());
-            request.release = {};
-            request.release.name = '';
-            const expectedHeaderRequestParams = "release.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.UpdateReleaseRequest()
+            );
+            request.release ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.UpdateReleaseRequest', ['release', 'name']);
+            request.release.name = defaultValue1;
+            const expectedHeaderRequestParams = `release.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updateRelease = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updateRelease(request), expectedError);
-            assert((client.innerApiCalls.updateRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateRelease with closed client', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UpdateReleaseRequest());
-            request.release = {};
-            request.release.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.UpdateReleaseRequest()
+            );
+            request.release ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.UpdateReleaseRequest', ['release', 'name']);
+            request.release.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updateRelease(request), expectedError);
@@ -480,43 +528,45 @@ describe('v1alpha1.PublisherClient', () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.DeleteReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.DeleteReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.DeleteReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteRelease = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteRelease(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.DeleteReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.DeleteReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.DeleteReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteRelease = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteRelease(
@@ -531,41 +581,50 @@ describe('v1alpha1.PublisherClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.DeleteReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.DeleteReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.DeleteReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteRelease = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteRelease(request), expectedError);
-            assert((client.innerApiCalls.deleteRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteRelease with closed client', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.DeleteReleaseRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.DeleteReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.DeleteReleaseRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteRelease(request), expectedError);
@@ -577,43 +636,45 @@ describe('v1alpha1.PublisherClient', () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UndeleteReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.Release());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.UndeleteReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.UndeleteReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.Release()
+            );
             client.innerApiCalls.undeleteRelease = stubSimpleCall(expectedResponse);
             const [response] = await client.undeleteRelease(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.undeleteRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.undeleteRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.undeleteRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes undeleteRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UndeleteReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.Release());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.UndeleteReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.UndeleteReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.Release()
+            );
             client.innerApiCalls.undeleteRelease = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.undeleteRelease(
@@ -628,41 +689,50 @@ describe('v1alpha1.PublisherClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.undeleteRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.undeleteRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.undeleteRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes undeleteRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UndeleteReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.UndeleteReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.UndeleteReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.undeleteRelease = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.undeleteRelease(request), expectedError);
-            assert((client.innerApiCalls.undeleteRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.undeleteRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.undeleteRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes undeleteRelease with closed client', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UndeleteReleaseRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.UndeleteReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.UndeleteReleaseRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.undeleteRelease(request), expectedError);
@@ -674,43 +744,45 @@ describe('v1alpha1.PublisherClient', () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.PublishReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.PublishReleaseResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.PublishReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.PublishReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.PublishReleaseResponse()
+            );
             client.innerApiCalls.publishRelease = stubSimpleCall(expectedResponse);
             const [response] = await client.publishRelease(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.publishRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.publishRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.publishRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes publishRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.PublishReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.PublishReleaseResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.PublishReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.PublishReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.PublishReleaseResponse()
+            );
             client.innerApiCalls.publishRelease = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.publishRelease(
@@ -725,41 +797,50 @@ describe('v1alpha1.PublisherClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.publishRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.publishRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.publishRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes publishRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.PublishReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.PublishReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.PublishReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.publishRelease = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.publishRelease(request), expectedError);
-            assert((client.innerApiCalls.publishRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.publishRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.publishRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes publishRelease with closed client', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.PublishReleaseRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.PublishReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.PublishReleaseRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.publishRelease(request), expectedError);
@@ -771,43 +852,45 @@ describe('v1alpha1.PublisherClient', () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UnpublishReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.UnpublishReleaseResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.UnpublishReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.UnpublishReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.UnpublishReleaseResponse()
+            );
             client.innerApiCalls.unpublishRelease = stubSimpleCall(expectedResponse);
             const [response] = await client.unpublishRelease(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.unpublishRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.unpublishRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.unpublishRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes unpublishRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UnpublishReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.UnpublishReleaseResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.UnpublishReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.UnpublishReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.UnpublishReleaseResponse()
+            );
             client.innerApiCalls.unpublishRelease = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.unpublishRelease(
@@ -822,41 +905,50 @@ describe('v1alpha1.PublisherClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.unpublishRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.unpublishRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.unpublishRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes unpublishRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UnpublishReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.UnpublishReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.UnpublishReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.unpublishRelease = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.unpublishRelease(request), expectedError);
-            assert((client.innerApiCalls.unpublishRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.unpublishRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.unpublishRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes unpublishRelease with closed client', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.UnpublishReleaseRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.UnpublishReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.UnpublishReleaseRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.unpublishRelease(request), expectedError);
@@ -868,43 +960,45 @@ describe('v1alpha1.PublisherClient', () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.ScheduleReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.ScheduleReleaseResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.ScheduleReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.ScheduleReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.ScheduleReleaseResponse()
+            );
             client.innerApiCalls.scheduleRelease = stubSimpleCall(expectedResponse);
             const [response] = await client.scheduleRelease(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.scheduleRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.scheduleRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.scheduleRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes scheduleRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.ScheduleReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.ScheduleReleaseResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.ScheduleReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.ScheduleReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.ScheduleReleaseResponse()
+            );
             client.innerApiCalls.scheduleRelease = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.scheduleRelease(
@@ -919,41 +1013,50 @@ describe('v1alpha1.PublisherClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.scheduleRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.scheduleRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.scheduleRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes scheduleRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.ScheduleReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.ScheduleReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.ScheduleReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.scheduleRelease = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.scheduleRelease(request), expectedError);
-            assert((client.innerApiCalls.scheduleRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.scheduleRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.scheduleRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes scheduleRelease with closed client', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.ScheduleReleaseRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.ScheduleReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.ScheduleReleaseRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.scheduleRelease(request), expectedError);
@@ -965,43 +1068,45 @@ describe('v1alpha1.PublisherClient', () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.CancelReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.CancelReleaseResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.CancelReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.CancelReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.CancelReleaseResponse()
+            );
             client.innerApiCalls.cancelRelease = stubSimpleCall(expectedResponse);
             const [response] = await client.cancelRelease(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.cancelRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.cancelRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.cancelRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes cancelRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.CancelReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.CancelReleaseResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.CancelReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.CancelReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.CancelReleaseResponse()
+            );
             client.innerApiCalls.cancelRelease = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.cancelRelease(
@@ -1016,41 +1121,50 @@ describe('v1alpha1.PublisherClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.cancelRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.cancelRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.cancelRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes cancelRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.CancelReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.CancelReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.CancelReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.cancelRelease = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.cancelRelease(request), expectedError);
-            assert((client.innerApiCalls.cancelRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.cancelRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.cancelRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes cancelRelease with closed client', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.CancelReleaseRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.CancelReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.CancelReleaseRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.cancelRelease(request), expectedError);
@@ -1062,43 +1176,45 @@ describe('v1alpha1.PublisherClient', () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.SuspendReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.SuspendReleaseResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.SuspendReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.SuspendReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.SuspendReleaseResponse()
+            );
             client.innerApiCalls.suspendRelease = stubSimpleCall(expectedResponse);
             const [response] = await client.suspendRelease(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.suspendRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.suspendRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.suspendRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes suspendRelease without error using callback', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.SuspendReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.release.v1alpha1.SuspendReleaseResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.SuspendReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.SuspendReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.SuspendReleaseResponse()
+            );
             client.innerApiCalls.suspendRelease = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.suspendRelease(
@@ -1113,41 +1229,50 @@ describe('v1alpha1.PublisherClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.suspendRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.suspendRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.suspendRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes suspendRelease with error', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.SuspendReleaseRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.SuspendReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.SuspendReleaseRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.suspendRelease = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.suspendRelease(request), expectedError);
-            assert((client.innerApiCalls.suspendRelease as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.suspendRelease as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.suspendRelease as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes suspendRelease with closed client', async () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.SuspendReleaseRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.SuspendReleaseRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.SuspendReleaseRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.suspendRelease(request), expectedError);
@@ -1161,17 +1286,13 @@ describe('v1alpha1.PublisherClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.ListReleasesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.ListReleasesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.ListReleasesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.release.v1alpha1.Release()),
               generateSampleMessage(new protos.animeshon.release.v1alpha1.Release()),
               generateSampleMessage(new protos.animeshon.release.v1alpha1.Release()),
@@ -1179,8 +1300,12 @@ describe('v1alpha1.PublisherClient', () => {
             client.innerApiCalls.listReleases = stubSimpleCall(expectedResponse);
             const [response] = await client.listReleases(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listReleases as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listReleases as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listReleases as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listReleases without error using callback', async () => {
@@ -1189,17 +1314,13 @@ describe('v1alpha1.PublisherClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.ListReleasesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.ListReleasesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.ListReleasesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.release.v1alpha1.Release()),
               generateSampleMessage(new protos.animeshon.release.v1alpha1.Release()),
               generateSampleMessage(new protos.animeshon.release.v1alpha1.Release()),
@@ -1218,8 +1339,12 @@ describe('v1alpha1.PublisherClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listReleases as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.listReleases as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listReleases as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listReleases with error', async () => {
@@ -1228,21 +1353,22 @@ describe('v1alpha1.PublisherClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.ListReleasesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.ListReleasesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.ListReleasesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.listReleases = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listReleases(request), expectedError);
-            assert((client.innerApiCalls.listReleases as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listReleases as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listReleases as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listReleasesStream without error', async () => {
@@ -1251,9 +1377,13 @@ describe('v1alpha1.PublisherClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.ListReleasesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.ListReleasesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.ListReleasesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.release.v1alpha1.Release()),
               generateSampleMessage(new protos.animeshon.release.v1alpha1.Release()),
@@ -1277,10 +1407,11 @@ describe('v1alpha1.PublisherClient', () => {
             assert.deepStrictEqual(responses, expectedResponse);
             assert((client.descriptors.page.listReleases.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listReleases, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listReleases.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1290,9 +1421,13 @@ describe('v1alpha1.PublisherClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.ListReleasesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.ListReleasesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.ListReleasesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.descriptors.page.listReleases.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listReleasesStream(request);
@@ -1311,10 +1446,11 @@ describe('v1alpha1.PublisherClient', () => {
             await assert.rejects(promise, expectedError);
             assert((client.descriptors.page.listReleases.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listReleases, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listReleases.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                         expectedHeaderRequestParams
+                    ) 
             );
         });
 
@@ -1322,11 +1458,15 @@ describe('v1alpha1.PublisherClient', () => {
             const client = new publisherModule.v1alpha1.PublisherClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.ListReleasesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.ListReleasesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.ListReleasesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.release.v1alpha1.Release()),
               generateSampleMessage(new protos.animeshon.release.v1alpha1.Release()),
@@ -1342,10 +1482,11 @@ describe('v1alpha1.PublisherClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listReleases.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listReleases.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1355,9 +1496,14 @@ describe('v1alpha1.PublisherClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.release.v1alpha1.ListReleasesRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.release.v1alpha1.ListReleasesRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.release.v1alpha1.ListReleasesRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedError = new Error('expected');
             client.descriptors.page.listReleases.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listReleasesAsync(request);
             await assert.rejects(async () => {
@@ -1369,10 +1515,11 @@ describe('v1alpha1.PublisherClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listReleases.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listReleases.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
     });

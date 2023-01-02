@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,11 +17,9 @@
 // ** All changes to this file may be overwritten. **
 
 /* global window */
-import * as gax from 'google-gax';
-import {Callback, CallOptions, Descriptors, ClientOptions, GrpcClientOptions, LROperation, PaginationCallback, GaxCall} from 'google-gax';
-
-import { Transform } from 'stream';
-import { RequestType } from 'google-gax/build/src/apitypes';
+import type * as gax from 'google-gax';
+import type {Callback, CallOptions, Descriptors, ClientOptions, GrpcClientOptions, LROperation, PaginationCallback, GaxCall} from 'google-gax';
+import {Transform} from 'stream';
 import * as protos from '../../protos/protos';
 import jsonProtos = require('../../protos/protos.json');
 /**
@@ -30,7 +28,6 @@ import jsonProtos = require('../../protos/protos.json');
  * This file defines retry strategy and timeouts for all API methods in this library.
  */
 import * as gapicConfig from './tracker_service_client_config.json';
-import { operationsProtos } from 'google-gax';
 const version = require('../../../package.json').version;
 
 /**
@@ -89,8 +86,15 @@ export class TrackerServiceClient {
    *     Pass "rest" to use HTTP/1.1 REST API instead of gRPC.
    *     For more information, please check the
    *     {@link https://github.com/googleapis/gax-nodejs/blob/main/client-libraries.md#http11-rest-api-mode documentation}.
+   * @param {gax} [gaxInstance]: loaded instance of `google-gax`. Useful if you
+   *     need to avoid loading the default gRPC version and want to use the fallback
+   *     HTTP implementation. Load only fallback version and pass it to the constructor:
+   *     ```
+   *     const gax = require('google-gax/build/src/fallback'); // avoids loading google-gax with gRPC
+   *     const client = new TrackerServiceClient({fallback: 'rest'}, gax);
+   *     ```
    */
-  constructor(opts?: ClientOptions) {
+  constructor(opts?: ClientOptions, gaxInstance?: typeof gax | typeof gax.fallback) {
     // Ensure that options include all the required fields.
     const staticMembers = this.constructor as typeof TrackerServiceClient;
     const servicePath = opts?.servicePath || opts?.apiEndpoint || staticMembers.servicePath;
@@ -105,8 +109,13 @@ export class TrackerServiceClient {
       opts['scopes'] = staticMembers.scopes;
     }
 
+    // Load google-gax module synchronously if needed
+    if (!gaxInstance) {
+      gaxInstance = require('google-gax') as typeof gax;
+    }
+
     // Choose either gRPC or proto-over-HTTP implementation of google-gax.
-    this._gaxModule = opts.fallback ? gax.fallback : gax;
+    this._gaxModule = opts.fallback ? gaxInstance.fallback : gaxInstance;
 
     // Create a `gaxGrpc` object, with any grpc-specific options sent to the client.
     this._gaxGrpc = new this._gaxModule.GrpcClient(opts);
@@ -201,7 +210,7 @@ export class TrackerServiceClient {
     this.innerApiCalls = {};
 
     // Add a warn function to the client constructor so it can be easily tested.
-    this.warn = gax.warn;
+    this.warn = this._gaxModule.warn;
   }
 
   /**
@@ -233,7 +242,7 @@ export class TrackerServiceClient {
     // Iterate over each of the methods that the service provides
     // and create an API call method for each.
     const trackerServiceStubMethods =
-        ['getTracker', 'listTrackers', 'createTracker', 'updateTracker', 'deleteTracker', 'importTrackers', 'exportTrackers', 'createActivity', 'deleteActivity'];
+        ['getTracker', 'listTrackers', 'createTracker', 'updateTracker', 'deleteTracker', 'computeTracker', 'importTrackers', 'exportTrackers', 'createActivity', 'deleteActivity'];
     for (const methodName of trackerServiceStubMethods) {
       const callPromise = this.trackerServiceStub.then(
         stub => (...args: Array<{}>) => {
@@ -254,7 +263,8 @@ export class TrackerServiceClient {
       const apiCall = this._gaxModule.createApiCall(
         callPromise,
         this._defaults[methodName],
-        descriptor
+        descriptor,
+        this._opts.fallback
       );
 
       this.innerApiCalls[methodName] = apiCall;
@@ -383,8 +393,8 @@ export class TrackerServiceClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers[
       'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'name': request.name || '',
+    ] = this._gaxModule.routingHeader.fromParams({
+      'name': request.name ?? '',
     });
     this.initialize();
     return this.innerApiCalls.getTracker(request, options, callback);
@@ -455,8 +465,8 @@ export class TrackerServiceClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers[
       'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'parent': request.parent || '',
+    ] = this._gaxModule.routingHeader.fromParams({
+      'parent': request.parent ?? '',
     });
     this.initialize();
     return this.innerApiCalls.createTracker(request, options, callback);
@@ -528,8 +538,8 @@ export class TrackerServiceClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers[
       'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'tracker.name': request.tracker!.name || '',
+    ] = this._gaxModule.routingHeader.fromParams({
+      'tracker.name': request.tracker!.name ?? '',
     });
     this.initialize();
     return this.innerApiCalls.updateTracker(request, options, callback);
@@ -598,11 +608,80 @@ export class TrackerServiceClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers[
       'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'name': request.name || '',
+    ] = this._gaxModule.routingHeader.fromParams({
+      'name': request.name ?? '',
     });
     this.initialize();
     return this.innerApiCalls.deleteTracker(request, options, callback);
+  }
+/**
+ *
+ * @param {Object} request
+ *   The request object that will be sent.
+ * @param {string} request.name
+ * @param {object} [options]
+ *   Call options. See {@link https://googleapis.dev/nodejs/google-gax/latest/interfaces/CallOptions.html|CallOptions} for more details.
+ * @returns {Promise} - The promise which resolves to an array.
+ *   The first element of the array is an object representing [ComputeTrackerResponse]{@link animeshon.tracker.v1alpha1.ComputeTrackerResponse}.
+ *   Please see the
+ *   [documentation](https://github.com/googleapis/gax-nodejs/blob/master/client-libraries.md#regular-methods)
+ *   for more details and examples.
+ * @example <caption>include:samples/generated/v1alpha1/tracker_service.compute_tracker.js</caption>
+ * region_tag:tracker_v1alpha1_generated_TrackerService_ComputeTracker_async
+ */
+  computeTracker(
+      request?: protos.animeshon.tracker.v1alpha1.IComputeTrackerRequest,
+      options?: CallOptions):
+      Promise<[
+        protos.animeshon.tracker.v1alpha1.IComputeTrackerResponse,
+        protos.animeshon.tracker.v1alpha1.IComputeTrackerRequest|undefined, {}|undefined
+      ]>;
+  computeTracker(
+      request: protos.animeshon.tracker.v1alpha1.IComputeTrackerRequest,
+      options: CallOptions,
+      callback: Callback<
+          protos.animeshon.tracker.v1alpha1.IComputeTrackerResponse,
+          protos.animeshon.tracker.v1alpha1.IComputeTrackerRequest|null|undefined,
+          {}|null|undefined>): void;
+  computeTracker(
+      request: protos.animeshon.tracker.v1alpha1.IComputeTrackerRequest,
+      callback: Callback<
+          protos.animeshon.tracker.v1alpha1.IComputeTrackerResponse,
+          protos.animeshon.tracker.v1alpha1.IComputeTrackerRequest|null|undefined,
+          {}|null|undefined>): void;
+  computeTracker(
+      request?: protos.animeshon.tracker.v1alpha1.IComputeTrackerRequest,
+      optionsOrCallback?: CallOptions|Callback<
+          protos.animeshon.tracker.v1alpha1.IComputeTrackerResponse,
+          protos.animeshon.tracker.v1alpha1.IComputeTrackerRequest|null|undefined,
+          {}|null|undefined>,
+      callback?: Callback<
+          protos.animeshon.tracker.v1alpha1.IComputeTrackerResponse,
+          protos.animeshon.tracker.v1alpha1.IComputeTrackerRequest|null|undefined,
+          {}|null|undefined>):
+      Promise<[
+        protos.animeshon.tracker.v1alpha1.IComputeTrackerResponse,
+        protos.animeshon.tracker.v1alpha1.IComputeTrackerRequest|undefined, {}|undefined
+      ]>|void {
+    request = request || {};
+    let options: CallOptions;
+    if (typeof optionsOrCallback === 'function' && callback === undefined) {
+      callback = optionsOrCallback;
+      options = {};
+    }
+    else {
+      options = optionsOrCallback as CallOptions;
+    }
+    options = options || {};
+    options.otherArgs = options.otherArgs || {};
+    options.otherArgs.headers = options.otherArgs.headers || {};
+    options.otherArgs.headers[
+      'x-goog-request-params'
+    ] = this._gaxModule.routingHeader.fromParams({
+      'name': request.name ?? '',
+    });
+    this.initialize();
+    return this.innerApiCalls.computeTracker(request, options, callback);
   }
 /**
  *
@@ -670,8 +749,8 @@ export class TrackerServiceClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers[
       'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'parent': request.parent || '',
+    ] = this._gaxModule.routingHeader.fromParams({
+      'parent': request.parent ?? '',
     });
     this.initialize();
     return this.innerApiCalls.createActivity(request, options, callback);
@@ -740,8 +819,8 @@ export class TrackerServiceClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers[
       'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'name': request.name || '',
+    ] = this._gaxModule.routingHeader.fromParams({
+      'name': request.name ?? '',
     });
     this.initialize();
     return this.innerApiCalls.deleteActivity(request, options, callback);
@@ -813,8 +892,8 @@ export class TrackerServiceClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers[
       'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'parent': request.parent || '',
+    ] = this._gaxModule.routingHeader.fromParams({
+      'parent': request.parent ?? '',
     });
     this.initialize();
     return this.innerApiCalls.importTrackers(request, options, callback);
@@ -832,9 +911,9 @@ export class TrackerServiceClient {
  * region_tag:tracker_v1alpha1_generated_TrackerService_ImportTrackers_async
  */
   async checkImportTrackersProgress(name: string): Promise<LROperation<protos.animeshon.tracker.v1alpha1.ImportTrackersResponse, protos.animeshon.tracker.v1alpha1.OperationMetadata>>{
-    const request = new operationsProtos.google.longrunning.GetOperationRequest({name});
+    const request = new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest({name});
     const [operation] = await this.operationsClient.getOperation(request);
-    const decodeOperation = new gax.Operation(operation, this.descriptors.longrunning.importTrackers, gax.createDefaultBackoffSettings());
+    const decodeOperation = new this._gaxModule.Operation(operation, this.descriptors.longrunning.importTrackers, this._gaxModule.createDefaultBackoffSettings());
     return decodeOperation as LROperation<protos.animeshon.tracker.v1alpha1.ImportTrackersResponse, protos.animeshon.tracker.v1alpha1.OperationMetadata>;
   }
 /**
@@ -903,8 +982,8 @@ export class TrackerServiceClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers[
       'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'parent': request.parent || '',
+    ] = this._gaxModule.routingHeader.fromParams({
+      'parent': request.parent ?? '',
     });
     this.initialize();
     return this.innerApiCalls.exportTrackers(request, options, callback);
@@ -922,9 +1001,9 @@ export class TrackerServiceClient {
  * region_tag:tracker_v1alpha1_generated_TrackerService_ExportTrackers_async
  */
   async checkExportTrackersProgress(name: string): Promise<LROperation<protos.animeshon.tracker.v1alpha1.ExportTrackersResponse, protos.animeshon.tracker.v1alpha1.OperationMetadata>>{
-    const request = new operationsProtos.google.longrunning.GetOperationRequest({name});
+    const request = new this._gaxModule.operationsProtos.google.longrunning.GetOperationRequest({name});
     const [operation] = await this.operationsClient.getOperation(request);
-    const decodeOperation = new gax.Operation(operation, this.descriptors.longrunning.exportTrackers, gax.createDefaultBackoffSettings());
+    const decodeOperation = new this._gaxModule.Operation(operation, this.descriptors.longrunning.exportTrackers, this._gaxModule.createDefaultBackoffSettings());
     return decodeOperation as LROperation<protos.animeshon.tracker.v1alpha1.ExportTrackersResponse, protos.animeshon.tracker.v1alpha1.OperationMetadata>;
   }
  /**
@@ -1003,8 +1082,8 @@ export class TrackerServiceClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers[
       'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'parent': request.parent || '',
+    ] = this._gaxModule.routingHeader.fromParams({
+      'parent': request.parent ?? '',
     });
     this.initialize();
     return this.innerApiCalls.listTrackers(request, options, callback);
@@ -1044,14 +1123,14 @@ export class TrackerServiceClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers[
       'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'parent': request.parent || '',
+    ] = this._gaxModule.routingHeader.fromParams({
+      'parent': request.parent ?? '',
     });
     const defaultCallSettings = this._defaults['listTrackers'];
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listTrackers.createStream(
-      this.innerApiCalls.listTrackers as gax.GaxCall,
+      this.innerApiCalls.listTrackers as GaxCall,
       request,
       callSettings
     );
@@ -1094,15 +1173,15 @@ export class TrackerServiceClient {
     options.otherArgs.headers = options.otherArgs.headers || {};
     options.otherArgs.headers[
       'x-goog-request-params'
-    ] = gax.routingHeader.fromParams({
-      'parent': request.parent || '',
+    ] = this._gaxModule.routingHeader.fromParams({
+      'parent': request.parent ?? '',
     });
     const defaultCallSettings = this._defaults['listTrackers'];
     const callSettings = defaultCallSettings.merge(options);
     this.initialize();
     return this.descriptors.page.listTrackers.asyncIterate(
       this.innerApiCalls['listTrackers'] as GaxCall,
-      request as unknown as RequestType,
+      request as {},
       callSettings
     ) as AsyncIterable<protos.animeshon.tracker.v1alpha1.ITracker>;
   }

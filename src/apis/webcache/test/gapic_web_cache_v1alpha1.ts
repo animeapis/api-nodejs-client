@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,25 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as webcacheModule from '../src';
 
 import {PassThrough} from 'stream';
 
 import {protobuf} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -87,97 +100,99 @@ function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?
 }
 
 describe('v1alpha1.WebCacheClient', () => {
-    it('has servicePath', () => {
-        const servicePath = webcacheModule.v1alpha1.WebCacheClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = webcacheModule.v1alpha1.WebCacheClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = webcacheModule.v1alpha1.WebCacheClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new webcacheModule.v1alpha1.WebCacheClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new webcacheModule.v1alpha1.WebCacheClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = webcacheModule.v1alpha1.WebCacheClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new webcacheModule.v1alpha1.WebCacheClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = webcacheModule.v1alpha1.WebCacheClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = webcacheModule.v1alpha1.WebCacheClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new webcacheModule.v1alpha1.WebCacheClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new webcacheModule.v1alpha1.WebCacheClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new webcacheModule.v1alpha1.WebCacheClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.webCacheStub, undefined);
+            await client.initialize();
+            assert(client.webCacheStub);
         });
-        assert.strictEqual(client.webCacheStub, undefined);
-        await client.initialize();
-        assert(client.webCacheStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new webcacheModule.v1alpha1.WebCacheClient({
+        it('has close method for the initialized client', done => {
+            const client = new webcacheModule.v1alpha1.WebCacheClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.webCacheStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new webcacheModule.v1alpha1.WebCacheClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.webCacheStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new webcacheModule.v1alpha1.WebCacheClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new webcacheModule.v1alpha1.WebCacheClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.webCacheStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new webcacheModule.v1alpha1.WebCacheClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.webCacheStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new webcacheModule.v1alpha1.WebCacheClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new webcacheModule.v1alpha1.WebCacheClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('createCache', () => {
@@ -185,27 +200,31 @@ describe('v1alpha1.WebCacheClient', () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.CreateCacheRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache());
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.CreateCacheRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.Cache()
+            );
             client.innerApiCalls.createCache = stubSimpleCall(expectedResponse);
             const [response] = await client.createCache(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createCache as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes createCache without error using callback', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.CreateCacheRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache());
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.CreateCacheRequest()
+            );
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.Cache()
+            );
             client.innerApiCalls.createCache = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createCache(
@@ -220,32 +239,31 @@ describe('v1alpha1.WebCacheClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createCache as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes createCache with error', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.CreateCacheRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.CreateCacheRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.createCache = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createCache(request), expectedError);
-            assert((client.innerApiCalls.createCache as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes createCache with closed client', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.CreateCacheRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.CreateCacheRequest()
+            );
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createCache(request), expectedError);
@@ -257,43 +275,45 @@ describe('v1alpha1.WebCacheClient', () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.GetCacheRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache());
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.GetCacheRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.webcache.v1alpha1.GetCacheRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.Cache()
+            );
             client.innerApiCalls.getCache = stubSimpleCall(expectedResponse);
             const [response] = await client.getCache(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getCache as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getCache as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getCache as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getCache without error using callback', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.GetCacheRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache());
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.GetCacheRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.webcache.v1alpha1.GetCacheRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.Cache()
+            );
             client.innerApiCalls.getCache = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getCache(
@@ -308,41 +328,50 @@ describe('v1alpha1.WebCacheClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getCache as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getCache as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getCache as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getCache with error', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.GetCacheRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.GetCacheRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.webcache.v1alpha1.GetCacheRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getCache = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getCache(request), expectedError);
-            assert((client.innerApiCalls.getCache as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getCache as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getCache as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getCache with closed client', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.GetCacheRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.GetCacheRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.webcache.v1alpha1.GetCacheRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getCache(request), expectedError);
@@ -354,43 +383,45 @@ describe('v1alpha1.WebCacheClient', () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.DeleteCacheRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.DeleteCacheRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.webcache.v1alpha1.DeleteCacheRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteCache = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteCache(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteCache as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteCache as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteCache as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteCache without error using callback', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.DeleteCacheRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.DeleteCacheRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.webcache.v1alpha1.DeleteCacheRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteCache = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteCache(
@@ -405,41 +436,50 @@ describe('v1alpha1.WebCacheClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteCache as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteCache as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteCache as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteCache with error', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.DeleteCacheRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.DeleteCacheRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.webcache.v1alpha1.DeleteCacheRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteCache = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteCache(request), expectedError);
-            assert((client.innerApiCalls.deleteCache as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteCache as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteCache as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteCache with closed client', async () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.DeleteCacheRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.DeleteCacheRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.webcache.v1alpha1.DeleteCacheRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteCache(request), expectedError);
@@ -453,9 +493,9 @@ describe('v1alpha1.WebCacheClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.ListCachesRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.ListCachesRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache()),
               generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache()),
               generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache()),
@@ -463,8 +503,6 @@ describe('v1alpha1.WebCacheClient', () => {
             client.innerApiCalls.listCaches = stubSimpleCall(expectedResponse);
             const [response] = await client.listCaches(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listCaches as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listCaches without error using callback', async () => {
@@ -473,9 +511,9 @@ describe('v1alpha1.WebCacheClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.ListCachesRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.ListCachesRequest()
+            );const expectedResponse = [
               generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache()),
               generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache()),
               generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache()),
@@ -494,8 +532,6 @@ describe('v1alpha1.WebCacheClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listCaches as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
         });
 
         it('invokes listCaches with error', async () => {
@@ -504,13 +540,12 @@ describe('v1alpha1.WebCacheClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.ListCachesRequest());
-            const expectedOptions = {otherArgs: {headers: {}}};;
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.ListCachesRequest()
+            );
             const expectedError = new Error('expected');
             client.innerApiCalls.listCaches = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listCaches(request), expectedError);
-            assert((client.innerApiCalls.listCaches as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
         });
 
         it('invokes listCachesStream without error', async () => {
@@ -519,7 +554,9 @@ describe('v1alpha1.WebCacheClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.ListCachesRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.ListCachesRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache()),
               generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache()),
@@ -551,7 +588,9 @@ describe('v1alpha1.WebCacheClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.ListCachesRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.ListCachesRequest()
+            );
             const expectedError = new Error('expected');
             client.descriptors.page.listCaches.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listCachesStream(request);
@@ -576,9 +615,11 @@ describe('v1alpha1.WebCacheClient', () => {
             const client = new webcacheModule.v1alpha1.WebCacheClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.ListCachesRequest());
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.ListCachesRequest()
+            );
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache()),
               generateSampleMessage(new protos.animeshon.webcache.v1alpha1.Cache()),
@@ -602,7 +643,10 @@ describe('v1alpha1.WebCacheClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.webcache.v1alpha1.ListCachesRequest());const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.webcache.v1alpha1.ListCachesRequest()
+            );
+            const expectedError = new Error('expected');
             client.descriptors.page.listCaches.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listCachesAsync(request);
             await assert.rejects(async () => {

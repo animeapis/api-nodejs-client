@@ -1,4 +1,4 @@
-// Copyright 2022 Google LLC
+// Copyright 2023 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -20,12 +20,25 @@ import * as protos from '../protos/protos';
 import * as assert from 'assert';
 import * as sinon from 'sinon';
 import {SinonStub} from 'sinon';
-import { describe, it } from 'mocha';
+import {describe, it} from 'mocha';
 import * as imageModule from '../src';
 
 import {PassThrough} from 'stream';
 
 import {protobuf, IamProtos} from 'google-gax';
+
+// Dynamically loaded proto JSON is needed to get the type information
+// to fill in default values for request objects
+const root = protobuf.Root.fromJSON(require('../protos/protos.json')).resolveAll();
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getTypeDefaultValue(typeName: string, fields: string[]) {
+    let type = root.lookupType(typeName) as protobuf.Type;
+    for (const field of fields.slice(0, -1)) {
+        type = type.fields[field]?.resolvedType as protobuf.Type;
+    }
+    return type.fields[fields[fields.length - 1]]?.defaultValue;
+}
 
 function generateSampleMessage<T extends object>(instance: T) {
     const filledObject = (instance.constructor as typeof protobuf.Message)
@@ -87,97 +100,99 @@ function stubAsyncIterationCall<ResponseType>(responses?: ResponseType[], error?
 }
 
 describe('v1alpha1.ImageClient', () => {
-    it('has servicePath', () => {
-        const servicePath = imageModule.v1alpha1.ImageClient.servicePath;
-        assert(servicePath);
-    });
-
-    it('has apiEndpoint', () => {
-        const apiEndpoint = imageModule.v1alpha1.ImageClient.apiEndpoint;
-        assert(apiEndpoint);
-    });
-
-    it('has port', () => {
-        const port = imageModule.v1alpha1.ImageClient.port;
-        assert(port);
-        assert(typeof port === 'number');
-    });
-
-    it('should create a client with no option', () => {
-        const client = new imageModule.v1alpha1.ImageClient();
-        assert(client);
-    });
-
-    it('should create a client with gRPC fallback', () => {
-        const client = new imageModule.v1alpha1.ImageClient({
-            fallback: true,
+    describe('Common methods', () => {
+        it('has servicePath', () => {
+            const servicePath = imageModule.v1alpha1.ImageClient.servicePath;
+            assert(servicePath);
         });
-        assert(client);
-    });
 
-    it('has initialize method and supports deferred initialization', async () => {
-        const client = new imageModule.v1alpha1.ImageClient({
+        it('has apiEndpoint', () => {
+            const apiEndpoint = imageModule.v1alpha1.ImageClient.apiEndpoint;
+            assert(apiEndpoint);
+        });
+
+        it('has port', () => {
+            const port = imageModule.v1alpha1.ImageClient.port;
+            assert(port);
+            assert(typeof port === 'number');
+        });
+
+        it('should create a client with no option', () => {
+            const client = new imageModule.v1alpha1.ImageClient();
+            assert(client);
+        });
+
+        it('should create a client with gRPC fallback', () => {
+            const client = new imageModule.v1alpha1.ImageClient({
+                fallback: true,
+            });
+            assert(client);
+        });
+
+        it('has initialize method and supports deferred initialization', async () => {
+            const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
+            });
+            assert.strictEqual(client.imageStub, undefined);
+            await client.initialize();
+            assert(client.imageStub);
         });
-        assert.strictEqual(client.imageStub, undefined);
-        await client.initialize();
-        assert(client.imageStub);
-    });
 
-    it('has close method for the initialized client', done => {
-        const client = new imageModule.v1alpha1.ImageClient({
+        it('has close method for the initialized client', done => {
+            const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
-        client.initialize();
-        assert(client.imageStub);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has close method for the non-initialized client', done => {
-        const client = new imageModule.v1alpha1.ImageClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        assert.strictEqual(client.imageStub, undefined);
-        client.close().then(() => {
-            done();
-        });
-    });
-
-    it('has getProjectId method', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new imageModule.v1alpha1.ImageClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
-        const result = await client.getProjectId();
-        assert.strictEqual(result, fakeProjectId);
-        assert((client.auth.getProjectId as SinonStub).calledWithExactly());
-    });
-
-    it('has getProjectId method with callback', async () => {
-        const fakeProjectId = 'fake-project-id';
-        const client = new imageModule.v1alpha1.ImageClient({
-              credentials: {client_email: 'bogus', private_key: 'bogus'},
-              projectId: 'bogus',
-        });
-        client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
-        const promise = new Promise((resolve, reject) => {
-            client.getProjectId((err?: Error|null, projectId?: string|null) => {
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(projectId);
-                }
+            });
+            client.initialize();
+            assert(client.imageStub);
+            client.close().then(() => {
+                done();
             });
         });
-        const result = await promise;
-        assert.strictEqual(result, fakeProjectId);
+
+        it('has close method for the non-initialized client', done => {
+            const client = new imageModule.v1alpha1.ImageClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            assert.strictEqual(client.imageStub, undefined);
+            client.close().then(() => {
+                done();
+            });
+        });
+
+        it('has getProjectId method', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new imageModule.v1alpha1.ImageClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().resolves(fakeProjectId);
+            const result = await client.getProjectId();
+            assert.strictEqual(result, fakeProjectId);
+            assert((client.auth.getProjectId as SinonStub).calledWithExactly());
+        });
+
+        it('has getProjectId method with callback', async () => {
+            const fakeProjectId = 'fake-project-id';
+            const client = new imageModule.v1alpha1.ImageClient({
+              credentials: {client_email: 'bogus', private_key: 'bogus'},
+              projectId: 'bogus',
+            });
+            client.auth.getProjectId = sinon.stub().callsArgWith(0, null, fakeProjectId);
+            const promise = new Promise((resolve, reject) => {
+                client.getProjectId((err?: Error|null, projectId?: string|null) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(projectId);
+                    }
+                });
+            });
+            const result = await promise;
+            assert.strictEqual(result, fakeProjectId);
+        });
     });
 
     describe('uploadImage', () => {
@@ -185,43 +200,45 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.UploadImageRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.image.v1alpha1.UploadImageResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.UploadImageRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.UploadImageRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.UploadImageResponse()
+            );
             client.innerApiCalls.uploadImage = stubSimpleCall(expectedResponse);
             const [response] = await client.uploadImage(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.uploadImage as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.uploadImage as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.uploadImage as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes uploadImage without error using callback', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.UploadImageRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.image.v1alpha1.UploadImageResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.UploadImageRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.UploadImageRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.UploadImageResponse()
+            );
             client.innerApiCalls.uploadImage = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.uploadImage(
@@ -236,41 +253,50 @@ describe('v1alpha1.ImageClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.uploadImage as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.uploadImage as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.uploadImage as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes uploadImage with error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.UploadImageRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.UploadImageRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.UploadImageRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.uploadImage = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.uploadImage(request), expectedError);
-            assert((client.innerApiCalls.uploadImage as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.uploadImage as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.uploadImage as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes uploadImage with closed client', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.UploadImageRequest());
-            request.parent = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.UploadImageRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.UploadImageRequest', ['parent']);
+            request.parent = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.uploadImage(request), expectedError);
@@ -282,43 +308,45 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.ImportImageRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.image.v1alpha1.ImportImageResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.ImportImageRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.ImportImageRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.ImportImageResponse()
+            );
             client.innerApiCalls.importImage = stubSimpleCall(expectedResponse);
             const [response] = await client.importImage(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.importImage as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.importImage as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.importImage as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes importImage without error using callback', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.ImportImageRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.image.v1alpha1.ImportImageResponse());
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.ImportImageRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.ImportImageRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.ImportImageResponse()
+            );
             client.innerApiCalls.importImage = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.importImage(
@@ -333,41 +361,50 @@ describe('v1alpha1.ImageClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.importImage as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.importImage as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.importImage as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes importImage with error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.ImportImageRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.ImportImageRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.ImportImageRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.importImage = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.importImage(request), expectedError);
-            assert((client.innerApiCalls.importImage as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.importImage as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.importImage as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes importImage with closed client', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.ImportImageRequest());
-            request.parent = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.ImportImageRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.ImportImageRequest', ['parent']);
+            request.parent = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.importImage(request), expectedError);
@@ -379,43 +416,45 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetImageRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.api.HttpBody());
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.GetImageRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.GetImageRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.api.HttpBody()
+            );
             client.innerApiCalls.getImage = stubSimpleCall(expectedResponse);
             const [response] = await client.getImage(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getImage as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getImage as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getImage as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getImage without error using callback', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetImageRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.api.HttpBody());
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.GetImageRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.GetImageRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.api.HttpBody()
+            );
             client.innerApiCalls.getImage = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getImage(
@@ -430,41 +469,50 @@ describe('v1alpha1.ImageClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getImage as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getImage as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getImage as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getImage with error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetImageRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.GetImageRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.GetImageRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getImage = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getImage(request), expectedError);
-            assert((client.innerApiCalls.getImage as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getImage as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getImage as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getImage with closed client', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetImageRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.GetImageRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.GetImageRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getImage(request), expectedError);
@@ -476,43 +524,45 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetAlbumRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.image.v1alpha1.Album());
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.GetAlbumRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.GetAlbumRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.Album()
+            );
             client.innerApiCalls.getAlbum = stubSimpleCall(expectedResponse);
             const [response] = await client.getAlbum(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getAlbum as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getAlbum as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getAlbum as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getAlbum without error using callback', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetAlbumRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.image.v1alpha1.Album());
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.GetAlbumRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.GetAlbumRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.Album()
+            );
             client.innerApiCalls.getAlbum = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getAlbum(
@@ -527,41 +577,50 @@ describe('v1alpha1.ImageClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getAlbum as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getAlbum as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getAlbum as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getAlbum with error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetAlbumRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.GetAlbumRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.GetAlbumRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getAlbum = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getAlbum(request), expectedError);
-            assert((client.innerApiCalls.getAlbum as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getAlbum as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getAlbum as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getAlbum with closed client', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetAlbumRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.GetAlbumRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.GetAlbumRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getAlbum(request), expectedError);
@@ -573,43 +632,45 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.CreateAlbumRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.image.v1alpha1.Album());
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.CreateAlbumRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.CreateAlbumRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.Album()
+            );
             client.innerApiCalls.createAlbum = stubSimpleCall(expectedResponse);
             const [response] = await client.createAlbum(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createAlbum as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createAlbum as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createAlbum as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createAlbum without error using callback', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.CreateAlbumRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.image.v1alpha1.Album());
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.CreateAlbumRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.CreateAlbumRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.Album()
+            );
             client.innerApiCalls.createAlbum = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.createAlbum(
@@ -624,41 +685,50 @@ describe('v1alpha1.ImageClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.createAlbum as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.createAlbum as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createAlbum as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createAlbum with error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.CreateAlbumRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.CreateAlbumRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.CreateAlbumRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.createAlbum = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.createAlbum(request), expectedError);
-            assert((client.innerApiCalls.createAlbum as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.createAlbum as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.createAlbum as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes createAlbum with closed client', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.CreateAlbumRequest());
-            request.parent = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.CreateAlbumRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.CreateAlbumRequest', ['parent']);
+            request.parent = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.createAlbum(request), expectedError);
@@ -670,43 +740,45 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.DeleteAlbumRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.DeleteAlbumRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.DeleteAlbumRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteAlbum = stubSimpleCall(expectedResponse);
             const [response] = await client.deleteAlbum(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteAlbum as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteAlbum as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteAlbum as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteAlbum without error using callback', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.DeleteAlbumRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.google.protobuf.Empty());
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.DeleteAlbumRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.DeleteAlbumRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.google.protobuf.Empty()
+            );
             client.innerApiCalls.deleteAlbum = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.deleteAlbum(
@@ -721,41 +793,50 @@ describe('v1alpha1.ImageClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.deleteAlbum as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.deleteAlbum as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteAlbum as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteAlbum with error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.DeleteAlbumRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.DeleteAlbumRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.DeleteAlbumRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.deleteAlbum = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.deleteAlbum(request), expectedError);
-            assert((client.innerApiCalls.deleteAlbum as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.deleteAlbum as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.deleteAlbum as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes deleteAlbum with closed client', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.DeleteAlbumRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.DeleteAlbumRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.DeleteAlbumRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.deleteAlbum(request), expectedError);
@@ -767,43 +848,45 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetAlbumSettingsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.image.v1alpha1.AlbumSettings());
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.GetAlbumSettingsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.GetAlbumSettingsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.AlbumSettings()
+            );
             client.innerApiCalls.getAlbumSettings = stubSimpleCall(expectedResponse);
             const [response] = await client.getAlbumSettings(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getAlbumSettings as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getAlbumSettings as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getAlbumSettings as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getAlbumSettings without error using callback', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetAlbumSettingsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.image.v1alpha1.AlbumSettings());
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.GetAlbumSettingsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.GetAlbumSettingsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.AlbumSettings()
+            );
             client.innerApiCalls.getAlbumSettings = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.getAlbumSettings(
@@ -818,41 +901,50 @@ describe('v1alpha1.ImageClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.getAlbumSettings as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.getAlbumSettings as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getAlbumSettings as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getAlbumSettings with error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetAlbumSettingsRequest());
-            request.name = '';
-            const expectedHeaderRequestParams = "name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.GetAlbumSettingsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.GetAlbumSettingsRequest', ['name']);
+            request.name = defaultValue1;
+            const expectedHeaderRequestParams = `name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.getAlbumSettings = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.getAlbumSettings(request), expectedError);
-            assert((client.innerApiCalls.getAlbumSettings as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.getAlbumSettings as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.getAlbumSettings as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes getAlbumSettings with closed client', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.GetAlbumSettingsRequest());
-            request.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.GetAlbumSettingsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.GetAlbumSettingsRequest', ['name']);
+            request.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.getAlbumSettings(request), expectedError);
@@ -864,45 +956,47 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.UpdateAlbumSettingsRequest());
-            request.settings = {};
-            request.settings.name = '';
-            const expectedHeaderRequestParams = "settings.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.image.v1alpha1.AlbumSettings());
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.UpdateAlbumSettingsRequest()
+            );
+            request.settings ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.UpdateAlbumSettingsRequest', ['settings', 'name']);
+            request.settings.name = defaultValue1;
+            const expectedHeaderRequestParams = `settings.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.AlbumSettings()
+            );
             client.innerApiCalls.updateAlbumSettings = stubSimpleCall(expectedResponse);
             const [response] = await client.updateAlbumSettings(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateAlbumSettings as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateAlbumSettings as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateAlbumSettings as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateAlbumSettings without error using callback', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.UpdateAlbumSettingsRequest());
-            request.settings = {};
-            request.settings.name = '';
-            const expectedHeaderRequestParams = "settings.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = generateSampleMessage(new protos.animeshon.image.v1alpha1.AlbumSettings());
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.UpdateAlbumSettingsRequest()
+            );
+            request.settings ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.UpdateAlbumSettingsRequest', ['settings', 'name']);
+            request.settings.name = defaultValue1;
+            const expectedHeaderRequestParams = `settings.name=${defaultValue1}`;
+            const expectedResponse = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.AlbumSettings()
+            );
             client.innerApiCalls.updateAlbumSettings = stubSimpleCallWithCallback(expectedResponse);
             const promise = new Promise((resolve, reject) => {
                  client.updateAlbumSettings(
@@ -917,43 +1011,52 @@ describe('v1alpha1.ImageClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.updateAlbumSettings as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.updateAlbumSettings as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateAlbumSettings as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateAlbumSettings with error', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.UpdateAlbumSettingsRequest());
-            request.settings = {};
-            request.settings.name = '';
-            const expectedHeaderRequestParams = "settings.name=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.UpdateAlbumSettingsRequest()
+            );
+            request.settings ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.UpdateAlbumSettingsRequest', ['settings', 'name']);
+            request.settings.name = defaultValue1;
+            const expectedHeaderRequestParams = `settings.name=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.updateAlbumSettings = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.updateAlbumSettings(request), expectedError);
-            assert((client.innerApiCalls.updateAlbumSettings as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.updateAlbumSettings as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.updateAlbumSettings as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes updateAlbumSettings with closed client', async () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.UpdateAlbumSettingsRequest());
-            request.settings = {};
-            request.settings.name = '';
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.UpdateAlbumSettingsRequest()
+            );
+            request.settings ??= {};
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.UpdateAlbumSettingsRequest', ['settings', 'name']);
+            request.settings.name = defaultValue1;
             const expectedError = new Error('The client has already been closed.');
             client.close();
             await assert.rejects(client.updateAlbumSettings(request), expectedError);
@@ -967,17 +1070,13 @@ describe('v1alpha1.ImageClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.ListAlbumsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.ListAlbumsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.ListAlbumsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.image.v1alpha1.Album()),
               generateSampleMessage(new protos.animeshon.image.v1alpha1.Album()),
               generateSampleMessage(new protos.animeshon.image.v1alpha1.Album()),
@@ -985,8 +1084,12 @@ describe('v1alpha1.ImageClient', () => {
             client.innerApiCalls.listAlbums = stubSimpleCall(expectedResponse);
             const [response] = await client.listAlbums(request);
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listAlbums as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listAlbums as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listAlbums as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listAlbums without error using callback', async () => {
@@ -995,17 +1098,13 @@ describe('v1alpha1.ImageClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.ListAlbumsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
-            const expectedResponse = [
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.ListAlbumsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.ListAlbumsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;const expectedResponse = [
               generateSampleMessage(new protos.animeshon.image.v1alpha1.Album()),
               generateSampleMessage(new protos.animeshon.image.v1alpha1.Album()),
               generateSampleMessage(new protos.animeshon.image.v1alpha1.Album()),
@@ -1024,8 +1123,12 @@ describe('v1alpha1.ImageClient', () => {
             });
             const response = await promise;
             assert.deepStrictEqual(response, expectedResponse);
-            assert((client.innerApiCalls.listAlbums as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions /*, callback defined above */));
+            const actualRequest = (client.innerApiCalls.listAlbums as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listAlbums as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listAlbums with error', async () => {
@@ -1034,21 +1137,22 @@ describe('v1alpha1.ImageClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.ListAlbumsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
-            const expectedOptions = {
-                otherArgs: {
-                    headers: {
-                        'x-goog-request-params': expectedHeaderRequestParams,
-                    },
-                },
-            };
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.ListAlbumsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.ListAlbumsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.innerApiCalls.listAlbums = stubSimpleCall(undefined, expectedError);
             await assert.rejects(client.listAlbums(request), expectedError);
-            assert((client.innerApiCalls.listAlbums as SinonStub)
-                .getCall(0).calledWith(request, expectedOptions, undefined));
+            const actualRequest = (client.innerApiCalls.listAlbums as SinonStub)
+                .getCall(0).args[0];
+            assert.deepStrictEqual(actualRequest, request);
+            const actualHeaderRequestParams = (client.innerApiCalls.listAlbums as SinonStub)
+                .getCall(0).args[1].otherArgs.headers['x-goog-request-params'];
+            assert(actualHeaderRequestParams.includes(expectedHeaderRequestParams));
         });
 
         it('invokes listAlbumsStream without error', async () => {
@@ -1057,9 +1161,13 @@ describe('v1alpha1.ImageClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.ListAlbumsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.ListAlbumsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.ListAlbumsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.image.v1alpha1.Album()),
               generateSampleMessage(new protos.animeshon.image.v1alpha1.Album()),
@@ -1083,10 +1191,11 @@ describe('v1alpha1.ImageClient', () => {
             assert.deepStrictEqual(responses, expectedResponse);
             assert((client.descriptors.page.listAlbums.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listAlbums, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listAlbums.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1096,9 +1205,13 @@ describe('v1alpha1.ImageClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.ListAlbumsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.ListAlbumsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.ListAlbumsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedError = new Error('expected');
             client.descriptors.page.listAlbums.createStream = stubPageStreamingCall(undefined, expectedError);
             const stream = client.listAlbumsStream(request);
@@ -1117,10 +1230,11 @@ describe('v1alpha1.ImageClient', () => {
             await assert.rejects(promise, expectedError);
             assert((client.descriptors.page.listAlbums.createStream as SinonStub)
                 .getCall(0).calledWith(client.innerApiCalls.listAlbums, request));
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listAlbums.createStream as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                         expectedHeaderRequestParams
+                    ) 
             );
         });
 
@@ -1128,11 +1242,15 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.ListAlbumsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.ListAlbumsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.ListAlbumsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
             const expectedResponse = [
               generateSampleMessage(new protos.animeshon.image.v1alpha1.Album()),
               generateSampleMessage(new protos.animeshon.image.v1alpha1.Album()),
@@ -1148,10 +1266,11 @@ describe('v1alpha1.ImageClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listAlbums.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listAlbums.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
 
@@ -1161,9 +1280,14 @@ describe('v1alpha1.ImageClient', () => {
                 projectId: 'bogus',
             });
             client.initialize();
-            const request = generateSampleMessage(new protos.animeshon.image.v1alpha1.ListAlbumsRequest());
-            request.parent = '';
-            const expectedHeaderRequestParams = "parent=";const expectedError = new Error('expected');
+            const request = generateSampleMessage(
+              new protos.animeshon.image.v1alpha1.ListAlbumsRequest()
+            );
+            const defaultValue1 =
+              getTypeDefaultValue('.animeshon.image.v1alpha1.ListAlbumsRequest', ['parent']);
+            request.parent = defaultValue1;
+            const expectedHeaderRequestParams = `parent=${defaultValue1}`;
+            const expectedError = new Error('expected');
             client.descriptors.page.listAlbums.asyncIterate = stubAsyncIterationCall(undefined, expectedError);
             const iterable = client.listAlbumsAsync(request);
             await assert.rejects(async () => {
@@ -1175,10 +1299,11 @@ describe('v1alpha1.ImageClient', () => {
             assert.deepStrictEqual(
                 (client.descriptors.page.listAlbums.asyncIterate as SinonStub)
                     .getCall(0).args[1], request);
-            assert.strictEqual(
+            assert(
                 (client.descriptors.page.listAlbums.asyncIterate as SinonStub)
-                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'],
-                expectedHeaderRequestParams
+                    .getCall(0).args[2].otherArgs.headers['x-goog-request-params'].includes(
+                        expectedHeaderRequestParams
+                    )
             );
         });
     });
@@ -1187,10 +1312,10 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.GetIamPolicyRequest()
+              new IamProtos.google.iam.v1.GetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1202,7 +1327,7 @@ describe('v1alpha1.ImageClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.Policy()
+              new IamProtos.google.iam.v1.Policy()
             );
             client.iamClient.getIamPolicy = stubSimpleCall(expectedResponse);
             const response = await client.getIamPolicy(request, expectedOptions);
@@ -1214,10 +1339,10 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.GetIamPolicyRequest()
+              new IamProtos.google.iam.v1.GetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1229,7 +1354,7 @@ describe('v1alpha1.ImageClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.Policy()
+              new IamProtos.google.iam.v1.Policy()
             );
             client.iamClient.getIamPolicy = sinon.stub().callsArgWith(2, null, expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -1253,10 +1378,10 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.GetIamPolicyRequest()
+              new IamProtos.google.iam.v1.GetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1279,10 +1404,10 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.SetIamPolicyRequest()
+              new IamProtos.google.iam.v1.SetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1294,7 +1419,7 @@ describe('v1alpha1.ImageClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.Policy()
+              new IamProtos.google.iam.v1.Policy()
             );
             client.iamClient.setIamPolicy = stubSimpleCall(expectedResponse);
             const response = await client.setIamPolicy(request, expectedOptions);
@@ -1306,10 +1431,10 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.SetIamPolicyRequest()
+              new IamProtos.google.iam.v1.SetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1321,7 +1446,7 @@ describe('v1alpha1.ImageClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.Policy()
+              new IamProtos.google.iam.v1.Policy()
             );
             client.iamClient.setIamPolicy = sinon.stub().callsArgWith(2, null, expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -1345,10 +1470,10 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.SetIamPolicyRequest()
+              new IamProtos.google.iam.v1.SetIamPolicyRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1371,10 +1496,10 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsRequest()
+              new IamProtos.google.iam.v1.TestIamPermissionsRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1386,7 +1511,7 @@ describe('v1alpha1.ImageClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsResponse()
+              new IamProtos.google.iam.v1.TestIamPermissionsResponse()
             );
             client.iamClient.testIamPermissions = stubSimpleCall(expectedResponse);
             const response = await client.testIamPermissions(request, expectedOptions);
@@ -1398,10 +1523,10 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsRequest()
+              new IamProtos.google.iam.v1.TestIamPermissionsRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
@@ -1413,7 +1538,7 @@ describe('v1alpha1.ImageClient', () => {
                 },
             };
             const expectedResponse = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsResponse()
+              new IamProtos.google.iam.v1.TestIamPermissionsResponse()
             );
             client.iamClient.testIamPermissions = sinon.stub().callsArgWith(2, null, expectedResponse);
             const promise = new Promise((resolve, reject) => {
@@ -1437,10 +1562,10 @@ describe('v1alpha1.ImageClient', () => {
             const client = new imageModule.v1alpha1.ImageClient({
               credentials: {client_email: 'bogus', private_key: 'bogus'},
               projectId: 'bogus',
-        });
+            });
             client.initialize();
             const request = generateSampleMessage(
-                new IamProtos.google.iam.v1.TestIamPermissionsRequest()
+              new IamProtos.google.iam.v1.TestIamPermissionsRequest()
             );
             request.resource = '';
             const expectedHeaderRequestParams = 'resource=';
