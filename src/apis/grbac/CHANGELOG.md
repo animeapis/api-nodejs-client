@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.0](https://www.github.com/animeapis/api-nodejs-client/compare/grbac-v1.3.0...grbac-v1.4.0) (2023-01-04)
+
+
+### Features
+
+* **all:** upgrade to latest dependencies ([8cda1b3](https://www.github.com/animeapis/api-nodejs-client/commit/8cda1b3c9ddb876cbbcf6b5d89cf5f6d0f5aa0ad))
+* **image:** add IAM rules to service YAML ([aad93a5](https://www.github.com/animeapis/api-nodejs-client/commit/aad93a57012872a5f1d0972505c7ba642d31b451))
+
 ## [1.3.0](https://www.github.com/animeapis/api-nodejs-client/compare/grbac-v1.2.1...grbac-v1.3.0) (2022-01-16)
 
 

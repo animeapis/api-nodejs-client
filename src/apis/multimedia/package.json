@@ -1,6 +1,6 @@
 {
   "name": "@animeapis/multimedia",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Multimedia client for Node.js",
   "repository": "googleapis/nodejs-multimedia",
   "license": "Apache-2.0",
