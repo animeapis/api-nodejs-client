@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.4.0](https://www.github.com/animeapis/api-nodejs-client/compare/tracker-v1.3.0...tracker-v1.4.0) (2023-01-04)
+
+
+### Features
+
+* **all:** better support for GraphQL and OpenAPI ([8a0b8ea](https://www.github.com/animeapis/api-nodejs-client/commit/8a0b8eac4262d9fc4ff76884014ebbc36dd3f0f3))
+* **all:** upgrade to latest dependencies ([8cda1b3](https://www.github.com/animeapis/api-nodejs-client/commit/8cda1b3c9ddb876cbbcf6b5d89cf5f6d0f5aa0ad))
+* **image:** add IAM rules to service YAML ([aad93a5](https://www.github.com/animeapis/api-nodejs-client/commit/aad93a57012872a5f1d0972505c7ba642d31b451))
+* **vision:** add IAM, GraphQL, and OpenAPI ([ee0cfb7](https://www.github.com/animeapis/api-nodejs-client/commit/ee0cfb7a50c0ed7d9781a230dc2bc4a1639fe6a4))
+
+
+### Bug Fixes
+
+* **tracker:** use snake-case for attribute names ([4648e6f](https://www.github.com/animeapis/api-nodejs-client/commit/4648e6f6f584213ab4b94cb657b910929b58f8bc))
+
 ## [1.3.0](https://www.github.com/animeapis/api-nodejs-client/compare/tracker-v1.2.1...tracker-v1.3.0) (2022-01-16)
 
 

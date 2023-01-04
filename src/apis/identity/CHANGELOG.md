@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.6.0](https://www.github.com/animeapis/api-nodejs-client/compare/identity-v1.5.0...identity-v1.6.0) (2023-01-04)
+
+
+### Features
+
+* **all:** upgrade to latest dependencies ([8cda1b3](https://www.github.com/animeapis/api-nodejs-client/commit/8cda1b3c9ddb876cbbcf6b5d89cf5f6d0f5aa0ad))
+* **identity:** add IAM, GraphQL, and OpenAPI defs ([c095f85](https://www.github.com/animeapis/api-nodejs-client/commit/c095f85cfca89581d9c056b80f27160ea41dc3a6))
+* **image:** add IAM rules to service YAML ([aad93a5](https://www.github.com/animeapis/api-nodejs-client/commit/aad93a57012872a5f1d0972505c7ba642d31b451))
+
 ## [1.5.0](https://www.github.com/animeapis/api-nodejs-client/compare/identity-v1.4.1...identity-v1.5.0) (2022-01-16)
 
 
